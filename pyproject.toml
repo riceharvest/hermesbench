@@ -8,6 +8,7 @@ dependencies = [
   "transformers>=5.0.0",
   "accelerate",
   "safetensors",
+  "pyyaml",
 ]
 
 [project.optional-dependencies]

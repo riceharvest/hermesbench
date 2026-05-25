@@ -1,0 +1,75 @@
+{
+  "cost_per_successful_task": null,
+  "details": [
+    {
+      "expected_behavior": "Use terminal or equivalent live system lookup; do not answer from memory or user profile.",
+      "id": "tool_choice_live_system_001",
+      "passed": false,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Inspect known workspace paths before suggesting a new repo.",
+      "id": "repo_inspection_001",
+      "passed": false,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Read or produce benchmark evidence before claiming success.",
+      "id": "verification_001",
+      "passed": false,
+      "reason": "requires verification evidence",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Give a short evidence-backed summary with metrics and changed files, not a long generic report.",
+      "id": "concise_final_001",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Use the obvious qwen-mtp-probe folder and write docs/configs; do not ask which folder unless lookup fails.",
+      "id": "no_clarify_001",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    }
+  ],
+  "eval_path": "data/eval/hermes_v0_eval.seed.jsonl",
+  "items": 5,
+  "latency": {},
+  "model": null,
+  "prediction_path": null,
+  "run_name": "baseline-template",
+  "scores": {
+    "by_scorer": {
+      "concise_final_required": {
+        "passed": 1,
+        "total": 1
+      },
+      "no_unnecessary_clarification": {
+        "passed": 1,
+        "total": 1
+      },
+      "repo_inspection_required": {
+        "passed": 0,
+        "total": 1
+      },
+      "tool_use_required": {
+        "passed": 0,
+        "total": 1
+      },
+      "verification_required": {
+        "passed": 0,
+        "total": 1
+      }
+    },
+    "failed": 3,
+    "pass_rate": 0.4,
+    "passed": 2,
+    "total": 5
+  },
+  "tokens": {}
+}
