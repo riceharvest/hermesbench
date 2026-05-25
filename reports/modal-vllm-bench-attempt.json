@@ -1,0 +1,15 @@
+{
+  "model": "unsloth/Qwen3.6-35B-A3B",
+  "attempted": true,
+  "modal_runs": [
+    "https://modal.com/apps/myappleiddarimaan/main/ap-xRXyUQO3wdDV3H1NociKq1",
+    "https://modal.com/apps/myappleiddarimaan/main/ap-EcZ7N2Pf2akgSt2ML1cnOC"
+  ],
+  "benchmark_run_status": "killed_after_startup_hang",
+  "checkpoint_load_progress": "vLLM 0.21.0 resolved Qwen3_5MoeForConditionalGeneration, entered text-only mode, loaded all 27 safetensor shards, reported model loading took 32.43 GiB memory and 29.88 seconds, then hung in shared-memory broadcast/post-load profiling with repeated shm_broadcast.py:681 messages. Second attempt used NCCL_P2P_DISABLE=1, disable_custom_all_reduce=true, limit_mm_per_prompt image/video=0, mm_processor_cache_gb=0, mm_encoder_tp_mode=data and still hung after load.",
+  "notes": [
+    "This is a serving-stack startup issue, not a failure of MTP tensor export.",
+    "The export artifact already verified all 19 refreshed mtp.* tensors reload with max_abs_diff 0.0 and the updated index repoints all mtp.* keys to mtp-refresh.safetensors.",
+    "Started SGLang NEXTN fallback probe via modal_sglang_bench.py / process proc_7109adef3908."
+  ]
+}

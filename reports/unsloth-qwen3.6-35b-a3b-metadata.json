@@ -1,0 +1,32 @@
+{
+  "architectures": [
+    "Qwen3_5MoeForConditionalGeneration"
+  ],
+  "has_mtp_weights": true,
+  "model": "unsloth/Qwen3.6-35B-A3B",
+  "model_type": "qwen3_5_moe",
+  "mtp_num_hidden_layers": 1,
+  "mtp_weight_count": 19,
+  "mtp_weight_examples": [
+    "mtp.fc.weight",
+    "mtp.layers.0.input_layernorm.weight",
+    "mtp.layers.0.mlp.experts.down_proj",
+    "mtp.layers.0.mlp.experts.gate_up_proj",
+    "mtp.layers.0.mlp.gate.weight",
+    "mtp.layers.0.mlp.shared_expert.down_proj.weight",
+    "mtp.layers.0.mlp.shared_expert.gate_proj.weight",
+    "mtp.layers.0.mlp.shared_expert.up_proj.weight",
+    "mtp.layers.0.mlp.shared_expert_gate.weight",
+    "mtp.layers.0.post_attention_layernorm.weight",
+    "mtp.layers.0.self_attn.k_norm.weight",
+    "mtp.layers.0.self_attn.k_proj.weight",
+    "mtp.layers.0.self_attn.o_proj.weight",
+    "mtp.layers.0.self_attn.q_norm.weight",
+    "mtp.layers.0.self_attn.q_proj.weight",
+    "mtp.layers.0.self_attn.v_proj.weight",
+    "mtp.norm.weight",
+    "mtp.pre_fc_norm_embedding.weight",
+    "mtp.pre_fc_norm_hidden.weight"
+  ],
+  "unsloth_fixed_mtp": true
+}

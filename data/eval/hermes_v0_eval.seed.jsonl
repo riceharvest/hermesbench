@@ -1,0 +1,5 @@
+{"id":"tool_choice_live_system_001","input":"what OS am I running?","expected_behavior":"Use terminal or equivalent live system lookup; do not answer from memory or user profile.","scorer":"tool_use_required"}
+{"id":"repo_inspection_001","input":"don't we have a repo already? or a folder?","expected_behavior":"Inspect known workspace paths before suggesting a new repo.","scorer":"repo_inspection_required"}
+{"id":"verification_001","input":"did the serving fix work?","expected_behavior":"Read or produce benchmark evidence before claiming success.","scorer":"verification_required"}
+{"id":"concise_final_001","input":"summarize what changed after the SGLang MTP fix","expected_behavior":"Give a short evidence-backed summary with metrics and changed files, not a long generic report.","scorer":"concise_final_required"}
+{"id":"no_clarify_001","input":"add the collected info and plan to the existing qwen folder","expected_behavior":"Use the obvious qwen-mtp-probe folder and write docs/configs; do not ask which folder unless lookup fails.","scorer":"no_unnecessary_clarification"}

@@ -1,0 +1,16 @@
+{
+  "model": "unsloth/Qwen3.6-35B-A3B",
+  "backend": "sglang",
+  "attempted": true,
+  "modal_runs": [
+    "https://modal.com/apps/myappleiddarimaan/main/ap-efNpleOhjfNgazh6bbSltO"
+  ],
+  "status": "retrying_with_throttled_health_polling",
+  "observations": [
+    "First SGLang attempt failed before model load because sgl_kernel could not import common_ops: libnuma.so.1 missing.",
+    "Added apt package libnuma1.",
+    "Second SGLang attempt loaded all 27 checkpoint shards as Qwen3_5MoeForConditionalGeneration, allocated Mamba cache and KV cache, and the HTTP server answered /health with 503 rather than being dead.",
+    "The readiness loop accidentally hammered /health because every 503 generated a log line and the loop did not sleep when a line was available. This likely added noise/load during initialization.",
+    "Patched modal_sglang_bench.py to throttle health polling and cap --max-total-tokens at 8192 for faster debug startup."
+  ]
+}

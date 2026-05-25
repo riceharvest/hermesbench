@@ -1,0 +1,18 @@
+{
+  "device": "cuda",
+  "dtype": "unknown",
+  "elapsed_seconds": 0.5888159275054932,
+  "error": "Refusing to load a large MTP checkpoint without --allow-large-load. Metadata shows 19 MTP tensors. Use this flag only on a GPU box with enough RAM/VRAM for the HF safetensors checkpoint.",
+  "forward_has_logits": false,
+  "forward_mtp_keys": [],
+  "loaded_mtp_param_count": 0,
+  "loss": null,
+  "metadata_mtp_weight_count": 19,
+  "model": "unsloth/Qwen3.6-35B-A3B",
+  "mtp_aux_loss": null,
+  "mtp_grad_norms": {},
+  "nonzero_mtp_grad_count": 0,
+  "trainable_mtp_param_count": 0,
+  "used_builtin_loss": false,
+  "used_explicit_mtp_loss": false
+}

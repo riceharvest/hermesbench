@@ -1,0 +1,14 @@
+{
+  "assembly_note": "Copy or symlink the original model snapshot, copy mtp-refresh.safetensors into it, and replace model.safetensors.index.json with model.safetensors.index.with-mtp-refresh.json.",
+  "config_mtp_num_hidden_layers": 1,
+  "config_unsloth_fixed_mtp": true,
+  "export_shard": "mtp-refresh.safetensors",
+  "exported_mtp_tensor_count": 19,
+  "final_eval_loss": 0.6064453125,
+  "initial_eval_loss": 9.72265625,
+  "last_nonzero_mtp_grad_count": 19,
+  "loss_delta": 9.1162109375,
+  "model": "unsloth/Qwen3.6-35B-A3B",
+  "source_mtp_weight_count": 19,
+  "updated_index": "model.safetensors.index.with-mtp-refresh.json"
+}

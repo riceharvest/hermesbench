@@ -1,0 +1,72 @@
+run_name: qwen36-hermes-v0-sft-main
+base_model: unsloth/Qwen3.6-35B-A3B
+output_dir: outputs/qwen36-hermes-v0-sft-main
+
+training:
+  method: qlora
+  adapter: lora
+  max_seq_length: 8192
+  learning_rate: 0.0001
+  num_train_epochs: 1
+  per_device_train_batch_size: 1
+  gradient_accumulation_steps: 16
+  warmup_ratio: 0.03
+  weight_decay: 0.0
+  bf16: true
+  gradient_checkpointing: true
+  eval_steps: 50
+  save_steps: 100
+
+lora:
+  r: 16
+  alpha: 32
+  dropout: 0.05
+  target_modules:
+    - q_proj
+    - k_proj
+    - v_proj
+    - o_proj
+    - gate_proj
+    - up_proj
+    - down_proj
+    - gate_up_proj
+
+behavior:
+  compact_scratchpad_budget_tokens: 80
+  optimize_for: cost_per_successful_task
+  forbidden:
+    - unverified_success_claims
+    - unnecessary_clarification
+    - verbose_generic_reasoning
+    - fake_tool_results
+
+mtp_refresh:
+  enabled_after_main_sft: true
+  mtp_weight: 0.075
+  num_speculative_tokens: 2
+  sglang:
+    env:
+      SGLANG_ENABLE_SPEC_V2: "1"
+    flags:
+      speculative_algorithm: EAGLE
+      speculative_num_steps: 3
+      speculative_eagle_topk: 1
+      speculative_num_draft_tokens: 4
+      mamba_scheduler_strategy: extra_buffer
+
+data:
+  train_path: data/processed/hermes_v0_train.jsonl
+  eval_path: data/eval/hermes_v0_eval.seed.jsonl
+  seed_path: data/examples/hermes_compact_traces.seed.jsonl
+
+metrics:
+  primary: cost_per_successful_task
+  secondary:
+    - quality_score
+    - invalid_output_rate
+    - tool_action_correctness
+    - tokens_per_successful_task
+    - compact_reasoning_tokens
+    - wall_clock_latency
+    - tokens_per_second
+    - mtp_accept_rate

@@ -1,0 +1,18 @@
+[project]
+name = "qwen-mtp-probe"
+version = "0.1.0"
+description = "Feasibility probe for Qwen3.6 MTP fine-tuning gradients and auxiliary loss."
+requires-python = ">=3.11"
+dependencies = [
+  "torch",
+  "transformers>=5.0.0",
+  "accelerate",
+  "safetensors",
+]
+
+[project.optional-dependencies]
+test = ["pytest"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

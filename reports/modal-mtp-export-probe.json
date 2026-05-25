@@ -1,0 +1,23 @@
+{
+  "batch_size": 2,
+  "elapsed_seconds": 84.61054992675781,
+  "error": null,
+  "example_count": 16,
+  "export_dir": "/results/qwen36-mtp-refresh-export",
+  "export_reload_max_abs_diff": 0.0,
+  "export_shard": "/results/qwen36-mtp-refresh-export/mtp-refresh.safetensors",
+  "exported_mtp_tensor_count": 19,
+  "final_eval_loss": 0.6064453125,
+  "initial_eval_loss": 9.72265625,
+  "last_nonzero_mtp_grad_count": 19,
+  "load_missing": [],
+  "load_unexpected": [],
+  "loaded_mtp_tensor_count": 19,
+  "loss_delta": 9.1162109375,
+  "lr": 3e-05,
+  "max_length": 48,
+  "metadata_mtp_weight_count": 19,
+  "model": "unsloth/Qwen3.6-35B-A3B",
+  "stage": "done",
+  "steps": 24
+}

@@ -1,0 +1,50 @@
+{
+  "config_architectures": [
+    "Qwen3_5MoeForConditionalGeneration"
+  ],
+  "config_model_type": "qwen3_5_moe",
+  "config_mtp_num_hidden_layers": 1,
+  "cuda_memory_allocated_gb_after_load": 69.32125696,
+  "cuda_memory_reserved_gb_after_load": 69.371691008,
+  "dtype": "torch.bfloat16",
+  "elapsed_seconds": 226.35604310035706,
+  "error": "RuntimeError('Loss does not require grad; likely MTP path is not used by forward loss')",
+  "forward_has_logits": true,
+  "forward_keys": [
+    "loss",
+    "logits"
+  ],
+  "forward_mtp_key": null,
+  "loaded_mtp_param_count": 0,
+  "loaded_mtp_param_examples": [],
+  "loss": 3.444524049758911,
+  "loss_requires_grad": false,
+  "metadata_mtp_weight_count": 19,
+  "metadata_mtp_weight_examples": [
+    "mtp.fc.weight",
+    "mtp.layers.0.input_layernorm.weight",
+    "mtp.layers.0.mlp.experts.down_proj",
+    "mtp.layers.0.mlp.experts.gate_up_proj",
+    "mtp.layers.0.mlp.gate.weight",
+    "mtp.layers.0.mlp.shared_expert.down_proj.weight",
+    "mtp.layers.0.mlp.shared_expert.gate_proj.weight",
+    "mtp.layers.0.mlp.shared_expert.up_proj.weight",
+    "mtp.layers.0.mlp.shared_expert_gate.weight",
+    "mtp.layers.0.post_attention_layernorm.weight",
+    "mtp.layers.0.self_attn.k_norm.weight",
+    "mtp.layers.0.self_attn.k_proj.weight",
+    "mtp.layers.0.self_attn.o_proj.weight",
+    "mtp.layers.0.self_attn.q_norm.weight",
+    "mtp.layers.0.self_attn.q_proj.weight",
+    "mtp.layers.0.self_attn.v_proj.weight",
+    "mtp.norm.weight",
+    "mtp.pre_fc_norm_embedding.weight",
+    "mtp.pre_fc_norm_hidden.weight"
+  ],
+  "model": "unsloth/Qwen3.6-35B-A3B",
+  "mtp_aux_loss": null,
+  "stage": "forward",
+  "trainable_mtp_param_count": 0,
+  "used_builtin_loss": true,
+  "used_explicit_mtp_loss": false
+}
