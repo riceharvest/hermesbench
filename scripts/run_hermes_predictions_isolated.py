@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import multiprocessing as mp
+import re
 import sys
 import time
 from dataclasses import asdict
@@ -12,6 +13,19 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'src'))
 
 from qwen_mtp_probe.datasets import EvalItem, load_eval_jsonl
 from qwen_mtp_probe.prediction_runner import PredictionRow, _predict_openrouter
+
+
+_SECRET_PATTERNS = [
+    re.compile(r'keys/[A-Za-z0-9_-]+'),
+    re.compile(r'Bearer\s+[A-Za-z0-9._~+/=-]+'),
+]
+
+
+def _redact_error(text: str) -> str:
+    redacted = text
+    for pattern in _SECRET_PATTERNS:
+        redacted = pattern.sub(lambda match: match.group(0).split('/')[0] + '/[REDACTED]' if '/' in match.group(0) else 'Bearer [REDACTED]', redacted)
+    return redacted
 
 
 def _worker(item_dict: dict, args: dict, queue: mp.Queue) -> None:
@@ -37,7 +51,7 @@ def _worker(item_dict: dict, args: dict, queue: mp.Queue) -> None:
             output_tokens=1,
             provider=args['provider'],
         )
-        queue.put((item.id, asdict(row), repr(exc)))
+        queue.put((item.id, asdict(row), _redact_error(repr(exc))))
 
 
 def _timeout_row(item: EvalItem, model: str, provider: str, elapsed_ms: float) -> dict:
