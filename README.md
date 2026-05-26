@@ -29,21 +29,26 @@ uv run --with pytest --with torch python -m pytest tests/test_probe.py -q
 
 ## GPU feasibility gate
 
-Run this on a GPU box with enough memory for the HF safetensors checkpoint:
+Status: **complete**. Do not rerun unless the base model, Transformers version, or serving backend changes.
 
-```bash
-PYTHONPATH=src uv run --with torch --with transformers --with accelerate python -m qwen_mtp_probe.probe \
-  --model unsloth/Qwen3.6-35B-A3B \
-  --output reports/unsloth-qwen3.6-35b-a3b-loaded.json
-```
+The original stock-HF probe showed that Transformers ignores `^mtp.*`: the checkpoint index has 19 `mtp.*` tensors, but the loaded HF model exposes 0 MTP parameters and forward outputs only `loss` and `logits`.
 
-That verifies the loaded model exposes `mtp.*` parameters and can mark only those params trainable. The next custom trainer should add a real batch forward and backprop using:
+The working path is the manual MTP module in `src/qwen_mtp_probe/qwen_mtp.py`. Modal probes proved:
 
-```text
-loss = next_token_ce + 0.05..0.1 * mtp_future_token_ce
-```
+- all 19 MTP tensors load with no missing/unexpected keys
+- all 19 reconstructed MTP tensors receive nonzero gradients
+- MTP-only tiny overfit works: eval loss `9.72 -> 0.606`
+- refreshed MTP export reloads with max absolute diff `0.0`
+- SGLang can serve the assembled checkpoint in normal and MTP speculative/EAGLE modes
 
-Then inspect nonzero `mtp.*` gradient norms before any serious SFT/RL run.
+See:
+
+- `MTP_FEASIBILITY.md`
+- `docs/PROCESS_STATUS.md`
+- `reports/modal-manual-mtp-probe.json`
+- `reports/modal-mtp-overfit-probe.json`
+- `reports/modal-mtp-export-probe.json`
+- `reports/modal-sglang-bench.json`
 
 ## Hermes-agent specialization
 
@@ -51,7 +56,9 @@ This repo is also the working folder for Hermes-agent model specialization: comp
 
 See:
 
+- `docs/PROCESS_STATUS.md` — canonical current-stage tracker
 - `docs/HERMES_AGENT_SPECIALIZATION.md`
 - `docs/plans/hermes-agent-v0-sft-main.md`
+- `docs/plans/hermes-agent-v0-mtp-refresh.md`
 
-Current training target: maximize Hermes-agent task performance with the least necessary reasoning/token spend. The first behavior run should be `v0-sft-main`; MTP refresh comes after SFT changes the output distribution.
+Current training target: maximize Hermes-agent task performance with the least necessary reasoning/token spend. We are currently at `v0-sft-main` preparation. The first behavior run should be `v0-sft-main`; MTP refresh comes after SFT changes the output distribution.

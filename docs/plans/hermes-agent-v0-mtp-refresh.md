@@ -2,6 +2,8 @@
 
 **Goal:** Refresh Qwen3.6 MTP heads after `v0-sft-main` changes the Hermes-agent output distribution.
 
+**Current status:** Waiting on `v0-sft-main`. The MTP feasibility probe is complete; track the overall process in `docs/PROCESS_STATUS.md`.
+
 ## Preconditions
 
 - `v0-sft-main` beats baseline on cost per successful task.

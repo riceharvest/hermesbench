@@ -13,10 +13,12 @@
 ## Current facts to preserve
 
 - Working folder: `/home/dario/Documents/dev workspace/qwen-mtp-probe`.
-- Project is currently not a git repo; initialize git before major implementation if we want history.
+- Git is initialized; initial probe commit is `5de6548`, SFT/eval scaffold commit is `b56b3e5`.
+- Canonical current-stage tracker: `docs/PROCESS_STATUS.md`.
 - Existing MTP proof is documented in `MTP_FEASIBILITY.md`.
 - `unsloth/Qwen3.6-35B-A3B` has 19 `mtp.*` tensors and `mtp_num_hidden_layers = 1`.
-- Stock HF may ignore `mtp.*`; custom MTP wrapper/probes already exist under `src/qwen_mtp_probe/qwen_mtp.py` and Modal scripts.
+- Stock HF ignores `mtp.*`; custom MTP wrapper/probes exist under `src/qwen_mtp_probe/qwen_mtp.py` and Modal scripts.
+- MTP feasibility is complete: manual reconstruction, nonzero gradients, MTP-only overfit, export, and SGLang serving smoke all passed.
 - SGLang speculative/MTP serving works with:
 
 ```bash

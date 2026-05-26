@@ -227,8 +227,16 @@ Interpretation: vLLM still looks like a Modal/vLLM multi-GPU startup issue, but 
 
 ## Next implementation path
 
-1. Run a larger benchmark sweep (`bench_speculative.py`-style) over realistic batch sizes and prompt lengths; tune `--speculative-num-steps`, `--speculative-eagle-topk`, and `--speculative-num-draft-tokens`.
-2. Test `--speculative-moe-runner-backend triton` only if the default MoE runner becomes unstable or slower on larger batches; the first successful MTP smoke did not need it.
-3. Measure acceptance rate / tok-s / latency / output quality / cost per successful task on real target prompts, not just four compact JSON smoke prompts.
-4. Decide deployment backend: SGLang is now the working path; vLLM can be revisited separately with Docker `--ipc=host` or an environment that avoids the Modal shared-memory startup hang.
-5. If acceptance and quality survive the larger sweep, fold this into the real SFT pipeline as `base -> main SFT -> MTP refresh -> SGLang EAGLE/MTP serving`.
+The MTP probe is complete. Do **not** redo it unless the base model, Transformers version, or serving backend changes.
+
+Current process order:
+
+1. `v0-sft-main` preparation: mine/convert compact Hermes traces, expand evals, and keep dry-run trainer checks green.
+2. `v0-sft-main`: specialize normal-decode behavior first. No RL. Do not train router initially.
+3. `v0-sft-main-mtp-refresh`: use the manual MTP path to refit MTP after SFT shifts the output distribution.
+4. Benchmark normal vs MTP on real target prompts: quality, brevity/format, tok/s, latency, and cost per successful task.
+5. Later `v1-rl`, only after SFT is clearly useful, followed by another MTP refresh if RL shifts outputs.
+
+SGLang is the default serving path for now; vLLM can be revisited separately with Docker `--ipc=host` or an environment that avoids the Modal shared-memory startup hang.
+
+Canonical tracker: `docs/PROCESS_STATUS.md`.
