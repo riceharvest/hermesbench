@@ -126,7 +126,13 @@ Concise answer only.
 Never claim tool results you have not observed. For current facts, arithmetic, hashes, file contents, repo state, or system state, emit an ACTION instead of answering from memory.'''
 
 
-def _openrouter_payload(item: EvalItem, model: str, max_tokens: int) -> dict[str, object]:
+def _openrouter_payload(
+    item: EvalItem,
+    model: str,
+    max_tokens: int,
+    reasoning_effort: str,
+    reasoning_exclude: bool,
+) -> dict[str, object]:
     return {
         'model': model,
         'messages': [
@@ -138,8 +144,26 @@ def _openrouter_payload(item: EvalItem, model: str, max_tokens: int) -> dict[str
         ],
         'temperature': 0,
         'max_tokens': max_tokens,
-        'reasoning': {'effort': 'none', 'exclude': True},
+        'reasoning': {'effort': reasoning_effort, 'exclude': reasoning_exclude},
     }
+
+
+def _openrouter_usage(data: dict[str, object]) -> tuple[int, int | None, int | None, float | None]:
+    usage = data.get('usage')
+    completion_tokens = 0
+    prompt_tokens = None
+    total_tokens = None
+    cost = None
+    if isinstance(usage, dict):
+        if isinstance(usage.get('completion_tokens'), int):
+            completion_tokens = usage['completion_tokens']
+        if isinstance(usage.get('prompt_tokens'), int):
+            prompt_tokens = usage['prompt_tokens']
+        if isinstance(usage.get('total_tokens'), int):
+            total_tokens = usage['total_tokens']
+        if isinstance(usage.get('cost'), int | float):
+            cost = float(usage['cost'])
+    return completion_tokens, prompt_tokens, total_tokens, cost
 
 
 def _openrouter_output(data: dict[str, object]) -> tuple[str, int, int | None, int | None, float | None]:
@@ -155,29 +179,31 @@ def _openrouter_output(data: dict[str, object]) -> tuple[str, int, int | None, i
     content = message.get('content')
     if not isinstance(content, str) or not content.strip():
         raise ValueError('OpenRouter response missing content')
-    usage = data.get('usage')
-    completion_tokens = 0
-    prompt_tokens = None
-    total_tokens = None
-    cost = None
-    if isinstance(usage, dict):
-        if isinstance(usage.get('completion_tokens'), int):
-            completion_tokens = usage['completion_tokens']
-        if isinstance(usage.get('prompt_tokens'), int):
-            prompt_tokens = usage['prompt_tokens']
-        if isinstance(usage.get('total_tokens'), int):
-            total_tokens = usage['total_tokens']
-        if isinstance(usage.get('cost'), int | float):
-            cost = float(usage['cost'])
+    completion_tokens, prompt_tokens, total_tokens, cost = _openrouter_usage(data)
     return content.strip(), completion_tokens, prompt_tokens, total_tokens, cost
 
 
-def _predict_openrouter(item: EvalItem, model: str, provider: str, *, max_tokens: int = 96) -> PredictionRow:
+def _openrouter_request(
+    item: EvalItem,
+    model: str,
+    *,
+    max_tokens: int,
+    reasoning_effort: str,
+    reasoning_exclude: bool,
+) -> tuple[dict[str, object], float]:
     api_key = os.getenv('OPENROUTER_API_KEY')
     if not api_key:
         raise RuntimeError('OPENROUTER_API_KEY is required for provider=openrouter')
 
-    body = json.dumps(_openrouter_payload(item, model, max_tokens)).encode('utf-8')
+    body = json.dumps(
+        _openrouter_payload(
+            item,
+            model,
+            max_tokens,
+            reasoning_effort=reasoning_effort,
+            reasoning_exclude=reasoning_exclude,
+        )
+    ).encode('utf-8')
     request = urllib.request.Request(
         OPENROUTER_URL,
         data=body,
@@ -191,42 +217,140 @@ def _predict_openrouter(item: EvalItem, model: str, provider: str, *, max_tokens
     )
     start = time.perf_counter()
     try:
-        with urllib.request.urlopen(request, timeout=60) as response:
+        with urllib.request.urlopen(request, timeout=180) as response:
             data = json.loads(response.read().decode('utf-8'))
     except urllib.error.HTTPError as exc:
         error_body = exc.read().decode('utf-8', errors='replace')
         raise RuntimeError(f'OpenRouter HTTP {exc.code}: {error_body[:500]}') from exc
-    latency_ms = (time.perf_counter() - start) * 1000
-    output, completion_tokens, prompt_tokens, total_tokens, cost = _openrouter_output(data)
-    output_tokens = completion_tokens or _token_count(output)
-    return PredictionRow(
-        id=item.id,
-        input=item.input,
-        output=output,
-        model=model,
-        latency_ms=latency_ms,
-        output_tokens=output_tokens,
-        provider=provider,
-        prompt_tokens=prompt_tokens,
-        total_tokens=total_tokens,
-        cost=cost,
-    )
+    return data, (time.perf_counter() - start) * 1000
 
 
-def run_predictions(eval_path: Path, model: str, provider: str = 'stub') -> list[PredictionRow]:
+def _predict_openrouter(
+    item: EvalItem,
+    model: str,
+    provider: str,
+    *,
+    max_tokens: int = 96,
+    reasoning_effort: str = 'none',
+    reasoning_exclude: bool = True,
+) -> PredictionRow:
+    attempts = [max_tokens]
+    if reasoning_effort != 'none':
+        attempts.extend(token_budget for token_budget in (max_tokens * 2, max_tokens * 4) if token_budget <= 4096)
+
+    last_error: Exception | None = None
+    total_latency_ms = 0.0
+    aggregate_prompt_tokens = 0
+    aggregate_total_tokens = 0
+    aggregate_cost = 0.0
+    last_completion_tokens = 0
+    for token_budget in attempts:
+        data, latency_ms = _openrouter_request(
+            item,
+            model,
+            max_tokens=token_budget,
+            reasoning_effort=reasoning_effort,
+            reasoning_exclude=reasoning_exclude,
+        )
+        total_latency_ms += latency_ms
+        attempt_completion, attempt_prompt, attempt_total, attempt_cost = _openrouter_usage(data)
+        last_completion_tokens = attempt_completion
+        aggregate_prompt_tokens += attempt_prompt or 0
+        aggregate_total_tokens += attempt_total or 0
+        aggregate_cost += attempt_cost or 0.0
+        try:
+            output, completion_tokens, prompt_tokens, total_tokens, cost = _openrouter_output(data)
+        except ValueError as exc:
+            last_error = exc
+            if 'missing content' in str(exc).lower() and token_budget != attempts[-1]:
+                continue
+            if 'missing content' in str(exc).lower():
+                return PredictionRow(
+                    id=item.id,
+                    input=item.input,
+                    output='OPENROUTER_NO_CONTENT',
+                    model=model,
+                    latency_ms=total_latency_ms,
+                    output_tokens=last_completion_tokens or 1,
+                    provider=provider,
+                    prompt_tokens=aggregate_prompt_tokens or None,
+                    total_tokens=aggregate_total_tokens or None,
+                    cost=aggregate_cost or None,
+                )
+            raise
+        output_tokens = completion_tokens or _token_count(output)
+        return PredictionRow(
+            id=item.id,
+            input=item.input,
+            output=output,
+            model=model,
+            latency_ms=total_latency_ms,
+            output_tokens=output_tokens,
+            provider=provider,
+            prompt_tokens=aggregate_prompt_tokens or prompt_tokens,
+            total_tokens=aggregate_total_tokens or total_tokens,
+            cost=aggregate_cost or cost,
+        )
+    raise RuntimeError(f'OpenRouter prediction failed: {last_error}')
+
+
+def iter_predictions(
+    eval_path: Path,
+    model: str,
+    provider: str = 'stub',
+    *,
+    max_tokens: int = 96,
+    reasoning_effort: str = 'none',
+    reasoning_exclude: bool = True,
+) -> Iterable[PredictionRow]:
     items = load_eval_jsonl(eval_path)
     if provider == 'stub':
-        predictions = [_predict_stub(item, model=model, provider=provider) for item in items]
-    elif provider == 'openrouter':
+        for item in items:
+            prediction = _predict_stub(item, model=model, provider=provider)
+            validate_prediction_row(prediction)
+            yield prediction
+        return
+    if provider == 'openrouter':
         with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-            predictions = list(
-                executor.map(lambda item: _predict_openrouter(item, model=model, provider=provider), items)
-            )
-    else:
-        raise NotImplementedError(f'provider {provider!r} is not implemented yet')
-    for prediction in predictions:
-        validate_prediction_row(prediction)
-    return predictions
+            futures = [
+                executor.submit(
+                    _predict_openrouter,
+                    item,
+                    model=model,
+                    provider=provider,
+                    max_tokens=max_tokens,
+                    reasoning_effort=reasoning_effort,
+                    reasoning_exclude=reasoning_exclude,
+                )
+                for item in items
+            ]
+            for future in concurrent.futures.as_completed(futures):
+                prediction = future.result()
+                validate_prediction_row(prediction)
+                yield prediction
+        return
+    raise NotImplementedError(f'provider {provider!r} is not implemented yet')
+
+
+def run_predictions(
+    eval_path: Path,
+    model: str,
+    provider: str = 'stub',
+    *,
+    max_tokens: int = 96,
+    reasoning_effort: str = 'none',
+    reasoning_exclude: bool = True,
+) -> list[PredictionRow]:
+    return list(
+        iter_predictions(
+            eval_path=eval_path,
+            model=model,
+            provider=provider,
+            max_tokens=max_tokens,
+            reasoning_effort=reasoning_effort,
+            reasoning_exclude=reasoning_exclude,
+        )
+    )
 
 
 def write_predictions_jsonl(path: str | Path, predictions: Iterable[PredictionRow]) -> None:
@@ -237,17 +361,49 @@ def write_predictions_jsonl(path: str | Path, predictions: Iterable[PredictionRo
     )
 
 
+def write_predictions_jsonl_incremental(path: str | Path, predictions: Iterable[PredictionRow]) -> int:
+    p = Path(path)
+    p.parent.mkdir(parents=True, exist_ok=True)
+    written = 0
+    with p.open('w', encoding='utf-8') as handle:
+        for prediction in predictions:
+            handle.write(json.dumps(asdict(prediction), ensure_ascii=False, sort_keys=True) + '\n')
+            handle.flush()
+            written += 1
+            print(json.dumps({'written': written, 'id': prediction.id}, sort_keys=True), flush=True)
+    return written
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description='Run Hermes eval prompts through a prediction provider.')
     parser.add_argument('--eval', required=True, help='Eval JSONL path')
     parser.add_argument('--output', required=True, help='Prediction JSONL output path')
     parser.add_argument('--model', default='stub-ultra-compact', help='Model label to record')
     parser.add_argument('--provider', default='stub', choices=['stub', 'openrouter'], help='Prediction provider')
+    parser.add_argument('--max-tokens', type=int, default=96, help='Max completion tokens for non-stub providers')
+    parser.add_argument(
+        '--reasoning-effort',
+        default='none',
+        choices=['none', 'minimal', 'low', 'medium', 'high', 'xhigh'],
+        help='OpenRouter reasoning effort',
+    )
+    parser.add_argument(
+        '--include-reasoning',
+        action='store_true',
+        help='Do not request OpenRouter reasoning exclusion from the response',
+    )
     args = parser.parse_args()
 
-    predictions = run_predictions(eval_path=Path(args.eval), model=args.model, provider=args.provider)
-    write_predictions_jsonl(args.output, predictions)
-    print(json.dumps({'output': args.output, 'predictions': len(predictions), 'model': args.model, 'provider': args.provider}, indent=2))
+    predictions = iter_predictions(
+        eval_path=Path(args.eval),
+        model=args.model,
+        provider=args.provider,
+        max_tokens=args.max_tokens,
+        reasoning_effort=args.reasoning_effort,
+        reasoning_exclude=not args.include_reasoning,
+    )
+    written = write_predictions_jsonl_incremental(args.output, predictions)
+    print(json.dumps({'output': args.output, 'predictions': written, 'model': args.model, 'provider': args.provider}, indent=2))
 
 
 if __name__ == '__main__':

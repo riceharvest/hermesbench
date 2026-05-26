@@ -7,6 +7,7 @@ from qwen_mtp_probe.prediction_runner import (
     run_predictions,
     validate_prediction_row,
     write_predictions_jsonl,
+    write_predictions_jsonl_incremental,
 )
 
 
@@ -63,6 +64,36 @@ def test_stub_predictions_score_above_empty_baseline(tmp_path):
     rows = [json.loads(line) for line in output_path.read_text().splitlines()]
     assert len(rows) == _eval_row_count()
     assert sum(1 for row in rows if row['output'].startswith('ACTION ')) >= len(rows) // 2
+
+
+def test_incremental_prediction_writer_persists_each_row(tmp_path):
+    output_path = tmp_path / 'predictions.jsonl'
+    rows = [
+        PredictionRow(
+            id='one',
+            input='what time is it?',
+            output='ACTION terminal {"command":"date"}',
+            model='stub',
+            latency_ms=1.0,
+            output_tokens=4,
+            provider='stub',
+        ),
+        PredictionRow(
+            id='two',
+            input='summarize status',
+            output='FINAL:\nDone.',
+            model='stub',
+            latency_ms=2.0,
+            output_tokens=2,
+            provider='stub',
+        ),
+    ]
+
+    written = write_predictions_jsonl_incremental(output_path, rows)
+
+    persisted = [json.loads(line) for line in output_path.read_text().splitlines()]
+    assert written == 2
+    assert [row['id'] for row in persisted] == ['one', 'two']
 
 
 def test_openrouter_output_extracts_content_and_usage_tokens():
