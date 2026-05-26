@@ -112,7 +112,17 @@ def _wait_ready(proc: subprocess.Popen[str], logs: list[str], timeout_s: int = 9
     raise TimeoutError(f"SGLang did not become ready. Tail:\n{_tail(logs)}")
 
 
-def _run_sglang(speculative: bool, *, minimal: bool = False, triton_moe: bool = False) -> dict[str, Any]:
+def _run_sglang(
+    speculative: bool,
+    *,
+    minimal: bool = False,
+    triton_moe: bool = False,
+    tp: int = 2,
+    disable_cuda_graph: bool = True,
+    mem_fraction_static: float = 0.70,
+    max_total_tokens: int = 8192,
+    max_running_requests: int = 4,
+) -> dict[str, Any]:
     from huggingface_hub import snapshot_download
     from openai import OpenAI
 
@@ -128,7 +138,7 @@ def _run_sglang(speculative: bool, *, minimal: bool = False, triton_moe: bool = 
         "--model-path",
         str(ASSEMBLED_DIR),
         "--tp",
-        "2",
+        str(tp),
         "--reasoning-parser",
         "qwen3",
         "--dtype",
@@ -136,22 +146,23 @@ def _run_sglang(speculative: bool, *, minimal: bool = False, triton_moe: bool = 
         "--context-length",
         "4096",
         "--max-total-tokens",
-        "8192",
+        str(max_total_tokens),
         "--page-size",
         "1",
         "--mem-fraction-static",
-        "0.70",
+        str(mem_fraction_static),
         "--max-running-requests",
-        "4",
+        str(max_running_requests),
         "--chunked-prefill-size",
         "2048",
-        "--disable-cuda-graph",
         "--trust-remote-code",
         "--host",
         "127.0.0.1",
         "--port",
         str(PORT),
     ]
+    if disable_cuda_graph:
+        cmd.append("--disable-cuda-graph")
     if speculative:
         cmd.extend([
             "--speculative-algorithm",
@@ -218,6 +229,11 @@ def _run_sglang(speculative: bool, *, minimal: bool = False, triton_moe: bool = 
         wall_seconds = time.time() - started
         return {
             "mode": "nextn" if speculative else "normal",
+            "tp": tp,
+            "disable_cuda_graph": disable_cuda_graph,
+            "mem_fraction_static": mem_fraction_static,
+            "max_total_tokens": max_total_tokens,
+            "max_running_requests": max_running_requests,
             "speculative_algorithm": "EAGLE" if speculative else None,
             "speculative_minimal": minimal if speculative else None,
             "speculative_moe_runner_backend": "triton" if triton_moe else None,
@@ -278,10 +294,127 @@ def bench_nextn() -> dict[str, Any]:
     raise RuntimeError(json.dumps({"nextn_attempts": attempts}, indent=2))
 
 
+@app.function(
+    image=image,
+    gpu="H100",
+    timeout=2400,
+    scaledown_window=10,
+    volumes={
+        "/root/.cache/huggingface": hf_cache,
+        "/results": results,
+    },
+)
+def bench_normal_single_h100() -> dict[str, Any]:
+    """Single-H100 fit/perf check with CUDA graphs enabled for a less-debuggy baseline."""
+
+    try:
+        return _run_sglang(
+            speculative=False,
+            tp=1,
+            disable_cuda_graph=False,
+            mem_fraction_static=0.88,
+            max_total_tokens=4096,
+            max_running_requests=1,
+        )
+    except Exception as exc:
+        return {
+            "mode": "normal",
+            "tp": 1,
+            "disable_cuda_graph": False,
+            "mem_fraction_static": 0.88,
+            "max_total_tokens": 4096,
+            "max_running_requests": 1,
+            "error": repr(exc),
+            "fallback": _run_sglang(
+                speculative=False,
+                tp=1,
+                disable_cuda_graph=True,
+                mem_fraction_static=0.88,
+                max_total_tokens=4096,
+                max_running_requests=1,
+            ),
+        }
+
+
+@app.function(
+    image=image,
+    gpu="H100",
+    timeout=2400,
+    scaledown_window=10,
+    volumes={
+        "/root/.cache/huggingface": hf_cache,
+        "/results": results,
+    },
+)
+def bench_nextn_single_h100() -> dict[str, Any]:
+    """Single-H100 speculative check; fall back to disabled CUDA graphs if needed."""
+
+    attempts: list[dict[str, Any]] = []
+    for disable_cuda_graph in [False, True]:
+        for minimal, triton_moe in [(False, False), (False, True), (True, True), (True, False)]:
+            try:
+                result = _run_sglang(
+                    speculative=True,
+                    minimal=minimal,
+                    triton_moe=triton_moe,
+                    tp=1,
+                    disable_cuda_graph=disable_cuda_graph,
+                    mem_fraction_static=0.88,
+                    max_total_tokens=4096,
+                    max_running_requests=1,
+                )
+                result["attempts"] = attempts
+                return result
+            except Exception as exc:
+                attempts.append({
+                    "disable_cuda_graph": disable_cuda_graph,
+                    "minimal": minimal,
+                    "triton_moe": triton_moe,
+                    "error": repr(exc),
+                })
+    raise RuntimeError(json.dumps({"single_h100_nextn_attempts": attempts}, indent=2))
+
+
 @app.local_entrypoint()
 def main(mode: str = "all"):
-    report_path = Path("reports/modal-sglang-bench.json")
+    report_path = Path(
+        "reports/modal-sglang-single-h100-bench.json"
+        if mode == "single-h100"
+        else "reports/modal-sglang-bench.json"
+    )
     report: dict[str, Any] = {"model": MODEL_NAME, "backend": "sglang", "error": None}
+
+    if mode == "single-h100":
+        try:
+            normal = bench_normal_single_h100.remote()
+            report["normal"] = normal
+            Path("reports").mkdir(exist_ok=True)
+            report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+        except Exception as exc:
+            report["normal_error"] = repr(exc)
+            report["error"] = repr(exc)
+            Path("reports").mkdir(exist_ok=True)
+            report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+            print(json.dumps(report, indent=2, sort_keys=True))
+            return
+
+        try:
+            nextn = bench_nextn_single_h100.remote()
+            report["nextn"] = nextn
+            normal_tps = normal.get("tokens_per_second") or normal.get("fallback", {}).get(
+                "tokens_per_second"
+            )
+            nextn_tps = nextn.get("tokens_per_second")
+            if normal_tps and nextn_tps:
+                report["speedup"] = nextn_tps / normal_tps
+        except Exception as exc:
+            report["nextn_error"] = repr(exc)
+            report["error"] = repr(exc)
+
+        Path("reports").mkdir(exist_ok=True)
+        report_path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return
 
     if mode == "nextn-only" and report_path.exists():
         report.update(json.loads(report_path.read_text()))

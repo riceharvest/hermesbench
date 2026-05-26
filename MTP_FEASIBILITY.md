@@ -209,13 +209,58 @@ Observed speculative MTP result:
 }
 ```
 
-The current small-prompt smoke benchmark shows about `1.90x` speculative speedup (`20.01 tok/s` vs `10.50 tok/s`) with non-empty compact JSON outputs in both modes.
+Observed single-H100 normal-decode result:
+
+```json
+{
+  "gpu": "H100",
+  "tp": 1,
+  "disable_cuda_graph": false,
+  "mem_fraction_static": 0.88,
+  "max_total_tokens": 4096,
+  "max_running_requests": 1,
+  "generated_tokens": 103,
+  "load_seconds": 174.47785782814026,
+  "wall_seconds": 5.017096996307373,
+  "tokens_per_second": 20.529800415620606
+}
+```
+
+Observed single-H100 speculative MTP result:
+
+```json
+{
+  "gpu": "H100",
+  "tp": 1,
+  "disable_cuda_graph": false,
+  "speculative_algorithm": "EAGLE",
+  "mem_fraction_static": 0.88,
+  "max_total_tokens": 4096,
+  "max_running_requests": 1,
+  "generated_tokens": 103,
+  "load_seconds": 205.40003395080566,
+  "wall_seconds": 3.013218879699707,
+  "tokens_per_second": 34.182714270748505
+}
+```
+
+This shows the BF16 assembled checkpoint can fit and serve on a single Modal H100 with a smaller scheduler pool. The first single-H100 attempt with `mem_fraction_static=0.70`, `max_total_tokens=8192`, `max_running_requests=4` loaded weights (`mem usage=65.49 GB`, `avail mem=12.99 GB`) but failed scheduler pool init; increasing `mem_fraction_static` to `0.88` and reducing the pool to `4096` tokens / one running request fixed it.
+
+The current small-prompt smoke benchmark shows about `1.67x` speculative speedup on a single H100 (`34.18 tok/s` vs `20.53 tok/s`) with non-empty compact JSON outputs in both modes.
 
 Local report:
 
 ```text
+reports/modal-sglang-single-h100-bench.json
+```
+
+Earlier dual-H100 result:
+
+```text
 reports/modal-sglang-bench.json
 ```
+
+The old TP=2 smoke showed `20.01 tok/s` speculative vs `10.50 tok/s` normal; single-H100 locality is faster for this tiny batch-1 smoke.
 
 Local failure note:
 

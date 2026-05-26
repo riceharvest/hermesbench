@@ -52,6 +52,24 @@ The next real work is not another MTP probe and not RL. It is building enough tr
 
 SGLang is the current working backend.
 
+Single-H100 BF16 smoke result from `reports/modal-sglang-single-h100-bench.json`:
+
+- GPU: Modal `H100` single GPU, `tp=1`
+- serving config: `mem_fraction_static=0.88`, `max_total_tokens=4096`, `max_running_requests=1`, CUDA graphs enabled
+- normal decode: `20.53 tok/s`
+- speculative/EAGLE: `34.18 tok/s`
+- speedup: about `1.67x`
+- fit note: the first single-H100 attempt with `mem_fraction_static=0.70`, `max_total_tokens=8192`, `max_running_requests=4` loaded weights but failed scheduler pool init with `Not enough memory. Please try to increase --mem-fraction-static.`
+
+Earlier dual-H100 smoke result from `reports/modal-sglang-bench.json`:
+
+- GPU: Modal `H100:2`, `tp=2`
+- normal decode: `10.50 tok/s`
+- speculative/EAGLE: `20.01 tok/s`
+- speedup: about `1.90x`
+
+Interpretation: single-H100 locality is better for this tiny batch-1 smoke than the old dual-H100 TP=2 debug path. Still do not treat either as final production performance; they are short smoke tests over four compact JSON prompts.
+
 Known-good speculative shape:
 
 ```bash
