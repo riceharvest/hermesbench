@@ -225,6 +225,18 @@ def _openrouter_request(
     return data, (time.perf_counter() - start) * 1000
 
 
+def _openrouter_token_budgets(
+    max_tokens: int,
+    *,
+    reasoning_effort: str,
+    retry_token_budgets: bool,
+) -> list[int]:
+    attempts = [max_tokens]
+    if retry_token_budgets and reasoning_effort != 'none':
+        attempts.extend(token_budget for token_budget in (max_tokens * 2, max_tokens * 4) if token_budget <= 4096)
+    return attempts
+
+
 def _predict_openrouter(
     item: EvalItem,
     model: str,
@@ -233,10 +245,13 @@ def _predict_openrouter(
     max_tokens: int = 96,
     reasoning_effort: str = 'none',
     reasoning_exclude: bool = True,
+    retry_token_budgets: bool = False,
 ) -> PredictionRow:
-    attempts = [max_tokens]
-    if reasoning_effort != 'none':
-        attempts.extend(token_budget for token_budget in (max_tokens * 2, max_tokens * 4) if token_budget <= 4096)
+    attempts = _openrouter_token_budgets(
+        max_tokens,
+        reasoning_effort=reasoning_effort,
+        retry_token_budgets=retry_token_budgets,
+    )
 
     last_error: Exception | None = None
     total_latency_ms = 0.0
@@ -302,6 +317,7 @@ def iter_predictions(
     max_tokens: int = 96,
     reasoning_effort: str = 'none',
     reasoning_exclude: bool = True,
+    retry_token_budgets: bool = False,
 ) -> Iterable[PredictionRow]:
     items = load_eval_jsonl(eval_path)
     if provider == 'stub':
@@ -321,6 +337,7 @@ def iter_predictions(
                     max_tokens=max_tokens,
                     reasoning_effort=reasoning_effort,
                     reasoning_exclude=reasoning_exclude,
+                    retry_token_budgets=retry_token_budgets,
                 )
                 for item in items
             ]
@@ -340,6 +357,7 @@ def run_predictions(
     max_tokens: int = 96,
     reasoning_effort: str = 'none',
     reasoning_exclude: bool = True,
+    retry_token_budgets: bool = False,
 ) -> list[PredictionRow]:
     return list(
         iter_predictions(
@@ -349,6 +367,7 @@ def run_predictions(
             max_tokens=max_tokens,
             reasoning_effort=reasoning_effort,
             reasoning_exclude=reasoning_exclude,
+            retry_token_budgets=retry_token_budgets,
         )
     )
 
@@ -392,6 +411,11 @@ def main() -> None:
         action='store_true',
         help='Do not request OpenRouter reasoning exclusion from the response',
     )
+    parser.add_argument(
+        '--retry-token-budgets',
+        action='store_true',
+        help='Retry empty OpenRouter reasoning responses with larger token budgets; can be slow.',
+    )
     args = parser.parse_args()
 
     predictions = iter_predictions(
@@ -401,6 +425,7 @@ def main() -> None:
         max_tokens=args.max_tokens,
         reasoning_effort=args.reasoning_effort,
         reasoning_exclude=not args.include_reasoning,
+        retry_token_budgets=args.retry_token_budgets,
     )
     written = write_predictions_jsonl_incremental(args.output, predictions)
     print(json.dumps({'output': args.output, 'predictions': written, 'model': args.model, 'provider': args.provider}, indent=2))

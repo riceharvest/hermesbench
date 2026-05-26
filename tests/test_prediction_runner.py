@@ -4,6 +4,7 @@ from pathlib import Path
 from qwen_mtp_probe.prediction_runner import (
     PredictionRow,
     _openrouter_output,
+    _openrouter_token_budgets,
     run_predictions,
     validate_prediction_row,
     write_predictions_jsonl,
@@ -109,3 +110,9 @@ def test_openrouter_output_extracts_content_and_usage_tokens():
     assert prompt_tokens == 7
     assert total_tokens == 12
     assert cost == 0.001
+
+
+def test_openrouter_token_budgets_do_not_retry_unless_enabled():
+    assert _openrouter_token_budgets(1024, reasoning_effort='high', retry_token_budgets=False) == [1024]
+    assert _openrouter_token_budgets(1024, reasoning_effort='high', retry_token_budgets=True) == [1024, 2048, 4096]
+    assert _openrouter_token_budgets(96, reasoning_effort='none', retry_token_budgets=True) == [96]
