@@ -97,19 +97,26 @@ def test_incremental_prediction_writer_persists_each_row(tmp_path):
     assert [row['id'] for row in persisted] == ['one', 'two']
 
 
-def test_openrouter_output_extracts_content_and_usage_tokens():
-    output, tokens, prompt_tokens, total_tokens, cost = _openrouter_output(
+def test_openrouter_output_extracts_content_usage_and_reasoning_tokens():
+    output, tokens, prompt_tokens, total_tokens, cost, reasoning_tokens = _openrouter_output(
         {
             'choices': [{'message': {'content': 'ACTION terminal {"command":"date"}'}}],
-            'usage': {'completion_tokens': 5, 'prompt_tokens': 7, 'total_tokens': 12, 'cost': 0.001},
+            'usage': {
+                'completion_tokens': 15,
+                'prompt_tokens': 7,
+                'total_tokens': 22,
+                'cost': 0.001,
+                'completion_tokens_details': {'reasoning_tokens': 10},
+            },
         }
     )
 
     assert output == 'ACTION terminal {"command":"date"}'
-    assert tokens == 5
+    assert tokens == 15
     assert prompt_tokens == 7
-    assert total_tokens == 12
+    assert total_tokens == 22
     assert cost == 0.001
+    assert reasoning_tokens == 10
 
 
 def test_openrouter_token_budgets_do_not_retry_unless_enabled():

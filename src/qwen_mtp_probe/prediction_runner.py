@@ -27,6 +27,7 @@ class PredictionRow:
     prompt_tokens: int | None = None
     total_tokens: int | None = None
     cost: float | None = None
+    reasoning_tokens: int | None = None
 
 
 def _token_count(text: str) -> int:
@@ -148,12 +149,13 @@ def _openrouter_payload(
     }
 
 
-def _openrouter_usage(data: dict[str, object]) -> tuple[int, int | None, int | None, float | None]:
+def _openrouter_usage(data: dict[str, object]) -> tuple[int, int | None, int | None, float | None, int | None]:
     usage = data.get('usage')
     completion_tokens = 0
     prompt_tokens = None
     total_tokens = None
     cost = None
+    reasoning_tokens = None
     if isinstance(usage, dict):
         if isinstance(usage.get('completion_tokens'), int):
             completion_tokens = usage['completion_tokens']
@@ -163,10 +165,13 @@ def _openrouter_usage(data: dict[str, object]) -> tuple[int, int | None, int | N
             total_tokens = usage['total_tokens']
         if isinstance(usage.get('cost'), int | float):
             cost = float(usage['cost'])
-    return completion_tokens, prompt_tokens, total_tokens, cost
+        completion_details = usage.get('completion_tokens_details')
+        if isinstance(completion_details, dict) and isinstance(completion_details.get('reasoning_tokens'), int):
+            reasoning_tokens = completion_details['reasoning_tokens']
+    return completion_tokens, prompt_tokens, total_tokens, cost, reasoning_tokens
 
 
-def _openrouter_output(data: dict[str, object]) -> tuple[str, int, int | None, int | None, float | None]:
+def _openrouter_output(data: dict[str, object]) -> tuple[str, int, int | None, int | None, float | None, int | None]:
     choices = data.get('choices')
     if not isinstance(choices, list) or not choices:
         raise ValueError('OpenRouter response missing choices')
@@ -179,8 +184,8 @@ def _openrouter_output(data: dict[str, object]) -> tuple[str, int, int | None, i
     content = message.get('content')
     if not isinstance(content, str) or not content.strip():
         raise ValueError('OpenRouter response missing content')
-    completion_tokens, prompt_tokens, total_tokens, cost = _openrouter_usage(data)
-    return content.strip(), completion_tokens, prompt_tokens, total_tokens, cost
+    completion_tokens, prompt_tokens, total_tokens, cost, reasoning_tokens = _openrouter_usage(data)
+    return content.strip(), completion_tokens, prompt_tokens, total_tokens, cost, reasoning_tokens
 
 
 def _openrouter_request(
@@ -258,6 +263,7 @@ def _predict_openrouter(
     aggregate_prompt_tokens = 0
     aggregate_total_tokens = 0
     aggregate_cost = 0.0
+    aggregate_reasoning_tokens = 0
     last_completion_tokens = 0
     for token_budget in attempts:
         data, latency_ms = _openrouter_request(
@@ -268,13 +274,14 @@ def _predict_openrouter(
             reasoning_exclude=reasoning_exclude,
         )
         total_latency_ms += latency_ms
-        attempt_completion, attempt_prompt, attempt_total, attempt_cost = _openrouter_usage(data)
+        attempt_completion, attempt_prompt, attempt_total, attempt_cost, attempt_reasoning = _openrouter_usage(data)
         last_completion_tokens = attempt_completion
         aggregate_prompt_tokens += attempt_prompt or 0
         aggregate_total_tokens += attempt_total or 0
         aggregate_cost += attempt_cost or 0.0
+        aggregate_reasoning_tokens += attempt_reasoning or 0
         try:
-            output, completion_tokens, prompt_tokens, total_tokens, cost = _openrouter_output(data)
+            output, completion_tokens, prompt_tokens, total_tokens, cost, reasoning_tokens = _openrouter_output(data)
         except ValueError as exc:
             last_error = exc
             if 'missing content' in str(exc).lower() and token_budget != attempts[-1]:
@@ -291,6 +298,7 @@ def _predict_openrouter(
                     prompt_tokens=aggregate_prompt_tokens or None,
                     total_tokens=aggregate_total_tokens or None,
                     cost=aggregate_cost or None,
+                    reasoning_tokens=aggregate_reasoning_tokens or None,
                 )
             raise
         output_tokens = completion_tokens or _token_count(output)
@@ -305,6 +313,7 @@ def _predict_openrouter(
             prompt_tokens=aggregate_prompt_tokens or prompt_tokens,
             total_tokens=aggregate_total_tokens or total_tokens,
             cost=aggregate_cost or cost,
+            reasoning_tokens=aggregate_reasoning_tokens or reasoning_tokens,
         )
     raise RuntimeError(f'OpenRouter prediction failed: {last_error}')
 

@@ -52,6 +52,11 @@ def main() -> None:
         'tokens': {
             'prompt_tokens': sum(int(row.get('prompt_tokens') or 0) for row in prediction_rows),
             'output_tokens': sum(int(row.get('output_tokens') or 0) for row in prediction_rows),
+            'reasoning_tokens': sum(int(row.get('reasoning_tokens') or 0) for row in prediction_rows),
+            'visible_output_tokens_estimate': sum(
+                max(int(row.get('output_tokens') or 0) - int(row.get('reasoning_tokens') or 0), 0)
+                for row in prediction_rows
+            ),
             'total_tokens': sum(int(row.get('total_tokens') or 0) for row in prediction_rows),
         },
         'cost': total_cost if prediction_rows else None,
