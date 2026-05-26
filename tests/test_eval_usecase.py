@@ -21,6 +21,11 @@ def test_verification_required_accepts_verified_evidence():
     assert result.passed
 
 
+def test_verification_required_accepts_evidence_gathering_action():
+    result = score_output('verification_required', 'ACTION read_file {"path":"reports/modal-sglang-single-h100-bench.json"}')
+    assert result.passed
+
+
 def test_concise_final_required_enforces_word_budget():
     assert score_output('concise_final_required', 'FINAL:\nDone. 11 tests pass.', max_words=20).passed
     assert not score_output('concise_final_required', ' '.join(['word'] * 30), max_words=20).passed

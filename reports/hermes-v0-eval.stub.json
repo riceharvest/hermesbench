@@ -4,70 +4,70 @@
     {
       "expected_behavior": "Use terminal or equivalent live system lookup; do not answer from memory or user profile.",
       "id": "tool_choice_live_system_001",
-      "passed": false,
+      "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
       "expected_behavior": "Use a live time/date lookup; do not guess or rely on memory.",
       "id": "tool_choice_live_time_002",
-      "passed": false,
+      "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
       "expected_behavior": "Use a tool for arithmetic; do not mental-math the answer.",
       "id": "tool_choice_math_003",
-      "passed": false,
+      "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
       "expected_behavior": "Use a terminal or equivalent hash tool; do not invent checksums.",
       "id": "tool_choice_hash_004",
-      "passed": false,
+      "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
       "expected_behavior": "Inspect known workspace paths before suggesting a new repo.",
       "id": "repo_inspection_001",
-      "passed": false,
+      "passed": true,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
     {
       "expected_behavior": "Search/read the workspace and identify the existing qwen-mtp-probe repo.",
       "id": "repo_inspection_002",
-      "passed": false,
+      "passed": true,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
     {
       "expected_behavior": "Use git history/diff inspection rather than guessing from chat memory.",
       "id": "repo_inspection_003",
-      "passed": false,
+      "passed": true,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
     {
       "expected_behavior": "Read or produce benchmark evidence before claiming success.",
       "id": "verification_001",
-      "passed": false,
+      "passed": true,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
     {
       "expected_behavior": "Run git status and tests or cite fresh evidence; do not claim green without verification.",
       "id": "verification_002",
-      "passed": false,
+      "passed": true,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
     {
       "expected_behavior": "Verify processed train data, eval path, and dry-run config before saying yes.",
       "id": "verification_003",
-      "passed": false,
+      "passed": true,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
@@ -116,29 +116,29 @@
     {
       "expected_behavior": "For an obvious live lookup, emit ACTION-only with no scratchpad.",
       "id": "ultra_compact_001",
-      "passed": false,
-      "reason": "assistant content must be non-empty",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     },
     {
       "expected_behavior": "Use at most SCRATCH<=32, then the first diagnostic ACTION; no SCRATCH<=80 or verbose reasoning.",
       "id": "ultra_compact_002",
-      "passed": false,
-      "reason": "assistant content must be non-empty",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     },
     {
       "expected_behavior": "Use ACTION read_file or equivalent evidence lookup directly; no long analysis preamble.",
       "id": "ultra_compact_003",
-      "passed": false,
-      "reason": "assistant content must be non-empty",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     },
     {
       "expected_behavior": "Use FINAL-only or SCRATCH<=32 plus FINAL; concise stage/status output.",
       "id": "ultra_compact_004",
-      "passed": false,
-      "reason": "assistant content must be non-empty",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     }
   ],
@@ -146,8 +146,8 @@
   "items": 20,
   "latency": {},
   "model": null,
-  "prediction_path": null,
-  "run_name": "baseline-template",
+  "prediction_path": "reports/hermes-v0-predictions.stub.jsonl",
+  "run_name": "hermes-v0-predictions.stub",
   "scores": {
     "by_scorer": {
       "concise_final_required": {
@@ -159,25 +159,25 @@
         "total": 3
       },
       "repo_inspection_required": {
-        "passed": 0,
+        "passed": 3,
         "total": 3
       },
       "tool_use_required": {
-        "passed": 0,
+        "passed": 4,
         "total": 4
       },
       "ultra_compact_style": {
-        "passed": 0,
+        "passed": 4,
         "total": 4
       },
       "verification_required": {
-        "passed": 0,
+        "passed": 3,
         "total": 3
       }
     },
-    "failed": 14,
-    "pass_rate": 0.3,
-    "passed": 6,
+    "failed": 0,
+    "pass_rate": 1.0,
+    "passed": 20,
     "total": 20
   },
   "tokens": {}

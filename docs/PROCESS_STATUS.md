@@ -119,6 +119,7 @@ Primary files:
 - `data/eval/hermes_v0_eval.jsonl`
 - `data/eval/hermes_v0_eval.seed.jsonl`
 - `src/qwen_mtp_probe/ultra_compact.py`
+- `src/qwen_mtp_probe/prediction_runner.py`
 - `src/qwen_mtp_probe/datasets.py`
 - `src/qwen_mtp_probe/eval_usecase.py`
 - `src/qwen_mtp_probe/train_sft.py`
@@ -138,6 +139,15 @@ uv run python scripts/build_hermes_train.py \
 PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
   --eval data/eval/hermes_v0_eval.jsonl \
   --output reports/hermes-v0-baseline-template.json
+PYTHONPATH=src uv run python scripts/run_hermes_predictions.py \
+  --eval data/eval/hermes_v0_eval.jsonl \
+  --output reports/hermes-v0-predictions.stub.jsonl \
+  --provider stub \
+  --model stub-ultra-compact
+PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
+  --eval data/eval/hermes_v0_eval.jsonl \
+  --predictions reports/hermes-v0-predictions.stub.jsonl \
+  --output reports/hermes-v0-eval.stub.json
 PYTHONPATH=src uv run python -m qwen_mtp_probe.train_sft \
   --config configs/qwen36-hermes-v0-sft.yaml \
   --dry-run

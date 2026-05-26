@@ -38,9 +38,25 @@ def score_output(scorer: str, output: str, *, max_words: int = 120) -> ScoreResu
         return ScoreResult(scorer, passed, 'requires file/repo inspection before answer', {'markers': markers})
 
     if scorer == 'verification_required':
-        markers = ['verified', 'tests pass', 'report shows', 'error=null', 'exit_code": 0', 'exit code 0']
-        passed = any(marker in lowered for marker in markers)
-        return ScoreResult(scorer, passed, 'requires verification evidence', {'markers': markers})
+        evidence_markers = ['verified', 'tests pass', 'report shows', 'error=null', 'exit_code": 0', 'exit code 0']
+        evidence_action_markers = [
+            'read_file',
+            'run_hermes_eval',
+            'train_sft',
+            'pytest',
+            'git status',
+            'benchmark',
+            'report',
+        ]
+        passed = any(marker in lowered for marker in evidence_markers) or (
+            _has_action(text) and any(marker in lowered for marker in evidence_action_markers)
+        )
+        return ScoreResult(
+            scorer,
+            passed,
+            'requires verification evidence or an evidence-gathering ACTION',
+            {'evidence_markers': evidence_markers, 'evidence_action_markers': evidence_action_markers},
+        )
 
     if scorer == 'concise_final_required':
         words = _word_count(text)

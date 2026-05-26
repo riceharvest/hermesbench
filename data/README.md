@@ -93,6 +93,30 @@ Initial scorer names:
 - `verification_required`
 - `concise_final_required`
 - `no_unnecessary_clarification`
+- `ultra_compact_style`
+
+## Prediction/eval harness
+
+Generate held-out predictions first, then score them:
+
+```bash
+PYTHONPATH=src uv run python scripts/run_hermes_predictions.py \
+  --eval data/eval/hermes_v0_eval.jsonl \
+  --output reports/hermes-v0-predictions.stub.jsonl \
+  --provider stub \
+  --model stub-ultra-compact
+
+PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
+  --eval data/eval/hermes_v0_eval.jsonl \
+  --predictions reports/hermes-v0-predictions.stub.jsonl \
+  --output reports/hermes-v0-eval.stub.json
+```
+
+Prediction JSONL rows contain:
+
+```json
+{"id":"...","input":"...","output":"...","model":"...","provider":"...","latency_ms":1.2,"output_tokens":12}
+```
 
 ## Quality rules
 
