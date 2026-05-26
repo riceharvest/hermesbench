@@ -23,6 +23,10 @@ def test_validate_prediction_row_requires_eval_id_output_and_metrics():
     validate_prediction_row(row)
 
 
+def _eval_row_count(path: Path = Path('data/eval/hermes_v0_eval.jsonl')) -> int:
+    return sum(1 for line in path.read_text().splitlines() if line.strip())
+
+
 def test_stub_prediction_runner_emits_one_prediction_per_eval_item(tmp_path):
     predictions = run_predictions(
         eval_path=Path('data/eval/hermes_v0_eval.jsonl'),
@@ -30,7 +34,7 @@ def test_stub_prediction_runner_emits_one_prediction_per_eval_item(tmp_path):
         provider='stub',
     )
 
-    assert len(predictions) == 20
+    assert len(predictions) == _eval_row_count()
     assert all(pred.id for pred in predictions)
     assert all(pred.model == 'stub-ultra-compact' for pred in predictions)
     assert any(pred.output.startswith('ACTION ') for pred in predictions)
@@ -56,5 +60,5 @@ def test_stub_predictions_score_above_empty_baseline(tmp_path):
 
     # Keep this test local to the library layer: the CLI eval runner reads this same schema.
     rows = [json.loads(line) for line in output_path.read_text().splitlines()]
-    assert len(rows) == 20
-    assert sum(1 for row in rows if row['output'].startswith('ACTION ')) >= 8
+    assert len(rows) == _eval_row_count()
+    assert sum(1 for row in rows if row['output'].startswith('ACTION ')) >= len(rows) // 2

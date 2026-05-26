@@ -2,148 +2,2108 @@
   "cost_per_successful_task": null,
   "details": [
     {
-      "expected_behavior": "Use terminal or equivalent live system lookup; do not answer from memory or user profile.",
-      "id": "tool_choice_live_system_001",
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_001_tool_choice_live_system_001",
       "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
-      "expected_behavior": "Use a live time/date lookup; do not guess or rely on memory.",
-      "id": "tool_choice_live_time_002",
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_002_tool_choice_live_time_002",
       "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
-      "expected_behavior": "Use a tool for arithmetic; do not mental-math the answer.",
-      "id": "tool_choice_math_003",
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_003_tool_choice_live_process_003",
       "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
-      "expected_behavior": "Use a terminal or equivalent hash tool; do not invent checksums.",
-      "id": "tool_choice_hash_004",
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_004_tool_choice_live_disk_004",
       "passed": true,
       "reason": "requires parseable ACTION marker",
       "scorer": "tool_use_required"
     },
     {
-      "expected_behavior": "Inspect known workspace paths before suggesting a new repo.",
-      "id": "repo_inspection_001",
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_005_tool_choice_live_memory_005",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_006_tool_choice_live_cpu_006",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_007_tool_choice_live_python_007",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_008_tool_choice_live_git_008",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_009_tool_choice_live_packages_009",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_010_tool_choice_live_network_010",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_011_tool_choice_math_011",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_012_tool_choice_math_012",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_013_tool_choice_math_013",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_014_tool_choice_math_014",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_015_tool_choice_math_015",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_016_tool_choice_math_016",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_017_tool_choice_math_017",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_018_tool_choice_math_018",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_019_tool_choice_math_019",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_020_tool_choice_math_020",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_021_tool_choice_hash_021",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_022_tool_choice_hash_022",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_023_tool_choice_hash_023",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_024_tool_choice_hash_024",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_025_tool_choice_hash_025",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_026_tool_choice_hash_026",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_027_tool_choice_hash_027",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_028_tool_choice_hash_028",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_029_tool_choice_hash_029",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_030_tool_choice_hash_030",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_031_tool_choice_current_info_031",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_032_tool_choice_current_info_032",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_033_tool_choice_current_info_033",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_034_tool_choice_current_info_034",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_035_tool_choice_current_info_035",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_036_tool_choice_current_info_036",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_037_tool_choice_current_info_037",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_038_tool_choice_current_info_038",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_039_tool_choice_current_info_039",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_040_tool_choice_current_info_040",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_041_tool_choice_file_fact_041",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_042_tool_choice_file_fact_042",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_043_tool_choice_file_fact_043",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_044_tool_choice_file_fact_044",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_045_tool_choice_file_fact_045",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_046_tool_choice_file_fact_046",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_047_tool_choice_file_fact_047",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_048_tool_choice_file_fact_048",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_049_tool_choice_file_fact_049",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
+      "id": "hermes_eval_050_tool_choice_file_fact_050",
+      "passed": true,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_051_repo_inspection_001",
       "passed": true,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
     {
-      "expected_behavior": "Search/read the workspace and identify the existing qwen-mtp-probe repo.",
-      "id": "repo_inspection_002",
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_052_repo_inspection_002",
       "passed": true,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
     {
-      "expected_behavior": "Use git history/diff inspection rather than guessing from chat memory.",
-      "id": "repo_inspection_003",
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_053_repo_inspection_003",
       "passed": true,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
     {
-      "expected_behavior": "Read or produce benchmark evidence before claiming success.",
-      "id": "verification_001",
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_054_repo_inspection_004",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_055_repo_inspection_005",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_056_repo_inspection_006",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_057_repo_inspection_007",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_058_repo_inspection_008",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_059_repo_inspection_009",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_060_repo_inspection_010",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_061_repo_inspection_011",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_062_repo_inspection_012",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_063_repo_inspection_013",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_064_repo_inspection_014",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_065_repo_inspection_015",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_066_repo_inspection_016",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_067_repo_inspection_017",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_068_repo_inspection_018",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_069_repo_inspection_019",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_070_repo_inspection_020",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_071_repo_inspection_021",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_072_repo_inspection_022",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_073_repo_inspection_023",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_074_repo_inspection_024",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_075_repo_inspection_025",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_076_repo_inspection_026",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_077_repo_inspection_027",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_078_repo_inspection_028",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_079_repo_inspection_029",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_080_repo_inspection_030",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_081_repo_inspection_031",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_082_repo_inspection_032",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_083_repo_inspection_033",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_084_repo_inspection_034",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_085_repo_inspection_035",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_086_repo_inspection_036",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_087_repo_inspection_037",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_088_repo_inspection_038",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_089_repo_inspection_039",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_090_repo_inspection_040",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_091_repo_inspection_041",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_092_repo_inspection_042",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_093_repo_inspection_043",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_094_repo_inspection_044",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_095_repo_inspection_045",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_096_repo_inspection_046",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_097_repo_inspection_047",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_098_repo_inspection_048",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_099_repo_inspection_049",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
+      "id": "hermes_eval_100_repo_inspection_050",
+      "passed": true,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_101_verification_001",
       "passed": true,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
     {
-      "expected_behavior": "Run git status and tests or cite fresh evidence; do not claim green without verification.",
-      "id": "verification_002",
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_102_verification_002",
       "passed": true,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
     {
-      "expected_behavior": "Verify processed train data, eval path, and dry-run config before saying yes.",
-      "id": "verification_003",
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_103_verification_003",
       "passed": true,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
     {
-      "expected_behavior": "Give a short evidence-backed summary with metrics and changed files, not a long generic report.",
-      "id": "concise_final_001",
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_104_verification_004",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_105_verification_005",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_106_verification_006",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_107_verification_007",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_108_verification_008",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_109_verification_009",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_110_verification_010",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_111_verification_011",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_112_verification_012",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_113_verification_013",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_114_verification_014",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_115_verification_015",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_116_verification_016",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_117_verification_017",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_118_verification_018",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_119_verification_019",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_120_verification_020",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_121_verification_021",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_122_verification_022",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_123_verification_023",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_124_verification_024",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_125_verification_025",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_126_verification_026",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_127_verification_027",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_128_verification_028",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_129_verification_029",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_130_verification_030",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_131_verification_031",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_132_verification_032",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_133_verification_033",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_134_verification_034",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_135_verification_035",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_136_verification_036",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_137_verification_037",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_138_verification_038",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_139_verification_039",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_140_verification_040",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_141_verification_041",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_142_verification_042",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_143_verification_043",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_144_verification_044",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_145_verification_045",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_146_verification_046",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_147_verification_047",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_148_verification_048",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_149_verification_049",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
+      "id": "hermes_eval_150_verification_050",
+      "passed": true,
+      "reason": "requires verification evidence or an evidence-gathering ACTION",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_151_concise_final_001",
       "passed": true,
       "reason": "requires <= 120 words",
       "scorer": "concise_final_required"
     },
     {
-      "expected_behavior": "Answer with the immediate next concrete steps, not a broad model-specialization taxonomy.",
-      "id": "concise_final_002",
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_152_concise_final_002",
       "passed": true,
       "reason": "requires <= 120 words",
       "scorer": "concise_final_required"
     },
     {
-      "expected_behavior": "Keep it tight: hardware, config, metrics, caveat.",
-      "id": "concise_final_003",
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_153_concise_final_003",
       "passed": true,
       "reason": "requires <= 120 words",
       "scorer": "concise_final_required"
     },
     {
-      "expected_behavior": "Use the obvious qwen-mtp-probe folder and write docs/configs; do not ask which folder unless lookup fails.",
-      "id": "no_clarify_001",
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_154_concise_final_004",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_155_concise_final_005",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_156_concise_final_006",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_157_concise_final_007",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_158_concise_final_008",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_159_concise_final_009",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_160_concise_final_010",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_161_concise_final_011",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_162_concise_final_012",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_163_concise_final_013",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_164_concise_final_014",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_165_concise_final_015",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_166_concise_final_016",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_167_concise_final_017",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_168_concise_final_018",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_169_concise_final_019",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_170_concise_final_020",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_171_concise_final_021",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_172_concise_final_022",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_173_concise_final_023",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_174_concise_final_024",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_175_concise_final_025",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_176_concise_final_026",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_177_concise_final_027",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_178_concise_final_028",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_179_concise_final_029",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_180_concise_final_030",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_181_concise_final_031",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_182_concise_final_032",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_183_concise_final_033",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_184_concise_final_034",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_185_concise_final_035",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_186_concise_final_036",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_187_concise_final_037",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_188_concise_final_038",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_189_concise_final_039",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_190_concise_final_040",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_191_concise_final_041",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_192_concise_final_042",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_193_concise_final_043",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_194_concise_final_044",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_195_concise_final_045",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_196_concise_final_046",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_197_concise_final_047",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_198_concise_final_048",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_199_concise_final_049",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Provide a short, concrete final answer focused on evidence, status, changed files, metrics, and caveats; avoid a broad generic report.",
+      "id": "hermes_eval_200_concise_final_050",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_201_no_clarify_001",
       "passed": true,
       "reason": "question-only clarification is disallowed when action is obvious",
       "scorer": "no_unnecessary_clarification"
     },
     {
-      "expected_behavior": "Run the relevant test suite immediately; do not ask which tests if repo context makes it obvious.",
-      "id": "no_clarify_002",
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_202_no_clarify_002",
       "passed": true,
       "reason": "question-only clarification is disallowed when action is obvious",
       "scorer": "no_unnecessary_clarification"
     },
     {
-      "expected_behavior": "Continue the obvious v0-sft-main prep work from context; do not ask for permission to start internal repo edits.",
-      "id": "no_clarify_003",
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_203_no_clarify_003",
       "passed": true,
       "reason": "question-only clarification is disallowed when action is obvious",
       "scorer": "no_unnecessary_clarification"
     },
     {
-      "expected_behavior": "For an obvious live lookup, emit ACTION-only with no scratchpad.",
-      "id": "ultra_compact_001",
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_204_no_clarify_004",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_205_no_clarify_005",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_206_no_clarify_006",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_207_no_clarify_007",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_208_no_clarify_008",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_209_no_clarify_009",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_210_no_clarify_010",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_211_no_clarify_011",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_212_no_clarify_012",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_213_no_clarify_013",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_214_no_clarify_014",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_215_no_clarify_015",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_216_no_clarify_016",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_217_no_clarify_017",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_218_no_clarify_018",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_219_no_clarify_019",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_220_no_clarify_020",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_221_no_clarify_021",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_222_no_clarify_022",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_223_no_clarify_023",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_224_no_clarify_024",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_225_no_clarify_025",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_226_no_clarify_026",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_227_no_clarify_027",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_228_no_clarify_028",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_229_no_clarify_029",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_230_no_clarify_030",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_231_no_clarify_031",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_232_no_clarify_032",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_233_no_clarify_033",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_234_no_clarify_034",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_235_no_clarify_035",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_236_no_clarify_036",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_237_no_clarify_037",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_238_no_clarify_038",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_239_no_clarify_039",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_240_no_clarify_040",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_241_no_clarify_041",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_242_no_clarify_042",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_243_no_clarify_043",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_244_no_clarify_044",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_245_no_clarify_045",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_246_no_clarify_046",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_247_no_clarify_047",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_248_no_clarify_048",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_249_no_clarify_049",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Act on the obvious default interpretation using available context/tools; do not ask a question-only clarification when progress is possible.",
+      "id": "hermes_eval_250_no_clarify_050",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_251_ultra_compact_001",
       "passed": true,
       "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     },
     {
-      "expected_behavior": "Use at most SCRATCH<=32, then the first diagnostic ACTION; no SCRATCH<=80 or verbose reasoning.",
-      "id": "ultra_compact_002",
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_252_ultra_compact_002",
       "passed": true,
       "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     },
     {
-      "expected_behavior": "Use ACTION read_file or equivalent evidence lookup directly; no long analysis preamble.",
-      "id": "ultra_compact_003",
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_253_ultra_compact_003",
       "passed": true,
       "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     },
     {
-      "expected_behavior": "Use FINAL-only or SCRATCH<=32 plus FINAL; concise stage/status output.",
-      "id": "ultra_compact_004",
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_254_ultra_compact_004",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_255_ultra_compact_005",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_256_ultra_compact_006",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_257_ultra_compact_007",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_258_ultra_compact_008",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_259_ultra_compact_009",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_260_ultra_compact_010",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_261_ultra_compact_011",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_262_ultra_compact_012",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_263_ultra_compact_013",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_264_ultra_compact_014",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_265_ultra_compact_015",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_266_ultra_compact_016",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_267_ultra_compact_017",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_268_ultra_compact_018",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_269_ultra_compact_019",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_270_ultra_compact_020",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_271_ultra_compact_021",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_272_ultra_compact_022",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_273_ultra_compact_023",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_274_ultra_compact_024",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_275_ultra_compact_025",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_276_ultra_compact_026",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_277_ultra_compact_027",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_278_ultra_compact_028",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_279_ultra_compact_029",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_280_ultra_compact_030",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_281_ultra_compact_031",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_282_ultra_compact_032",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_283_ultra_compact_033",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_284_ultra_compact_034",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_285_ultra_compact_035",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_286_ultra_compact_036",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_287_ultra_compact_037",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_288_ultra_compact_038",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_289_ultra_compact_039",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_290_ultra_compact_040",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_291_ultra_compact_041",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_292_ultra_compact_042",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_293_ultra_compact_043",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_294_ultra_compact_044",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_295_ultra_compact_045",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_296_ultra_compact_046",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_297_ultra_compact_047",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_298_ultra_compact_048",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_299_ultra_compact_049",
+      "passed": true,
+      "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Follow Hermes ultra-compact format: ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL; avoid verbose preambles.",
+      "id": "hermes_eval_300_ultra_compact_050",
       "passed": true,
       "reason": "requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL",
       "scorer": "ultra_compact_style"
     }
   ],
   "eval_path": "data/eval/hermes_v0_eval.jsonl",
-  "items": 20,
+  "items": 300,
   "latency": {},
   "model": null,
   "prediction_path": "reports/hermes-v0-predictions.stub.jsonl",
@@ -151,34 +2111,34 @@
   "scores": {
     "by_scorer": {
       "concise_final_required": {
-        "passed": 3,
-        "total": 3
+        "passed": 50,
+        "total": 50
       },
       "no_unnecessary_clarification": {
-        "passed": 3,
-        "total": 3
+        "passed": 50,
+        "total": 50
       },
       "repo_inspection_required": {
-        "passed": 3,
-        "total": 3
+        "passed": 50,
+        "total": 50
       },
       "tool_use_required": {
-        "passed": 4,
-        "total": 4
+        "passed": 50,
+        "total": 50
       },
       "ultra_compact_style": {
-        "passed": 4,
-        "total": 4
+        "passed": 50,
+        "total": 50
       },
       "verification_required": {
-        "passed": 3,
-        "total": 3
+        "passed": 50,
+        "total": 50
       }
     },
     "failed": 0,
     "pass_rate": 1.0,
-    "passed": 20,
-    "total": 20
+    "passed": 300,
+    "total": 300
   },
   "tokens": {}
 }

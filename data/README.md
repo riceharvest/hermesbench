@@ -69,9 +69,11 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.generated.wave2.repo_ops.jsonl \
   --input data/examples/hermes_compact_traces.generated.wave2.live_data.jsonl \
   --input data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl \
+  --input data/examples/hermes_compact_traces.real_mined.v0.jsonl \
+  --input data/examples/hermes_compact_traces.multi_turn.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 2000
+  --min-examples 2250
 ```
 
 ## Preference pair schema
@@ -82,7 +84,7 @@ Each line:
 {"prompt":"...","chosen":"...","rejected":"...","tags":["compactness","tool_choice"]}
 ```
 
-Use this later for DPO/ORPO/SimPO after v0 SFT is already shaped.
+Use `data/examples/hermes_preference_pairs.v0.jsonl` for DPO/ORPO/SimPO after v0 SFT is already shaped. It currently contains 200 hard negatives covering verbose answers, fake verification, unnecessary clarification, mental math/live facts without tools, premature RL/router/serving work, ungrounded benchmarks, and secret leakage.
 
 ## Eval item schema
 
