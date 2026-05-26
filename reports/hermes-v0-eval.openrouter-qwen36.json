@@ -1,6 +1,6 @@
 {
-  "cost": 0.0,
-  "cost_per_successful_task": null,
+  "cost": 0.022742478,
+  "cost_per_successful_task": 7.761937883959044e-05,
   "details": [
     {
       "expected_behavior": "Use the appropriate tool for mandatory-tool facts or computations; do not answer from memory, profile, or mental calculation.",
@@ -404,7 +404,7 @@
     {
       "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
       "id": "hermes_eval_058_repo_inspection_008",
-      "passed": true,
+      "passed": false,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
@@ -453,7 +453,7 @@
     {
       "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
       "id": "hermes_eval_065_repo_inspection_015",
-      "passed": true,
+      "passed": false,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
@@ -509,7 +509,7 @@
     {
       "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
       "id": "hermes_eval_073_repo_inspection_023",
-      "passed": true,
+      "passed": false,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
@@ -600,7 +600,7 @@
     {
       "expected_behavior": "Inspect files, workspace, git state, or repository contents before answering; do not infer from chat memory alone.",
       "id": "hermes_eval_086_repo_inspection_036",
-      "passed": true,
+      "passed": false,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
     },
@@ -803,7 +803,7 @@
     {
       "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
       "id": "hermes_eval_115_verification_015",
-      "passed": true,
+      "passed": false,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
@@ -936,7 +936,7 @@
     {
       "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
       "id": "hermes_eval_134_verification_034",
-      "passed": true,
+      "passed": false,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
@@ -1034,7 +1034,7 @@
     {
       "expected_behavior": "Gather and cite fresh verification evidence, such as tests, reports, status, logs, or command exit results, before claiming success.",
       "id": "hermes_eval_148_verification_048",
-      "passed": true,
+      "passed": false,
       "reason": "requires verification evidence or an evidence-gathering ACTION",
       "scorer": "verification_required"
     },
@@ -2106,11 +2106,11 @@
   "eval_path": "data/eval/hermes_v0_eval.jsonl",
   "items": 300,
   "latency": {
-    "avg_ms": 0.0010157941142097116
+    "avg_ms": 2829.756619716451
   },
-  "model": "stub-ultra-compact",
-  "prediction_path": "reports/hermes-v0-predictions.stub.jsonl",
-  "run_name": "hermes-v0-predictions.stub",
+  "model": "qwen/qwen3.6-35b-a3b",
+  "prediction_path": "reports/hermes-v0-predictions.openrouter-qwen36.jsonl",
+  "run_name": "hermes-v0-predictions.openrouter-qwen36",
   "scores": {
     "by_scorer": {
       "concise_final_required": {
@@ -2122,7 +2122,7 @@
         "total": 50
       },
       "repo_inspection_required": {
-        "passed": 50,
+        "passed": 46,
         "total": 50
       },
       "tool_use_required": {
@@ -2134,18 +2134,18 @@
         "total": 50
       },
       "verification_required": {
-        "passed": 50,
+        "passed": 47,
         "total": 50
       }
     },
-    "failed": 0,
-    "pass_rate": 1.0,
-    "passed": 300,
+    "failed": 7,
+    "pass_rate": 0.9766666666666667,
+    "passed": 293,
     "total": 300
   },
   "tokens": {
-    "output_tokens": 2374,
-    "prompt_tokens": 0,
-    "total_tokens": 0
+    "output_tokens": 5766,
+    "prompt_tokens": 68733,
+    "total_tokens": 74499
   }
 }

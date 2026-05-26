@@ -118,6 +118,17 @@ PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
   --eval data/eval/hermes_v0_eval.jsonl \
   --predictions reports/hermes-v0-predictions.stub.jsonl \
   --output reports/hermes-v0-eval.stub.json
+
+PYTHONPATH=src uv run python scripts/run_hermes_predictions.py \
+  --eval data/eval/hermes_v0_eval.jsonl \
+  --output reports/hermes-v0-predictions.openrouter-qwen36.jsonl \
+  --provider openrouter \
+  --model qwen/qwen3.6-35b-a3b
+
+PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
+  --eval data/eval/hermes_v0_eval.jsonl \
+  --predictions reports/hermes-v0-predictions.openrouter-qwen36.jsonl \
+  --output reports/hermes-v0-eval.openrouter-qwen36.json
 ```
 
 Prediction JSONL rows contain:

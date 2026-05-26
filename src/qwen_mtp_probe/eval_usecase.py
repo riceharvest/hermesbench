@@ -41,6 +41,8 @@ def score_output(scorer: str, output: str, *, max_words: int = 120) -> ScoreResu
         evidence_markers = ['verified', 'tests pass', 'report shows', 'error=null', 'exit_code": 0', 'exit code 0']
         evidence_action_markers = [
             'read_file',
+            'search_files',
+            'execute_code',
             'run_hermes_eval',
             'train_sft',
             'pytest',

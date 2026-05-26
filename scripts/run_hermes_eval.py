@@ -20,11 +20,13 @@ def main() -> None:
 
     items = load_eval_jsonl(args.eval)
     predictions: dict[str, str] = {}
+    prediction_rows: list[dict] = []
     if args.predictions:
         for line in Path(args.predictions).read_text().splitlines():
             if not line.strip():
                 continue
             row = json.loads(line)
+            prediction_rows.append(row)
             predictions[str(row['id'])] = str(row.get('output', ''))
 
     scored = []
@@ -33,16 +35,27 @@ def main() -> None:
         result = score_output(item.scorer, output)
         scored.append(result)
 
+    passed = sum(result.passed for result in scored)
+    total_cost = sum(float(row.get('cost') or 0) for row in prediction_rows)
     report = {
         'run_name': 'baseline-template' if not args.predictions else Path(args.predictions).stem,
-        'model': None,
+        'model': prediction_rows[0].get('model') if prediction_rows else None,
         'eval_path': args.eval,
         'prediction_path': args.predictions,
         'items': len(items),
         'scores': summarize_scores(scored),
-        'latency': {},
-        'tokens': {},
-        'cost_per_successful_task': None,
+        'latency': {
+            'avg_ms': sum(float(row.get('latency_ms') or 0) for row in prediction_rows) / len(prediction_rows)
+            if prediction_rows
+            else None,
+        },
+        'tokens': {
+            'prompt_tokens': sum(int(row.get('prompt_tokens') or 0) for row in prediction_rows),
+            'output_tokens': sum(int(row.get('output_tokens') or 0) for row in prediction_rows),
+            'total_tokens': sum(int(row.get('total_tokens') or 0) for row in prediction_rows),
+        },
+        'cost': total_cost if prediction_rows else None,
+        'cost_per_successful_task': total_cost / passed if passed and total_cost else None,
         'details': [
             {
                 'id': item.id,

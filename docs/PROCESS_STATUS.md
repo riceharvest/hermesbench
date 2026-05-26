@@ -19,7 +19,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
 | v0-sft-main data | 2,250-example seed + mined/multi-turn passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Ready for first SFT smoke run; real raw transcripts can improve v1 |
-| v0-sft-main eval | 300 held-out items | `data/eval/hermes_v0_eval.jsonl`, `scripts/run_hermes_eval.py`, `scripts/run_hermes_predictions.py` | Score real/base model behavior when convenient; do not block data/SFT on serving setup |
+| v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
 | v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
@@ -132,6 +132,9 @@ Primary files:
 - `data/processed/hermes_v0_train.jsonl`
 - `reports/hermes-v0-train-quality.json`
 - `data/eval/hermes_v0_eval.jsonl`
+- `reports/hermes-v0-predictions.openrouter-qwen36.jsonl`
+- `reports/hermes-v0-eval.openrouter-qwen36.json`
+- `reports/hermes-v0-base-model-baseline.openrouter-qwen36.md`
 - `data/eval/hermes_v0_eval.seed.jsonl`
 - `src/qwen_mtp_probe/ultra_compact.py`
 - `src/qwen_mtp_probe/prediction_runner.py`

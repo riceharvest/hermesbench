@@ -1,8 +1,12 @@
 from __future__ import annotations
 
 import argparse
+import concurrent.futures
 import json
+import os
 import time
+import urllib.error
+import urllib.request
 from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Iterable
@@ -20,6 +24,9 @@ class PredictionRow:
     latency_ms: float
     output_tokens: int
     provider: str
+    prompt_tokens: int | None = None
+    total_tokens: int | None = None
+    cost: float | None = None
 
 
 def _token_count(text: str) -> int:
@@ -101,11 +108,122 @@ def _predict_stub(item: EvalItem, model: str, provider: str) -> PredictionRow:
     )
 
 
+OPENROUTER_URL = 'https://openrouter.ai/api/v1/chat/completions'
+
+OPENROUTER_SYSTEM_PROMPT = '''You are Hermes Agent in eval mode.
+Return exactly one compact assistant target, with no markdown and no explanation.
+Valid formats:
+ACTION terminal {"command":"date"}
+ACTION read_file {"path":"README.md"}
+ACTION search_files {"path":".","pattern":"auth","target":"content"}
+ACTION execute_code {"code":"print(3847 * 219)"}
+SCRATCH<=32:
+Need evidence before claiming success.
+
+ACTION read_file {"path":"reports/example.json"}
+FINAL:
+Concise answer only.
+Never claim tool results you have not observed. For current facts, arithmetic, hashes, file contents, repo state, or system state, emit an ACTION instead of answering from memory.'''
+
+
+def _openrouter_payload(item: EvalItem, model: str, max_tokens: int) -> dict[str, object]:
+    return {
+        'model': model,
+        'messages': [
+            {'role': 'system', 'content': OPENROUTER_SYSTEM_PROMPT},
+            {
+                'role': 'user',
+                'content': f'Input: {item.input}\nExpected behavior: {item.expected_behavior}\nScorer: {item.scorer}\nOutput one Hermes ultra-compact target now.',
+            },
+        ],
+        'temperature': 0,
+        'max_tokens': max_tokens,
+        'reasoning': {'effort': 'none', 'exclude': True},
+    }
+
+
+def _openrouter_output(data: dict[str, object]) -> tuple[str, int, int | None, int | None, float | None]:
+    choices = data.get('choices')
+    if not isinstance(choices, list) or not choices:
+        raise ValueError('OpenRouter response missing choices')
+    first = choices[0]
+    if not isinstance(first, dict):
+        raise ValueError('OpenRouter response choice is not an object')
+    message = first.get('message')
+    if not isinstance(message, dict):
+        raise ValueError('OpenRouter response missing message')
+    content = message.get('content')
+    if not isinstance(content, str) or not content.strip():
+        raise ValueError('OpenRouter response missing content')
+    usage = data.get('usage')
+    completion_tokens = 0
+    prompt_tokens = None
+    total_tokens = None
+    cost = None
+    if isinstance(usage, dict):
+        if isinstance(usage.get('completion_tokens'), int):
+            completion_tokens = usage['completion_tokens']
+        if isinstance(usage.get('prompt_tokens'), int):
+            prompt_tokens = usage['prompt_tokens']
+        if isinstance(usage.get('total_tokens'), int):
+            total_tokens = usage['total_tokens']
+        if isinstance(usage.get('cost'), int | float):
+            cost = float(usage['cost'])
+    return content.strip(), completion_tokens, prompt_tokens, total_tokens, cost
+
+
+def _predict_openrouter(item: EvalItem, model: str, provider: str, *, max_tokens: int = 96) -> PredictionRow:
+    api_key = os.getenv('OPENROUTER_API_KEY')
+    if not api_key:
+        raise RuntimeError('OPENROUTER_API_KEY is required for provider=openrouter')
+
+    body = json.dumps(_openrouter_payload(item, model, max_tokens)).encode('utf-8')
+    request = urllib.request.Request(
+        OPENROUTER_URL,
+        data=body,
+        headers={
+            'Authorization': f'Bearer {api_key}',
+            'Content-Type': 'application/json',
+            'HTTP-Referer': 'https://github.com/opensourceframework/qwen-mtp-probe',
+            'X-Title': 'qwen-mtp-probe-hermes-eval',
+        },
+        method='POST',
+    )
+    start = time.perf_counter()
+    try:
+        with urllib.request.urlopen(request, timeout=60) as response:
+            data = json.loads(response.read().decode('utf-8'))
+    except urllib.error.HTTPError as exc:
+        error_body = exc.read().decode('utf-8', errors='replace')
+        raise RuntimeError(f'OpenRouter HTTP {exc.code}: {error_body[:500]}') from exc
+    latency_ms = (time.perf_counter() - start) * 1000
+    output, completion_tokens, prompt_tokens, total_tokens, cost = _openrouter_output(data)
+    output_tokens = completion_tokens or _token_count(output)
+    return PredictionRow(
+        id=item.id,
+        input=item.input,
+        output=output,
+        model=model,
+        latency_ms=latency_ms,
+        output_tokens=output_tokens,
+        provider=provider,
+        prompt_tokens=prompt_tokens,
+        total_tokens=total_tokens,
+        cost=cost,
+    )
+
+
 def run_predictions(eval_path: Path, model: str, provider: str = 'stub') -> list[PredictionRow]:
     items = load_eval_jsonl(eval_path)
-    if provider != 'stub':
+    if provider == 'stub':
+        predictions = [_predict_stub(item, model=model, provider=provider) for item in items]
+    elif provider == 'openrouter':
+        with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+            predictions = list(
+                executor.map(lambda item: _predict_openrouter(item, model=model, provider=provider), items)
+            )
+    else:
         raise NotImplementedError(f'provider {provider!r} is not implemented yet')
-    predictions = [_predict_stub(item, model=model, provider=provider) for item in items]
     for prediction in predictions:
         validate_prediction_row(prediction)
     return predictions
@@ -124,7 +242,7 @@ def main() -> None:
     parser.add_argument('--eval', required=True, help='Eval JSONL path')
     parser.add_argument('--output', required=True, help='Prediction JSONL output path')
     parser.add_argument('--model', default='stub-ultra-compact', help='Model label to record')
-    parser.add_argument('--provider', default='stub', choices=['stub'], help='Prediction provider')
+    parser.add_argument('--provider', default='stub', choices=['stub', 'openrouter'], help='Prediction provider')
     args = parser.parse_args()
 
     predictions = run_predictions(eval_path=Path(args.eval), model=args.model, provider=args.provider)

@@ -3,6 +3,7 @@ from pathlib import Path
 
 from qwen_mtp_probe.prediction_runner import (
     PredictionRow,
+    _openrouter_output,
     run_predictions,
     validate_prediction_row,
     write_predictions_jsonl,
@@ -62,3 +63,18 @@ def test_stub_predictions_score_above_empty_baseline(tmp_path):
     rows = [json.loads(line) for line in output_path.read_text().splitlines()]
     assert len(rows) == _eval_row_count()
     assert sum(1 for row in rows if row['output'].startswith('ACTION ')) >= len(rows) // 2
+
+
+def test_openrouter_output_extracts_content_and_usage_tokens():
+    output, tokens, prompt_tokens, total_tokens, cost = _openrouter_output(
+        {
+            'choices': [{'message': {'content': 'ACTION terminal {"command":"date"}'}}],
+            'usage': {'completion_tokens': 5, 'prompt_tokens': 7, 'total_tokens': 12, 'cost': 0.001},
+        }
+    )
+
+    assert output == 'ACTION terminal {"command":"date"}'
+    assert tokens == 5
+    assert prompt_tokens == 7
+    assert total_tokens == 12
+    assert cost == 0.001
