@@ -1,23 +1,23 @@
 {
-  "avg_scratch_words": 2.22,
+  "avg_scratch_words": 1.5855,
   "by_output_kind": {
-    "action_only": 75,
-    "final_only": 28,
-    "scratch_action": 42,
-    "scratch_final": 5
+    "action_only": 1353,
+    "final_only": 152,
+    "scratch_action": 450,
+    "scratch_final": 45
   },
   "by_tool": {
-    "execute_code": 5,
-    "patch": 2,
-    "read_file": 22,
-    "search_files": 19,
-    "terminal": 57,
-    "web_extract": 2,
-    "web_search": 9,
-    "write_file": 1
+    "execute_code": 230,
+    "patch": 41,
+    "read_file": 294,
+    "search_files": 341,
+    "terminal": 657,
+    "web_extract": 67,
+    "web_search": 135,
+    "write_file": 38
   },
   "invalid_examples": [],
   "max_scratch_words": 12,
   "style": "hermes-ultra-compact-v0",
-  "total": 150
+  "total": 2000
 }

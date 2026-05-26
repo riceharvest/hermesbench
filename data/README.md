@@ -66,9 +66,12 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.generated.repo_dev.jsonl \
   --input data/examples/hermes_compact_traces.generated.live_verification.jsonl \
   --input data/examples/hermes_compact_traces.generated.training_process.jsonl \
+  --input data/examples/hermes_compact_traces.generated.wave2.repo_ops.jsonl \
+  --input data/examples/hermes_compact_traces.generated.wave2.live_data.jsonl \
+  --input data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 150
+  --min-examples 2000
 ```
 
 ## Preference pair schema

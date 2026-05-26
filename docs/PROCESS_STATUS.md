@@ -18,7 +18,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: MTP-only overfit | Done | `reports/modal-mtp-overfit-probe.json` | No action unless training code changes materially |
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
-| v0-sft-main data | Seed expanded | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Mine/convert real compact Hermes traces beyond generated seed |
+| v0-sft-main data | 2,000-example generated seed passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Optionally mine real compact Hermes traces; otherwise ready for first SFT run |
 | v0-sft-main eval | Seed expanded | `data/eval/hermes_v0_eval.jsonl`, `scripts/run_hermes_eval.py`, `scripts/run_hermes_predictions.py` | Score real/base model behavior when convenient; do not block data/SFT on serving setup |
 | v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
@@ -107,7 +107,7 @@ Behavior-first scope:
 
 Required before training:
 
-- Convert/minify real successful Hermes sessions into `data/processed/hermes_v0_train.jsonl` using the ultra-compact format.
+- Convert/minify successful Hermes-style traces into `data/processed/hermes_v0_train.jsonl` using the ultra-compact format. The generated seed pack is now 2,000 examples; mined real traces can improve coverage but are not required before the first SFT smoke run.
 - Prefer `ACTION`-only when obvious, `SCRATCH<=32` when a short decision note is useful, and `FINAL:` for concise evidence-backed answers.
 - Keep examples compact: action selection, tool discipline, verification, short final answers.
 - Exclude verbose generic chat traces and failed/uncertain traces unless they are explicitly negative/preference examples.
@@ -123,6 +123,9 @@ Primary files:
 - `data/examples/hermes_compact_traces.generated.repo_dev.jsonl`
 - `data/examples/hermes_compact_traces.generated.live_verification.jsonl`
 - `data/examples/hermes_compact_traces.generated.training_process.jsonl`
+- `data/examples/hermes_compact_traces.generated.wave2.repo_ops.jsonl`
+- `data/examples/hermes_compact_traces.generated.wave2.live_data.jsonl`
+- `data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl`
 - `data/processed/hermes_v0_train.jsonl`
 - `reports/hermes-v0-train-quality.json`
 - `data/eval/hermes_v0_eval.jsonl`
@@ -145,9 +148,12 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.generated.repo_dev.jsonl \
   --input data/examples/hermes_compact_traces.generated.live_verification.jsonl \
   --input data/examples/hermes_compact_traces.generated.training_process.jsonl \
+  --input data/examples/hermes_compact_traces.generated.wave2.repo_ops.jsonl \
+  --input data/examples/hermes_compact_traces.generated.wave2.live_data.jsonl \
+  --input data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 150
+  --min-examples 2000
 PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
   --eval data/eval/hermes_v0_eval.jsonl \
   --output reports/hermes-v0-baseline-template.json
