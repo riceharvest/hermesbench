@@ -63,9 +63,12 @@ Build the current processed seed set with:
 uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.seed.jsonl \
   --input data/examples/hermes_compact_traces.v0.jsonl \
+  --input data/examples/hermes_compact_traces.generated.repo_dev.jsonl \
+  --input data/examples/hermes_compact_traces.generated.live_verification.jsonl \
+  --input data/examples/hermes_compact_traces.generated.training_process.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 30
+  --min-examples 150
 ```
 
 ## Preference pair schema
