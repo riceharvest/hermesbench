@@ -6,7 +6,7 @@ This is the canonical tracker for where the project is in the specialization pip
 
 We are **past the MTP feasibility probe** and currently at **v0-sft-main preparation**.
 
-The next real work is not another MTP probe and not RL. It is building enough training data and eval coverage to run `v0-sft-main` safely, then refreshing MTP after that SFT changes the model's output distribution.
+The next real work is not another MTP probe, serving optimization, or RL. It is changing normal model behavior first: build enough ultra-compact Hermes training data and held-out behavior eval coverage to run `v0-sft-main` safely. Serving, MTP refresh, and throughput comparisons stay later.
 
 ## Stage tracker
 
@@ -19,7 +19,7 @@ The next real work is not another MTP probe and not RL. It is building enough tr
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
 | v0-sft-main data | Seed processed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Mine/convert real compact Hermes traces beyond seed |
-| v0-sft-main eval | Seed expanded | `data/eval/hermes_v0_eval.jsonl`, `scripts/run_hermes_eval.py` | Add model-output harness before GPU spend |
+| v0-sft-main eval | Seed expanded | `data/eval/hermes_v0_eval.jsonl`, `scripts/run_hermes_eval.py`, `scripts/run_hermes_predictions.py` | Score real/base model behavior when convenient; do not block data/SFT on serving setup |
 | v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
@@ -97,7 +97,13 @@ vLLM is not the default path right now. The Modal TP=2 H100 attempts loaded or b
 
 ### 1. Finish v0-sft-main preparation
 
-Objective: make normal-decode Hermes behavior better before spending effort on speculative acceleration.
+Objective: make normal-decode Hermes behavior better before spending effort on speculative acceleration or serving performance.
+
+Behavior-first scope:
+
+- Optimize output shape, tool choice, verification discipline, and concise finals.
+- Use OpenRouter/OpenAI-compatible prediction runs only as cheap behavior baselines when useful.
+- Do not spend time on local serving throughput, SGLang tuning, vLLM recovery, MTP accept rate, or GPU benchmark polish until after `v0-sft-main` changes behavior.
 
 Required before training:
 
@@ -177,9 +183,9 @@ Gate to pass:
 - It does not regress basic instruction following or compact final answer behavior.
 - If it fails quality, fix data/evals before touching MTP.
 
-### 3. Run `v0-sft-main-mtp-refresh`
+### 3. Later: run `v0-sft-main-mtp-refresh`
 
-Objective: restore/improve speculative accept rate after SFT changes the output distribution.
+Objective: restore/improve speculative accept rate after SFT changes the output distribution. This is explicitly after behavior has moved; do not work this path during the behavior-first SFT loop.
 
 Rules:
 
@@ -197,9 +203,9 @@ Gate to pass:
 - Export reload diff is `0.0` or explained.
 - Assembled checkpoint serves in SGLang normal and speculative modes.
 
-### 4. Benchmark normal vs MTP
+### 4. Later: benchmark normal vs MTP
 
-Objective: decide whether MTP matters for this use case.
+Objective: decide whether MTP matters for this use case after the behavior checkpoint exists. Do not optimize serving before we know the model behavior is worth serving.
 
 Measure on target prompts, not smoke prompts:
 
@@ -234,3 +240,4 @@ After RL, run another MTP refresh because RL can shift the output distribution a
 - Do not train router initially; add router only if eval shows routing mismatch.
 - Do not treat the SGLang smoke speedup as production performance.
 - Do not optimize MTP at the expense of normal-decode quality.
+- Do not let serving/backend work delay the behavior-first SFT loop.
