@@ -4,6 +4,8 @@ import re
 from dataclasses import dataclass
 from typing import Any
 
+from qwen_mtp_probe.ultra_compact import UltraCompactViolation, validate_ultra_compact_assistant
+
 
 @dataclass(frozen=True)
 class ScoreResult:
@@ -53,6 +55,18 @@ def score_output(scorer: str, output: str, *, max_words: int = 120) -> ScoreResu
             passed,
             'question-only clarification is disallowed when action is obvious',
             {'question_count': question_count, 'has_action': _has_action(text)},
+        )
+
+    if scorer == 'ultra_compact_style':
+        try:
+            validate_ultra_compact_assistant(text)
+        except UltraCompactViolation as exc:
+            return ScoreResult(scorer, False, str(exc), {'style': 'hermes-ultra-compact-v0'})
+        return ScoreResult(
+            scorer,
+            True,
+            'requires ACTION-only, FINAL-only, or SCRATCH<=32 followed by ACTION/FINAL',
+            {'style': 'hermes-ultra-compact-v0'},
         )
 
     raise ValueError(f'unknown scorer: {scorer}')

@@ -23,10 +23,16 @@ def load_sft_config(path: str | Path) -> dict[str, Any]:
 
 def summarize_dry_run(config: dict[str, Any]) -> dict[str, Any]:
     data = config['data']
-    seed_path = data.get('seed_path') or data.get('train_path')
+    train_path = data.get('train_path')
+    seed_path = data.get('seed_path')
     eval_path = data['eval_path']
-    seed_examples = load_chat_jsonl(seed_path) if seed_path else []
+
+    train_examples = load_chat_jsonl(train_path) if train_path and Path(train_path).exists() else []
+    seed_examples = load_chat_jsonl(seed_path) if seed_path and Path(seed_path).exists() else []
     eval_items = load_eval_jsonl(eval_path)
+    active_train_path = train_path if train_examples else seed_path
+    active_train_examples = len(train_examples) if train_examples else len(seed_examples)
+
     return {
         'run_name': config['run_name'],
         'base_model': config['base_model'],
@@ -34,9 +40,13 @@ def summarize_dry_run(config: dict[str, Any]) -> dict[str, Any]:
         'training_method': config['training'].get('method'),
         'adapter': config['training'].get('adapter'),
         'max_seq_length': config['training'].get('max_seq_length'),
+        'train_path': train_path,
         'seed_path': seed_path,
+        'active_train_path': active_train_path,
         'eval_path': eval_path,
+        'train_examples': len(train_examples),
         'seed_examples': len(seed_examples),
+        'active_train_examples': active_train_examples,
         'eval_items': len(eval_items),
         'would_download_model': False,
     }

@@ -56,7 +56,7 @@ mtp_refresh:
 
 data:
   train_path: data/processed/hermes_v0_train.jsonl
-  eval_path: data/eval/hermes_v0_eval.seed.jsonl
+  eval_path: data/eval/hermes_v0_eval.jsonl
   seed_path: data/examples/hermes_compact_traces.seed.jsonl
 
 metrics:

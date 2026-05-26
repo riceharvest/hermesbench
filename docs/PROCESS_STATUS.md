@@ -18,8 +18,8 @@ The next real work is not another MTP probe and not RL. It is building enough tr
 | Probe: MTP-only overfit | Done | `reports/modal-mtp-overfit-probe.json` | No action unless training code changes materially |
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
-| v0-sft-main data | In progress | `data/examples/hermes_compact_traces.seed.jsonl`, `data/eval/hermes_v0_eval.seed.jsonl` | Mine/convert real compact Hermes traces |
-| v0-sft-main eval | In progress | `scripts/run_hermes_eval.py`, `reports/hermes-v0-baseline-template.json` | Expand beyond seed evals before GPU spend |
+| v0-sft-main data | Seed processed | `data/processed/hermes_v0_train.jsonl`, `scripts/build_hermes_train.py` | Mine/convert real compact Hermes traces beyond seed |
+| v0-sft-main eval | Seed expanded | `data/eval/hermes_v0_eval.jsonl`, `scripts/run_hermes_eval.py` | Add model-output harness before GPU spend |
 | v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
@@ -101,7 +101,8 @@ Objective: make normal-decode Hermes behavior better before spending effort on s
 
 Required before training:
 
-- Convert/minify real successful Hermes sessions into `data/processed/hermes_v0_train.jsonl`.
+- Convert/minify real successful Hermes sessions into `data/processed/hermes_v0_train.jsonl` using the ultra-compact format.
+- Prefer `ACTION`-only when obvious, `SCRATCH<=32` when a short decision note is useful, and `FINAL:` for concise evidence-backed answers.
 - Keep examples compact: action selection, tool discipline, verification, short final answers.
 - Exclude verbose generic chat traces and failed/uncertain traces unless they are explicitly negative/preference examples.
 - Expand evals beyond the seed items so the baseline and SFT checkpoint can be compared.
@@ -113,7 +114,9 @@ Primary files:
 - `data/README.md`
 - `data/examples/hermes_compact_traces.seed.jsonl`
 - `data/processed/hermes_v0_train.jsonl`
+- `data/eval/hermes_v0_eval.jsonl`
 - `data/eval/hermes_v0_eval.seed.jsonl`
+- `src/qwen_mtp_probe/ultra_compact.py`
 - `src/qwen_mtp_probe/datasets.py`
 - `src/qwen_mtp_probe/eval_usecase.py`
 - `src/qwen_mtp_probe/train_sft.py`
@@ -123,9 +126,12 @@ Primary files:
 Gate to pass:
 
 ```bash
-uv run python -m pytest
+uv run --extra test python -m pytest
+uv run python scripts/build_hermes_train.py \
+  --input data/examples/hermes_compact_traces.seed.jsonl \
+  --output data/processed/hermes_v0_train.jsonl
 PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
-  --eval data/eval/hermes_v0_eval.seed.jsonl \
+  --eval data/eval/hermes_v0_eval.jsonl \
   --output reports/hermes-v0-baseline-template.json
 PYTHONPATH=src uv run python -m qwen_mtp_probe.train_sft \
   --config configs/qwen36-hermes-v0-sft.yaml \

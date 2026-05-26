@@ -24,7 +24,7 @@ eval/       held-out eval examples and scorer fixtures
 Each line:
 
 ```json
-{"messages":[{"role":"system","content":"..."},{"role":"user","content":"..."},{"role":"assistant","content":"SCRATCH<=80:\n...\n\nACTION ..."}]}
+{"messages":[{"role":"system","content":"..."},{"role":"user","content":"..."},{"role":"assistant","content":"ACTION terminal {\"command\":\"date\"}"}],"style":"hermes-ultra-compact-v0"}
 ```
 
 Rules:
@@ -32,8 +32,38 @@ Rules:
 - `messages` must be a list.
 - Each message has `role` and `content`.
 - Allowed roles: `system`, `user`, `assistant`, `tool`.
-- Assistant examples should teach either a compact trace, a parseable action, or a concise final.
+- Assistant examples should teach either a parseable action or concise final.
 - Avoid dumping verbose chain-of-thought. Use compact scratchpads only.
+
+## Hermes ultra-compact v0 target
+
+`v0-sft-main` trains toward GPT-5.5-ish terse agent behavior, not verbose CoT imitation:
+
+1. **ACTION-only** when the next step is obvious.
+2. **SCRATCH<=32** only when a short private decision note materially improves tool choice.
+3. **FINAL-only** for direct answers after evidence is already known.
+4. No `SCRATCH<=80`, long chain-of-thought, generic planning narration, or fake verification.
+
+Valid assistant targets:
+
+```text
+ACTION terminal {"command":"uname -a && cat /etc/os-release"}
+```
+
+```text
+SCRATCH<=32:
+Need full early-exit log and docs.
+
+ACTION web_search {"query":"SGLang MTP speculative Qwen mamba extra_buffer"}
+```
+
+Build the current processed seed set with:
+
+```bash
+uv run python scripts/build_hermes_train.py \
+  --input data/examples/hermes_compact_traces.seed.jsonl \
+  --output data/processed/hermes_v0_train.jsonl
+```
 
 ## Preference pair schema
 

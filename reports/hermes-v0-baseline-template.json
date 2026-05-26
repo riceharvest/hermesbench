@@ -9,8 +9,43 @@
       "scorer": "tool_use_required"
     },
     {
+      "expected_behavior": "Use a live time/date lookup; do not guess or rely on memory.",
+      "id": "tool_choice_live_time_002",
+      "passed": false,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use a tool for arithmetic; do not mental-math the answer.",
+      "id": "tool_choice_math_003",
+      "passed": false,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
+      "expected_behavior": "Use a terminal or equivalent hash tool; do not invent checksums.",
+      "id": "tool_choice_hash_004",
+      "passed": false,
+      "reason": "requires parseable ACTION marker",
+      "scorer": "tool_use_required"
+    },
+    {
       "expected_behavior": "Inspect known workspace paths before suggesting a new repo.",
       "id": "repo_inspection_001",
+      "passed": false,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Search/read the workspace and identify the existing qwen-mtp-probe repo.",
+      "id": "repo_inspection_002",
+      "passed": false,
+      "reason": "requires file/repo inspection before answer",
+      "scorer": "repo_inspection_required"
+    },
+    {
+      "expected_behavior": "Use git history/diff inspection rather than guessing from chat memory.",
+      "id": "repo_inspection_003",
       "passed": false,
       "reason": "requires file/repo inspection before answer",
       "scorer": "repo_inspection_required"
@@ -23,8 +58,36 @@
       "scorer": "verification_required"
     },
     {
+      "expected_behavior": "Run git status and tests or cite fresh evidence; do not claim green without verification.",
+      "id": "verification_002",
+      "passed": false,
+      "reason": "requires verification evidence",
+      "scorer": "verification_required"
+    },
+    {
+      "expected_behavior": "Verify processed train data, eval path, and dry-run config before saying yes.",
+      "id": "verification_003",
+      "passed": false,
+      "reason": "requires verification evidence",
+      "scorer": "verification_required"
+    },
+    {
       "expected_behavior": "Give a short evidence-backed summary with metrics and changed files, not a long generic report.",
       "id": "concise_final_001",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Answer with the immediate next concrete steps, not a broad model-specialization taxonomy.",
+      "id": "concise_final_002",
+      "passed": true,
+      "reason": "requires <= 120 words",
+      "scorer": "concise_final_required"
+    },
+    {
+      "expected_behavior": "Keep it tight: hardware, config, metrics, caveat.",
+      "id": "concise_final_003",
       "passed": true,
       "reason": "requires <= 120 words",
       "scorer": "concise_final_required"
@@ -35,10 +98,52 @@
       "passed": true,
       "reason": "question-only clarification is disallowed when action is obvious",
       "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Run the relevant test suite immediately; do not ask which tests if repo context makes it obvious.",
+      "id": "no_clarify_002",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "Continue the obvious v0-sft-main prep work from context; do not ask for permission to start internal repo edits.",
+      "id": "no_clarify_003",
+      "passed": true,
+      "reason": "question-only clarification is disallowed when action is obvious",
+      "scorer": "no_unnecessary_clarification"
+    },
+    {
+      "expected_behavior": "For an obvious live lookup, emit ACTION-only with no scratchpad.",
+      "id": "ultra_compact_001",
+      "passed": false,
+      "reason": "assistant content must be non-empty",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Use at most SCRATCH<=32, then the first diagnostic ACTION; no SCRATCH<=80 or verbose reasoning.",
+      "id": "ultra_compact_002",
+      "passed": false,
+      "reason": "assistant content must be non-empty",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Use ACTION read_file or equivalent evidence lookup directly; no long analysis preamble.",
+      "id": "ultra_compact_003",
+      "passed": false,
+      "reason": "assistant content must be non-empty",
+      "scorer": "ultra_compact_style"
+    },
+    {
+      "expected_behavior": "Use FINAL-only or SCRATCH<=32 plus FINAL; concise stage/status output.",
+      "id": "ultra_compact_004",
+      "passed": false,
+      "reason": "assistant content must be non-empty",
+      "scorer": "ultra_compact_style"
     }
   ],
-  "eval_path": "data/eval/hermes_v0_eval.seed.jsonl",
-  "items": 5,
+  "eval_path": "data/eval/hermes_v0_eval.jsonl",
+  "items": 20,
   "latency": {},
   "model": null,
   "prediction_path": null,
@@ -46,30 +151,34 @@
   "scores": {
     "by_scorer": {
       "concise_final_required": {
-        "passed": 1,
-        "total": 1
+        "passed": 3,
+        "total": 3
       },
       "no_unnecessary_clarification": {
-        "passed": 1,
-        "total": 1
+        "passed": 3,
+        "total": 3
       },
       "repo_inspection_required": {
         "passed": 0,
-        "total": 1
+        "total": 3
       },
       "tool_use_required": {
         "passed": 0,
-        "total": 1
+        "total": 4
+      },
+      "ultra_compact_style": {
+        "passed": 0,
+        "total": 4
       },
       "verification_required": {
         "passed": 0,
-        "total": 1
+        "total": 3
       }
     },
-    "failed": 3,
-    "pass_rate": 0.4,
-    "passed": 2,
-    "total": 5
+    "failed": 14,
+    "pass_rate": 0.3,
+    "passed": 6,
+    "total": 20
   },
   "tokens": {}
 }

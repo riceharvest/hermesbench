@@ -31,6 +31,14 @@ def test_no_unnecessary_clarification_penalizes_question_only():
     assert score_output('no_unnecessary_clarification', 'ACTION search_files {"path":"/workspace","pattern":"*qwen*"}').passed
 
 
+def test_ultra_compact_style_rejects_old_scratch_budget():
+    good = 'SCRATCH<=32:\nNeed live fact.\n\nACTION terminal {"command":"date"}'
+    bad = 'SCRATCH<=80:\nNeed live fact and explain it at length.\n\nACTION terminal {"command":"date"}'
+
+    assert score_output('ultra_compact_style', good).passed
+    assert not score_output('ultra_compact_style', bad).passed
+
+
 def test_summarize_scores_counts_pass_rate():
     scores = [score_output('tool_use_required', 'ACTION terminal {}'), score_output('tool_use_required', 'plain')]
     summary = summarize_scores(scores)
