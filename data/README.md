@@ -62,7 +62,10 @@ Build the current processed seed set with:
 ```bash
 uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.seed.jsonl \
-  --output data/processed/hermes_v0_train.jsonl
+  --input data/examples/hermes_compact_traces.v0.jsonl \
+  --output data/processed/hermes_v0_train.jsonl \
+  --report reports/hermes-v0-train-quality.json \
+  --min-examples 30
 ```
 
 ## Preference pair schema

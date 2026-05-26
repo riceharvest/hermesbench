@@ -6,6 +6,8 @@ from qwen_mtp_probe.datasets import load_chat_jsonl
 from qwen_mtp_probe.ultra_compact import (
     UltraCompactViolation,
     build_ultra_compact_examples,
+    summarize_ultra_compact_dataset,
+    validate_quality_gates,
     validate_ultra_compact_assistant,
     write_jsonl,
 )
@@ -50,3 +52,31 @@ def test_write_jsonl_outputs_loadable_training_file(tmp_path):
     first = json.loads(output.read_text().splitlines()[0])
     assert first['source_style'] == 'compact-seed'
     assert first['style'] == 'hermes-ultra-compact-v0'
+
+
+def test_dataset_summary_counts_output_kinds_and_tools():
+    rows = build_ultra_compact_examples(
+        [
+            'data/examples/hermes_compact_traces.seed.jsonl',
+            'data/examples/hermes_compact_traces.v0.jsonl',
+        ]
+    )
+
+    summary = summarize_ultra_compact_dataset(rows)
+
+    assert summary['total'] >= 30
+    assert summary['by_output_kind']['action_only'] >= 10
+    assert summary['by_output_kind']['scratch_action'] >= 10
+    assert summary['by_output_kind']['final_only'] >= 5
+    assert summary['by_tool']['terminal'] >= 3
+    assert summary['by_tool']['search_files'] >= 3
+    assert summary['by_tool']['read_file'] >= 3
+    assert summary['max_scratch_words'] <= 32
+    assert summary['invalid_examples'] == []
+
+
+def test_quality_gates_reject_tiny_or_unbalanced_datasets():
+    rows = build_ultra_compact_examples(['data/examples/hermes_compact_traces.seed.jsonl'])
+
+    with pytest.raises(UltraCompactViolation, match='at least 30 examples'):
+        validate_quality_gates(rows, min_examples=30)

@@ -18,7 +18,7 @@ The next real work is not another MTP probe and not RL. It is building enough tr
 | Probe: MTP-only overfit | Done | `reports/modal-mtp-overfit-probe.json` | No action unless training code changes materially |
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
-| v0-sft-main data | Seed processed | `data/processed/hermes_v0_train.jsonl`, `scripts/build_hermes_train.py` | Mine/convert real compact Hermes traces beyond seed |
+| v0-sft-main data | Seed processed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Mine/convert real compact Hermes traces beyond seed |
 | v0-sft-main eval | Seed expanded | `data/eval/hermes_v0_eval.jsonl`, `scripts/run_hermes_eval.py` | Add model-output harness before GPU spend |
 | v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
@@ -113,7 +113,9 @@ Primary files:
 
 - `data/README.md`
 - `data/examples/hermes_compact_traces.seed.jsonl`
+- `data/examples/hermes_compact_traces.v0.jsonl`
 - `data/processed/hermes_v0_train.jsonl`
+- `reports/hermes-v0-train-quality.json`
 - `data/eval/hermes_v0_eval.jsonl`
 - `data/eval/hermes_v0_eval.seed.jsonl`
 - `src/qwen_mtp_probe/ultra_compact.py`
@@ -129,7 +131,10 @@ Gate to pass:
 uv run --extra test python -m pytest
 uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.seed.jsonl \
-  --output data/processed/hermes_v0_train.jsonl
+  --input data/examples/hermes_compact_traces.v0.jsonl \
+  --output data/processed/hermes_v0_train.jsonl \
+  --report reports/hermes-v0-train-quality.json \
+  --min-examples 30
 PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
   --eval data/eval/hermes_v0_eval.jsonl \
   --output reports/hermes-v0-baseline-template.json

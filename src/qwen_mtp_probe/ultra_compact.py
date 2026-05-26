@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import re
+from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -147,6 +148,99 @@ def compress_assistant_content(user_text: str, content: str) -> str:
     return result
 
 
+def _classify_output(content: str) -> str:
+    stripped = content.strip()
+    if stripped.startswith('ACTION '):
+        return 'action_only'
+    if stripped.startswith('FINAL:'):
+        return 'final_only'
+    if stripped.startswith('SCRATCH<=32:'):
+        _, _, rest = stripped.partition('\n\n')
+        if rest.startswith('ACTION '):
+            return 'scratch_action'
+        if rest.startswith('FINAL:'):
+            return 'scratch_final'
+    return 'invalid'
+
+
+def _extract_tool_name(content: str) -> str | None:
+    action_match = re.search(r'(?:^|\n)ACTION\s+([A-Za-z_][A-Za-z0-9_]*)\b', content.strip())
+    if action_match:
+        return action_match.group(1)
+    return None
+
+
+def _scratch_word_count(content: str) -> int:
+    stripped = content.strip()
+    if not stripped.startswith('SCRATCH<=32:\n'):
+        return 0
+    scratch = stripped.removeprefix('SCRATCH<=32:\n').split('\n\n', 1)[0]
+    return _word_count(scratch)
+
+
+def summarize_ultra_compact_dataset(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
+    row_list = list(rows)
+    by_output_kind: Counter[str] = Counter()
+    by_tool: Counter[str] = Counter()
+    scratch_counts: list[int] = []
+    invalid_examples: list[dict[str, Any]] = []
+
+    for index, row in enumerate(row_list, 1):
+        try:
+            content = _assistant_payload(row)
+            validate_ultra_compact_assistant(content)
+        except UltraCompactViolation as exc:
+            invalid_examples.append({'index': index, 'reason': str(exc)})
+            by_output_kind['invalid'] += 1
+            continue
+
+        kind = _classify_output(content)
+        by_output_kind[kind] += 1
+        tool = _extract_tool_name(content)
+        if tool:
+            by_tool[tool] += 1
+        scratch_counts.append(_scratch_word_count(content))
+
+    return {
+        'style': STYLE_NAME,
+        'total': len(row_list),
+        'by_output_kind': dict(sorted(by_output_kind.items())),
+        'by_tool': dict(sorted(by_tool.items())),
+        'max_scratch_words': max(scratch_counts, default=0),
+        'avg_scratch_words': sum(scratch_counts) / len(scratch_counts) if scratch_counts else 0.0,
+        'invalid_examples': invalid_examples,
+    }
+
+
+def validate_quality_gates(
+    rows: Iterable[dict[str, Any]],
+    *,
+    min_examples: int = 30,
+    min_action_only: int = 10,
+    min_scratch_action: int = 10,
+    min_final_only: int = 5,
+) -> dict[str, Any]:
+    summary = summarize_ultra_compact_dataset(rows)
+    if summary['invalid_examples']:
+        raise UltraCompactViolation(f"invalid examples: {summary['invalid_examples']}")
+    if summary['total'] < min_examples:
+        raise UltraCompactViolation(f'dataset must contain at least {min_examples} examples')
+
+    by_kind = summary['by_output_kind']
+    requirements = {
+        'action_only': min_action_only,
+        'scratch_action': min_scratch_action,
+        'final_only': min_final_only,
+    }
+    for kind, minimum in requirements.items():
+        actual = by_kind.get(kind, 0)
+        if actual < minimum:
+            raise UltraCompactViolation(f'{kind} needs at least {minimum} examples, got {actual}')
+    if summary['max_scratch_words'] > MAX_SCRATCH_WORDS:
+        raise UltraCompactViolation('scratch exceeds 32 words')
+    return summary
+
+
 def build_ultra_compact_examples(paths: Iterable[str | Path]) -> list[dict[str, Any]]:
     output: list[dict[str, Any]] = []
     seen: set[str] = set()
@@ -186,10 +280,20 @@ def main() -> None:
     parser = argparse.ArgumentParser(description='Build Hermes ultra-compact v0 SFT JSONL.')
     parser.add_argument('--input', action='append', required=True, help='Source chat JSONL path')
     parser.add_argument('--output', required=True, help='Output processed JSONL path')
+    parser.add_argument('--report', help='Optional dataset quality report JSON path')
+    parser.add_argument('--min-examples', type=int, default=0, help='Fail if fewer examples are produced')
     args = parser.parse_args()
 
     rows = build_ultra_compact_examples(args.input)
+    if args.min_examples:
+        summary = validate_quality_gates(rows, min_examples=args.min_examples)
+    else:
+        summary = summarize_ultra_compact_dataset(rows)
     write_jsonl(args.output, rows)
+    if args.report:
+        report_path = Path(args.report)
+        report_path.parent.mkdir(parents=True, exist_ok=True)
+        report_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n')
     print(json.dumps({'output': args.output, 'examples': len(rows), 'style': STYLE_NAME}, indent=2))
 
 

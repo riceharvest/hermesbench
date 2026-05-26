@@ -1,0 +1,20 @@
+{
+  "avg_scratch_words": 2.6333333333333333,
+  "by_output_kind": {
+    "action_only": 11,
+    "final_only": 6,
+    "scratch_action": 13
+  },
+  "by_tool": {
+    "execute_code": 1,
+    "read_file": 7,
+    "search_files": 3,
+    "terminal": 11,
+    "web_search": 1,
+    "write_file": 1
+  },
+  "invalid_examples": [],
+  "max_scratch_words": 8,
+  "style": "hermes-ultra-compact-v0",
+  "total": 30
+}
