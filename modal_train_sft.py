@@ -125,7 +125,7 @@ def _collate(tokenizer: Any, features: list[dict[str, Any]]) -> dict[str, Any]:
 
 @app.function(
     image=image,
-    gpu="A100-80GB",
+    gpu="H100",
     timeout=6 * 3600,
     scaledown_window=10,
     max_containers=1,
@@ -149,7 +149,7 @@ def train_smoke(
         "stage": "start",
         "base_model": MODEL_NAME,
         "model": model_name,
-        "gpu_request": "A100-80GB",
+        "gpu_request": "H100",
         "max_steps": max_steps,
         "max_seq_length": max_seq_length,
         "train_limit": train_limit,
