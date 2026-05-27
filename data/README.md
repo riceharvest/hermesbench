@@ -71,10 +71,12 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl \
   --input data/examples/hermes_compact_traces.real_mined.v0.jsonl \
   --input data/examples/hermes_compact_traces.multi_turn.v0.jsonl \
+  --input data/examples/hermes_hf_openhands_swe.v0.jsonl \
+  --input data/examples/hermes_hf_openthoughts_terminal.v0.jsonl \
   --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 6432
+  --min-examples 7032
 ```
 
 ## Alignment checks
@@ -100,6 +102,19 @@ data/examples/hermes_gpt55_teacher_sft.v0.jsonl
 ```
 
 The import keeps parseable `SCRATCH<=96` teacher traces, dedupes exact message trajectories, and filters malformed actions or obvious raw secret patterns before adding them to processed training.
+
+HF agent data prepared for v0:
+
+```text
+data/examples/hermes_hf_openhands_swe.v0.jsonl
+data/examples/hermes_hf_openthoughts_terminal.v0.jsonl
+```
+
+These are active train-compatible converted rows from public HF agent datasets. Domain-tool datasets that do not match the Hermes v0 action surface are quarantined as source-ready raw data, not active SFT:
+
+```text
+data/raw/hf/hermes_hf_toolcall_source_ready.v0.jsonl
+```
 
 Current alignment report:
 

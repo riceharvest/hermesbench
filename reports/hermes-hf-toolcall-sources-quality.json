@@ -1,0 +1,35 @@
+{
+  "action_rows": 183,
+  "datasets": [
+    "jkazdan/taubench_traces_training_data",
+    "zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory"
+  ],
+  "final_rows": 117,
+  "max_rows": 300,
+  "output_path": "data/raw/hf/hermes_hf_toolcall_source_ready.v0.jsonl",
+  "quarantine_reason": "domain tool namespace not in Hermes v0 action surface",
+  "skipped_reasons": {
+    "jkazdan/taubench_traces_training_data": {},
+    "zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory": {}
+  },
+  "source_counts": {
+    "jkazdan/taubench_traces_training_data": {
+      "action_rows": 74,
+      "emitted_rows": 150,
+      "final_rows": 76,
+      "source_records_seen": 50
+    },
+    "zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory": {
+      "action_rows": 109,
+      "emitted_rows": 150,
+      "final_rows": 41,
+      "source_records_seen": 52
+    }
+  },
+  "style": "hermes-hf-source-ready-v0",
+  "total_rows": 300,
+  "validation_failures": {
+    "jkazdan/taubench_traces_training_data": {},
+    "zake7749/Qwen-3.6-plus-agent-tool-calling-trajectory": {}
+  }
+}

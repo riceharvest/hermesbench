@@ -1,0 +1,35 @@
+{
+  "by_output_kind": {
+    "action_only": 283,
+    "final_only": 17
+  },
+  "by_source_conversion": {
+    "create": 22,
+    "execute_bash": 79,
+    "finish": 17,
+    "str_replace": 58,
+    "view_dir": 43,
+    "view_file": 81
+  },
+  "by_tool": {
+    "patch": 58,
+    "read_file": 81,
+    "search_files": 43,
+    "terminal": 79,
+    "write_file": 22
+  },
+  "dataset": "SWE-Gym/OpenHands-SFT-Trajectories",
+  "parquet_file": "data/train.success.oss-00000-of-00001.parquet",
+  "rows": 300,
+  "skipped_reasons": {
+    "assistant_without_tool_call": 29,
+    "duplicate": 14,
+    "risky_bash_command": 1,
+    "unsupported_editor_command:insert": 3,
+    "unsupported_editor_command:undo_edit": 1
+  },
+  "source_rows_read": 491,
+  "source_split": "train.success.oss",
+  "style": "hermes-ultra-compact-v0",
+  "usage": "uv run --with duckdb --with huggingface_hub python scripts/convert_hf_openhands_swe.py --output data/examples/hermes_hf_openhands_swe.v0.jsonl --report reports/hermes-hf-openhands-swe-quality.json --limit 300 --min-rows 100"
+}

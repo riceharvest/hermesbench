@@ -115,20 +115,27 @@ FINAL: concise verified answer
 
 Never keep raw `<think>`, OpenThoughts `analysis`/`plan`, OpenHands private `think`, XML wrappers, OpenAI call IDs, or verbose self-talk.
 
-## Concrete next implementation step
+## Current prepared HF artifacts
 
-Build a converter prototype for `SWE-Gym/OpenHands-SFT-Trajectories` first:
+The first usable HF sources are now converted and ready:
 
-1. Download/sample the success split.
-2. Convert 100-300 assistant action turns into candidate Hermes compact rows.
-3. Add `source_dataset`, `source_id`, `source_style`, and `conversion_notes` metadata outside the `messages` target.
-4. Run existing data alignment gates plus a new source-specific test:
-   - no raw `<function=...>` / `<think>` / `analysis` / `plan` in assistant targets;
-   - every action parses as Hermes JSON;
-   - no train/eval prompt overlap;
-   - no raw secrets;
-   - scratch budget respected.
-5. Manually inspect a 30-row sample before adding to active training.
+- Active train-compatible: `data/examples/hermes_hf_openhands_swe.v0.jsonl` — 300 rows from `SWE-Gym/OpenHands-SFT-Trajectories` success split.
+- Active train-compatible: `data/examples/hermes_hf_openthoughts_terminal.v0.jsonl` — 300 rows from `open-thoughts/OpenThoughts-Agent-v1-SFT`.
+- Quarantined source-ready: `data/raw/hf/hermes_hf_toolcall_source_ready.v0.jsonl` — 300 rows from TauBench/Qwen ToolScale with domain tool calls stored in metadata, not active Hermes `ACTION` targets.
+
+The active-compatible HF rows have been added to `data/processed/hermes_v0_train.jsonl`, bringing active SFT to 7,032 rows. The quarantined source-ready rows are intentionally excluded from active SFT until the tool namespace/mix policy is decided.
+
+Converter scripts:
+
+- `scripts/convert_hf_openhands_swe.py`
+- `scripts/convert_hf_openthoughts_terminal.py`
+- `scripts/convert_hf_toolcall_sources.py`
+
+Quality reports:
+
+- `reports/hermes-hf-openhands-swe-quality.json`
+- `reports/hermes-hf-openthoughts-terminal-quality.json`
+- `reports/hermes-hf-toolcall-sources-quality.json`
 
 See detailed subagent reports:
 - `reports/hf-openhands-swe-usability.md`

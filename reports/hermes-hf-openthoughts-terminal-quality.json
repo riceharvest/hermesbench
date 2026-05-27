@@ -1,0 +1,24 @@
+{
+  "by_output_kind": {
+    "action_only": 300
+  },
+  "by_style": {
+    "hermes-ultra-compact-v0": 300
+  },
+  "by_tool": {
+    "terminal": 300
+  },
+  "dataset": "open-thoughts/OpenThoughts-Agent-v1-SFT",
+  "invalid_examples": [],
+  "row_count": 300,
+  "skipped_reasons": {
+    "assistant_without_user": 3,
+    "duplicate": 1,
+    "no_commands": 16,
+    "risky_command": 3,
+    "risky_task": 2,
+    "risky_user_context": 3
+  },
+  "source_parquet": "https://huggingface.co/datasets/open-thoughts/OpenThoughts-Agent-v1-SFT/resolve/main/data/train-00000-of-00001.parquet",
+  "source_rows_scanned_limit": 3500
+}

@@ -1,14 +1,14 @@
 {
-  "avg_scratch_words": 29.077269900497512,
+  "avg_scratch_words": 26.59627417519909,
   "by_output_kind": {
-    "action_only": 1511,
-    "final_only": 206,
+    "action_only": 2094,
+    "final_only": 223,
     "scratch_action": 4670,
     "scratch_final": 45
   },
   "by_style": {
     "hermes-gpt55-compact-v0": 4182,
-    "hermes-ultra-compact-v0": 2250
+    "hermes-ultra-compact-v0": 2850
   },
   "by_tool": {
     "browser_click": 2,
@@ -20,23 +20,23 @@
     "delegate_task": 3,
     "execute_code": 282,
     "memory": 7,
-    "patch": 314,
+    "patch": 372,
     "process": 32,
-    "read_file": 949,
-    "search_files": 903,
+    "read_file": 1030,
+    "search_files": 946,
     "skill_manage": 4,
     "skill_view": 120,
     "skills_list": 4,
-    "terminal": 3132,
+    "terminal": 3511,
     "todo": 72,
     "vision_analyze": 1,
     "web_extract": 93,
     "web_search": 149,
-    "write_file": 76,
+    "write_file": 98,
     "x_search": 1
   },
   "invalid_examples": [],
   "max_scratch_words": 44,
   "style": "mixed-hermes-compact-v0",
-  "total": 6432
+  "total": 7032
 }

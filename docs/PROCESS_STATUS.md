@@ -6,7 +6,7 @@ This is the canonical tracker for where the project is in the specialization pip
 
 We are **past the MTP feasibility probe** and currently at **v0-sft-main preparation**.
 
-The next real work is not another MTP probe, serving optimization, or RL. It is changing normal model behavior first: use the now-passing 6,432-row mixed compact SFT set (2,250 ultra-compact rows + 4,182 GPT-5.5 compact teacher traces) and held-out behavior eval coverage to run `v0-sft-main` safely. Serving, MTP refresh, and throughput comparisons stay later.
+The next real work is not another MTP probe, serving optimization, or RL. It is changing normal model behavior first: use the now-passing 7,032-row mixed compact SFT set (2,850 ultra-compact rows including 600 converted HF agent rows + 4,182 GPT-5.5 compact teacher traces) and held-out behavior eval coverage to run `v0-sft-main` safely. Serving, MTP refresh, and throughput comparisons stay later.
 
 ## Stage tracker
 
@@ -18,7 +18,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: MTP-only overfit | Done | `reports/modal-mtp-overfit-probe.json` | No action unless training code changes materially |
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
-| v0-sft-main data | 6,432-example mixed compact set passed | `data/processed/hermes_v0_train.jsonl`, `data/examples/hermes_gpt55_teacher_sft.v0.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Ready for first SFT smoke run |
+| v0-sft-main data | 7,032-example mixed compact set passed | `data/processed/hermes_v0_train.jsonl`, `data/examples/hermes_gpt55_teacher_sft.v0.jsonl`, `data/examples/hermes_hf_openhands_swe.v0.jsonl`, `data/examples/hermes_hf_openthoughts_terminal.v0.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Ready for first SFT smoke run |
 | v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
 | v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
@@ -99,7 +99,7 @@ Behavior-first scope:
 
 Required before training:
 
-- Convert/minify successful Hermes-style traces into `data/processed/hermes_v0_train.jsonl`. Current processed data has 6,432 examples: 2,250 ultra-compact v0 examples plus 4,182 imported GPT-5.5 compact teacher traces accepted by maintainer decision.
+- Convert/minify successful Hermes-style traces into `data/processed/hermes_v0_train.jsonl`. Current processed data has 7,032 examples: 2,850 ultra-compact v0 examples, including 600 converted HF OpenHands/OpenThoughts rows, plus 4,182 imported GPT-5.5 compact teacher traces accepted by maintainer decision.
 - Prefer `ACTION`-only when obvious, `SCRATCH<=32` for ultra-compact v0 rows, and imported GPT-5.5 teacher traces may keep `SCRATCH<=96` by maintainer decision.
 - Keep examples compact: action selection, tool discipline, verification, short final answers.
 - Exclude verbose generic chat traces and failed/uncertain traces unless they are explicitly negative/preference examples.
@@ -120,7 +120,10 @@ Primary files:
 - `data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl`
 - `data/examples/hermes_compact_traces.real_mined.v0.jsonl`
 - `data/examples/hermes_compact_traces.multi_turn.v0.jsonl`
+- `data/examples/hermes_hf_openhands_swe.v0.jsonl`
+- `data/examples/hermes_hf_openthoughts_terminal.v0.jsonl`
 - `data/examples/hermes_gpt55_teacher_sft.v0.jsonl`
+- `data/raw/hf/hermes_hf_toolcall_source_ready.v0.jsonl`
 - `data/examples/hermes_preference_pairs.v0.jsonl`
 - `data/processed/hermes_v0_train.jsonl`
 - `reports/hermes-v0-train-quality.json`
@@ -152,10 +155,12 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl \
   --input data/examples/hermes_compact_traces.real_mined.v0.jsonl \
   --input data/examples/hermes_compact_traces.multi_turn.v0.jsonl \
+  --input data/examples/hermes_hf_openhands_swe.v0.jsonl \
+  --input data/examples/hermes_hf_openthoughts_terminal.v0.jsonl \
   --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 6432
+  --min-examples 7032
 PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
   --eval data/eval/hermes_v0_eval.jsonl \
   --output reports/hermes-v0-baseline-template.json
