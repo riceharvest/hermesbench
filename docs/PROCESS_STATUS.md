@@ -6,7 +6,7 @@ This is the canonical tracker for where the project is in the specialization pip
 
 We are **past the MTP feasibility probe** and currently at **v0-sft-main preparation**.
 
-The next real work is not another MTP probe, serving optimization, or RL. It is changing normal model behavior first: build enough ultra-compact Hermes training data and held-out behavior eval coverage to run `v0-sft-main` safely. Serving, MTP refresh, and throughput comparisons stay later.
+The next real work is not another MTP probe, serving optimization, or RL. It is changing normal model behavior first: use the now-passing 6,432-row mixed compact SFT set (2,250 ultra-compact rows + 4,182 GPT-5.5 compact teacher traces) and held-out behavior eval coverage to run `v0-sft-main` safely. Serving, MTP refresh, and throughput comparisons stay later.
 
 ## Stage tracker
 
@@ -82,14 +82,6 @@ SGLANG_ENABLE_SPEC_V2=1 python -m sglang.launch_server \
   --speculative-num-draft-tokens 4 \
   --mamba-scheduler-strategy extra_buffer
 ```
-
-Small smoke result from `reports/modal-sglang-bench.json`:
-
-- normal decode: `10.50 tok/s`
-- speculative/EAGLE: `20.01 tok/s`
-- speedup: about `1.90x`
-
-Do not treat this as the final performance number. It is a smoke test, not a real target-prompt benchmark.
 
 vLLM is not the default path right now. The Modal TP=2 H100 attempts loaded or began loading the checkpoint but stalled around post-load/shared-memory startup/profiling. Revisit only if SGLang fails a real requirement.
 

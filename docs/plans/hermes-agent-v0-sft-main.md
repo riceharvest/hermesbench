@@ -8,6 +8,17 @@
 
 **Tech Stack:** Python 3.11+, PyTorch, Transformers, Accelerate, PEFT LoRA/DoRA, safetensors, pytest, Modal for remote GPU runs, SGLang/vLLM for serving eval.
 
+## Current alignment checkpoint
+
+This plan is still aligned with the active process:
+
+1. MTP feasibility is complete; do not repeat it unless base model, Transformers, or serving stack changes.
+2. `v0-sft-main` is next and remains behavior-first: normal decode quality, tool choice, verification discipline, and concise finals.
+3. The active SFT set is mixed compact data, not raw transcript dumps: ultra-compact v0 rows plus imported GPT-5.5 compact teacher traces capped at `SCRATCH<=96` by maintainer decision.
+4. Eval stays held out from train and is used to compare SFT against the base/OpenRouter behavior baseline.
+5. `v0-sft-main-mtp-refresh` comes only after the SFT checkpoint changes behavior.
+6. RL/preference tuning and router training remain later stages; do not use them to teach basic output shape or tool discipline.
+
 ---
 
 ## Current facts to preserve
@@ -32,7 +43,7 @@ SGLANG_ENABLE_SPEC_V2=1 python -m sglang.launch_server \
   --mamba-scheduler-strategy extra_buffer
 ```
 
-- Smoke benchmark result: normal `10.50 tok/s`, MTP `20.01 tok/s`, speedup `1.90x` on four compact JSON prompts.
+- Latest smoke benchmark result: single H100 normal `20.53 tok/s`, MTP `34.18 tok/s`, speedup `1.67x` on four compact JSON prompts. The older dual-H100 TP=2 smoke was slower (`10.50`/`20.01 tok/s`) and should remain smoke evidence only.
 - User target: maximize Hermes-agent performance with the highest performance in the least reasoning. Existing compact reasoning traces are valuable seed data; generate more only after format/scoring is defined.
 
 ---
@@ -223,7 +234,7 @@ def test_seed_sft_jsonl_has_messages():
         assert isinstance(row['messages'], list)
         assert row['messages'][-1]['role'] == 'assistant'
         content = row['messages'][-1]['content']
-        assert 'SCRATCH<=80:' in content or 'FINAL:' in content or 'ACTION' in content
+        assert 'SCRATCH<=32:' in content or 'FINAL:' in content or 'ACTION' in content
 ```
 
 **Step 2: Run to verify failure**
@@ -249,7 +260,7 @@ Create `data/examples/hermes_compact_traces.seed.jsonl` with 5-10 examples cover
 Example line:
 
 ```json
-{"messages":[{"role":"system","content":"You are Hermes Agent. Use compact reasoning and tool actions. Do not claim success without verification."},{"role":"user","content":"don't we have a repo already? or a folder?"},{"role":"assistant","content":"SCRATCH<=80:\nNeed inspect workspace, not create new repo. Find qwen/mtp folders and top-level files.\n\nACTION search_files {\"path\":\"/home/dario/Documents/dev workspace\",\"pattern\":\"*qwen*\",\"target\":\"files\"}"}]}
+{"messages":[{"role":"system","content":"You are Hermes Agent. Use compact reasoning and tool actions. Do not claim success without verification."},{"role":"user","content":"don't we have a repo already? or a folder?"},{"role":"assistant","content":"SCRATCH<=32:\nNeed inspect workspace, not create new repo.\n\nACTION search_files {\"path\":\"/home/dario/Documents/dev workspace\",\"pattern\":\"*qwen*\",\"target\":\"files\"}"}]}
 ```
 
 **Step 4: Run test to verify pass**

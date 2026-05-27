@@ -61,4 +61,4 @@ See:
 - `docs/plans/hermes-agent-v0-sft-main.md`
 - `docs/plans/hermes-agent-v0-mtp-refresh.md`
 
-Current training target: maximize Hermes-agent task performance with the least necessary reasoning/token spend. We are currently at `v0-sft-main` preparation. The first behavior run should be `v0-sft-main`; MTP refresh comes after SFT changes the output distribution.
+Current training target: maximize Hermes-agent task performance with the least necessary reasoning/token spend. We are currently at `v0-sft-main` preparation with a passing 6,432-row mixed compact SFT set: ultra-compact v0 rows plus GPT-5.5 compact teacher traces capped at `SCRATCH<=96`. The first behavior run should be `v0-sft-main`; MTP refresh comes after SFT changes the output distribution.

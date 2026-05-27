@@ -32,9 +32,9 @@ Keep versions explicit:
 base-qwen3.6-35b-a3b
 v0-probe
 v0-sft-main
-v0-sft-mtp
+v0-sft-main-mtp-refresh
 v1-rl
-v1-rl-mtp
+v1-rl-mtp-refresh
 ```
 
 Meaning:
@@ -42,9 +42,9 @@ Meaning:
 - `base-qwen3.6-35b-a3b`: original base/instruct checkpoint.
 - `v0-probe`: loader/trainability/eval harness sanity checks.
 - `v0-sft-main`: first real Hermes-agent behavior SFT/LoRA/DoRA run.
-- `v0-sft-mtp`: short MTP refresh after v0 SFT changes the output distribution.
+- `v0-sft-main-mtp-refresh`: short MTP refresh after v0 SFT changes the output distribution.
 - `v1-rl`: optional preference/RL stage only after SFT is boringly good.
-- `v1-rl-mtp`: MTP refresh after the RL distribution shift.
+- `v1-rl-mtp-refresh`: MTP refresh after the RL distribution shift.
 
 ## Performance objective
 
@@ -79,13 +79,13 @@ Useful trace shape:
 
 ```text
 OBSERVE: relevant user request + state + available tools
-SCRATCH<=80: compact private reasoning / plan / constraint summary
+SCRATCH<=32: compact private reasoning / constraint summary when needed
 ACTION: parseable tool/action call or final response
 RESULT: tool result summary when applicable
 FINAL: concise user-facing answer, if task complete
 ```
 
-For training, convert this into chat or structured JSONL while preserving the compactness pressure.
+For imported GPT-5.5 compact teacher traces, `SCRATCH<=96` is allowed by maintainer decision because those traces encode useful multi-step policy logic. Do not use `SCRATCH<=80` as an active target; old traces should be converted to `SCRATCH<=32` or tagged teacher `SCRATCH<=96`.
 
 ## Dataset classes
 
@@ -114,8 +114,8 @@ Use larger models or human edits to rewrite verbose successful traces into compa
 Target examples:
 
 ```text
-SCRATCH<=80:
-Need confirm existing repo. qwen-mtp-probe has MTP proof; add SFT docs there, not new repo. Plan: eval -> SFT -> MTP refresh -> optional RL.
+SCRATCH<=32:
+Need confirm existing repo. qwen-mtp-probe has MTP proof; add SFT docs there, not new repo.
 
 ACTION write_file {"path":"docs/HERMES_AGENT_SPECIALIZATION.md"}
 ```
@@ -158,7 +158,7 @@ Keep examples where the model should:
 ### SFT chat format
 
 ```json
-{"messages":[{"role":"system","content":"You are Hermes Agent. Use compact reasoning and tool actions."},{"role":"user","content":"Need debug failing qwen MTP serving"},{"role":"assistant","content":"SCRATCH<=80:\nNeed inspect logs before changing flags. Search docs and run modal bench; root cause likely SGLang MTP flag/cache mode.\n\nACTION web_search {\"query\":\"SGLang MTP speculative qwen mamba scheduler no_buffer\"}"}]}
+{"messages":[{"role":"system","content":"You are Hermes Agent. Use compact reasoning and tool actions."},{"role":"user","content":"Need debug failing qwen MTP serving"},{"role":"assistant","content":"SCRATCH<=32:\nNeed inspect logs/docs before changing flags.\n\nACTION web_search {\"query\":\"SGLang MTP speculative qwen mamba scheduler\"}"}]}
 ```
 
 ### Preference pair format
