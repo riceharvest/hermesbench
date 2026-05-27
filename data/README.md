@@ -76,6 +76,30 @@ uv run python scripts/build_hermes_train.py \
   --min-examples 2250
 ```
 
+## Alignment checks
+
+The checked-in v0 SFT and preference data must stay aligned with `hermes-ultra-compact-v0`:
+
+- no `SCRATCH<=64/80/96` targets in active sources or processed train data;
+- assistant targets must be `ACTION tool {json}`, `SCRATCH<=32` + `ACTION/FINAL`, or `FINAL:`;
+- `ACTION` arguments must parse as JSON objects;
+- active train/eval inputs must remain disjoint;
+- raw secret-looking credential values must not be checked in.
+
+Run:
+
+```bash
+PYTHONPATH=src uv run pytest tests/test_data_alignment.py tests/test_eval_holdout.py -q
+```
+
+The larger GPT-5.5-ish teacher traces currently live outside this project at `/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_*`. Treat them as teacher/reference sources, not direct v0 training input: raw rows use older `SCRATCH<=96` style and include broader tools. Import them only through a distillation/adapter step that rewrites targets into `hermes-ultra-compact-v0` and re-runs the alignment tests.
+
+Current alignment report:
+
+```text
+reports/hermes-data-alignment.json
+```
+
 ## Preference pair schema
 
 Each line:

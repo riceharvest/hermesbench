@@ -1,5 +1,5 @@
 {
-  "avg_scratch_words": 1.5186666666666666,
+  "avg_scratch_words": 1.516,
   "by_output_kind": {
     "action_only": 1511,
     "final_only": 206,
@@ -9,9 +9,9 @@
   "by_tool": {
     "execute_code": 234,
     "patch": 75,
-    "read_file": 350,
+    "read_file": 351,
     "search_files": 361,
-    "terminal": 717,
+    "terminal": 716,
     "web_extract": 81,
     "web_search": 139,
     "write_file": 42
