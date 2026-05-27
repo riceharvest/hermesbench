@@ -36,6 +36,7 @@ image = (
         "hf_transfer",
         "huggingface_hub[hf_transfer]",
         "transformers>=5.0.0",
+        "unsloth",
     )
     .add_local_dir("src", "/workspace/src", copy=True)
     .add_local_dir("configs", "/workspace/configs", copy=True)
@@ -46,6 +47,7 @@ image = (
             "HF_XET_HIGH_PERFORMANCE": "1",
             "PYTHONPATH": "/workspace/src",
             "TOKENIZERS_PARALLELISM": "false",
+            "PYTORCH_CUDA_ALLOC_CONF": "expandable_segments:True",
         }
     )
 )
@@ -158,9 +160,8 @@ def train_smoke(
     try:
         import torch
         import yaml
-        from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
         from torch.utils.data import DataLoader
-        from transformers import AutoModelForCausalLM, AutoTokenizer, BitsAndBytesConfig
+        from unsloth import FastLanguageModel
 
         torch.manual_seed(42)
         print("[sft-smoke] torch", torch.__version__, "cuda", torch.version.cuda, flush=True)
@@ -171,7 +172,13 @@ def train_smoke(
         report.update({"stage": "data", "loaded_rows": len(rows), "config_run_name": config["run_name"]})
         print(f"[sft-smoke] loaded {len(rows)} rows", flush=True)
 
-        tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
+        model, tokenizer = FastLanguageModel.from_pretrained(
+            model_name=MODEL_NAME,
+            max_seq_length=max_seq_length,
+            dtype=torch.bfloat16,
+            load_in_4bit=True,
+            trust_remote_code=True,
+        )
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = "right"
@@ -185,39 +192,26 @@ def train_smoke(
                 "min_tokens": min(lengths),
                 "max_tokens": max(lengths),
                 "avg_tokens": sum(lengths) / len(lengths),
+                "cuda_memory_allocated_gb_after_4bit_load": torch.cuda.memory_allocated() / 1e9,
+                "cuda_memory_reserved_gb_after_4bit_load": torch.cuda.memory_reserved() / 1e9,
             }
         )
         print("[sft-smoke] tokenized", report["tokenized_rows"], "avg_tokens", report["avg_tokens"], flush=True)
 
-        bnb_config = BitsAndBytesConfig(
-            load_in_4bit=True,
-            bnb_4bit_quant_type="nf4",
-            bnb_4bit_use_double_quant=True,
-            bnb_4bit_compute_dtype=torch.bfloat16,
-        )
-        model = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME,
-            quantization_config=bnb_config,
-            torch_dtype=torch.bfloat16,
-            device_map="auto",
-            trust_remote_code=True,
-            low_cpu_mem_usage=True,
-        )
-        model.config.use_cache = False
-        model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
-
         lora_modules = config["lora"]["target_modules"]
         # Explicitly no router modules in v0-sft-main.
         lora_modules = [module for module in lora_modules if "router" not in module.lower()]
-        peft_config = LoraConfig(
+        model = FastLanguageModel.get_peft_model(
+            model,
             r=lora_r,
+            target_modules=lora_modules,
             lora_alpha=lora_alpha,
             lora_dropout=float(config["lora"].get("dropout", 0.05)),
             bias="none",
-            task_type="CAUSAL_LM",
-            target_modules=lora_modules,
+            use_gradient_checkpointing="unsloth",
+            random_state=42,
         )
-        model = get_peft_model(model, peft_config)
+        FastLanguageModel.for_training(model)
         model.train()
         trainable_params, all_params = model.get_nb_trainable_parameters()
         report.update(
@@ -266,6 +260,7 @@ def train_smoke(
         model.save_pretrained(VOLUME_OUTPUT_DIR)
         tokenizer.save_pretrained(VOLUME_OUTPUT_DIR)
 
+        FastLanguageModel.for_inference(model)
         model.eval()
         prompt_messages = [
             {"role": "system", "content": "You are a coding agent. Keep responses terse and parseable."},
