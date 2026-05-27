@@ -17,7 +17,7 @@ TRACE_SOURCE_PATHS = sorted(Path('data/examples').glob('hermes_compact_traces*.j
 GPT55_TEACHER_PATH = Path('data/examples/hermes_gpt55_teacher_sft.v0.jsonl')
 PREFERENCE_PATHS = sorted(Path('data/examples').glob('hermes_preference_pairs*.jsonl'))
 PROCESSED_TRAIN_PATH = Path('data/processed/hermes_v0_train.jsonl')
-ACTIVE_TRAIN_STYLES = {STYLE_NAME, GPT55_STYLE_NAME}
+ACTIVE_TRAIN_STYLES = {STYLE_NAME}
 
 VALID_ACTION_TOOLS = {
     'browser_click',
@@ -46,10 +46,24 @@ VALID_ACTION_TOOLS = {
 }
 
 OBSOLETE_SCRATCH_MARKERS = ('SCRATCH<=64', 'SCRATCH<=80', 'SCRATCH<=96')
+FORBIDDEN_REASONING_TARGET_PATTERNS = [
+    re.compile(r"here(?:'|’)s a thinking process", re.I),
+    re.compile(r'thinking process', re.I),
+    re.compile(r'Analyze User Input', re.I),
+    re.compile(r'\b\d+\.\s+\*\*Analyze\b', re.I),
+    re.compile(r'</?think\b', re.I),
+]
 HIGH_RISK_SECRET_PATTERNS = [
     re.compile(r'sk-[A-Za-z0-9]{20,}'),
     re.compile(r"(?:postgres|mysql|mongodb)://[^\s\"']+:[^\s\"']+@", re.I),
     re.compile(r'-----BEGIN (?:RSA |OPENSSH |EC )?PRIVATE KEY-----'),
+]
+UNSAFE_ACTION_TARGET_PATTERNS = [
+    re.compile(r'\brm\s+-[A-Za-z]*r[A-Za-z]*f\b'),
+    re.compile(r'\bfind\b[^\n;|&]*\s-delete\b'),
+    re.compile(r'\bchmod\b'),
+    re.compile(r'\bchown\b'),
+    re.compile(r'\bmkfs(?:\.[A-Za-z0-9_+-]+)?\b'),
 ]
 
 
@@ -106,15 +120,33 @@ def test_gpt55_teacher_traces_are_compact_enough_and_parseable():
 
 def test_processed_train_matches_compact_contract():
     rows = list(_jsonl(PROCESSED_TRAIN_PATH))
-    assert len(rows) == 7032
+    assert len(rows) == 6441
     assert {row['style'] for _, row in rows} == ACTIVE_TRAIN_STYLES
     for line_number, row in rows:
-        assert row['messages'][-1]['role'] == 'assistant'
-        content = row['messages'][-1]['content']
-        validate_training_assistant(content, row['style'])
-        if row['style'] == STYLE_NAME:
+        for message in row['messages']:
+            if message.get('role') != 'assistant':
+                continue
+            content = message['content']
+            validate_training_assistant(content, row['style'])
             assert not any(marker in content for marker in OBSOLETE_SCRATCH_MARKERS)
-        _assert_action_is_parseable(PROCESSED_TRAIN_PATH, line_number, content)
+            for pattern in FORBIDDEN_REASONING_TARGET_PATTERNS:
+                assert not pattern.search(content), f'{PROCESSED_TRAIN_PATH}:{line_number}: {pattern.pattern}'
+            _assert_action_is_parseable(PROCESSED_TRAIN_PATH, line_number, content)
+
+
+def test_live_tool_prompts_have_action_targets_in_processed_train():
+    rows = list(_jsonl(PROCESSED_TRAIN_PATH))
+    matches = []
+    for line_number, row in rows:
+        user_text = ' '.join(
+            message.get('content', '') for message in row['messages'] if message.get('role') == 'user'
+        )
+        if 'what time is it' in user_text.lower():
+            content = row['messages'][-1]['content']
+            matches.append((line_number, content))
+            assert content.startswith('ACTION terminal '), f'{PROCESSED_TRAIN_PATH}:{line_number}'
+            assert 'date' in content, f'{PROCESSED_TRAIN_PATH}:{line_number}'
+    assert matches, 'expected at least one What time is it? regression row'
 
 
 def test_preference_chosen_outputs_are_valid_compact_targets():
@@ -135,3 +167,13 @@ def test_checked_in_data_has_no_obvious_raw_secret_values():
         text = path.read_text()
         for pattern in HIGH_RISK_SECRET_PATTERNS:
             assert not pattern.search(text), f'{path}: matched high-risk secret pattern {pattern.pattern}'
+
+
+def test_processed_train_has_no_destructive_action_targets():
+    for line_number, row in _jsonl(PROCESSED_TRAIN_PATH):
+        for message in row['messages']:
+            if message.get('role') != 'assistant':
+                continue
+            content = message['content']
+            for pattern in UNSAFE_ACTION_TARGET_PATTERNS:
+                assert not pattern.search(content), f'{PROCESSED_TRAIN_PATH}:{line_number}: {pattern.pattern}'

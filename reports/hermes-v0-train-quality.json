@@ -1,14 +1,13 @@
 {
-  "avg_scratch_words": 26.59627417519909,
+  "avg_scratch_words": 2.332867567147958,
   "by_output_kind": {
-    "action_only": 2094,
+    "action_only": 2100,
     "final_only": 223,
-    "scratch_action": 4670,
+    "scratch_action": 4073,
     "scratch_final": 45
   },
   "by_style": {
-    "hermes-gpt55-compact-v0": 4182,
-    "hermes-ultra-compact-v0": 2850
+    "hermes-ultra-compact-v0": 6441
   },
   "by_tool": {
     "browser_click": 2,
@@ -16,27 +15,25 @@
     "browser_navigate": 17,
     "browser_type": 1,
     "browser_vision": 2,
-    "cronjob": 3,
     "delegate_task": 3,
-    "execute_code": 282,
-    "memory": 7,
-    "patch": 372,
-    "process": 32,
-    "read_file": 1030,
-    "search_files": 946,
+    "execute_code": 275,
+    "memory": 6,
+    "patch": 352,
+    "process": 25,
+    "read_file": 963,
+    "search_files": 896,
     "skill_manage": 4,
-    "skill_view": 120,
-    "skills_list": 4,
-    "terminal": 3511,
-    "todo": 72,
-    "vision_analyze": 1,
-    "web_extract": 93,
-    "web_search": 149,
-    "write_file": 98,
+    "skill_view": 41,
+    "skills_list": 3,
+    "terminal": 3186,
+    "todo": 52,
+    "web_extract": 91,
+    "web_search": 144,
+    "write_file": 95,
     "x_search": 1
   },
   "invalid_examples": [],
-  "max_scratch_words": 44,
-  "style": "mixed-hermes-compact-v0",
-  "total": 7032
+  "max_scratch_words": 14,
+  "style": "hermes-ultra-compact-v0",
+  "total": 6441
 }

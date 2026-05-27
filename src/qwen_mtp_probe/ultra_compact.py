@@ -14,6 +14,31 @@ GPT55_STYLE_NAME = 'hermes-gpt55-compact-v0'
 SOURCE_STYLE = 'compact-seed'
 MAX_SCRATCH_WORDS = 32
 MAX_GPT55_SCRATCH_WORDS = 96
+MAX_FINAL_WORDS = 80
+
+FORBIDDEN_REASONING_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r"here(?:'|’)s a thinking process", re.I),
+    re.compile(r'thinking process', re.I),
+    re.compile(r'Analyze User Input', re.I),
+    re.compile(r'\b\d+\.\s+\*\*Analyze\b', re.I),
+    re.compile(r'</?think\b', re.I),
+)
+
+GENERIC_REASONING_CUES = (
+    'analyze user input',
+    "here's a thinking process",
+    'thinking process',
+    'step-by-step reasoning',
+    'chain of thought',
+)
+
+UNSAFE_ACTION_PATTERNS: tuple[re.Pattern[str], ...] = (
+    re.compile(r'\brm\s+-[A-Za-z]*r[A-Za-z]*f\b'),
+    re.compile(r'\bfind\b[^\n;|&]*\s-delete\b'),
+    re.compile(r'\bchmod\b'),
+    re.compile(r'\bchown\b'),
+    re.compile(r'\bmkfs(?:\.[A-Za-z0-9_+-]+)?\b'),
+)
 
 
 class UltraCompactViolation(ValueError):
@@ -48,10 +73,59 @@ def _validate_scratch_assistant(content: str, marker: str, max_words: int) -> No
         raise UltraCompactViolation(f'{marker} must lead to ACTION or FINAL')
 
 
+def _assert_no_reasoning_contamination(content: str) -> None:
+    for pattern in FORBIDDEN_REASONING_PATTERNS:
+        if pattern.search(content):
+            raise UltraCompactViolation(f'forbidden reasoning contamination: {pattern.pattern}')
+
+
+def _assert_not_long_generic_final(content: str) -> None:
+    stripped = content.strip()
+    if not stripped.startswith('FINAL:'):
+        return
+    final_text = stripped.removeprefix('FINAL:').strip()
+    lowered = final_text.lower()
+    if _word_count(final_text) > MAX_FINAL_WORDS:
+        raise UltraCompactViolation(f'FINAL exceeds {MAX_FINAL_WORDS} words')
+    if any(cue in lowered for cue in GENERIC_REASONING_CUES):
+        raise UltraCompactViolation('FINAL contains generic reasoning prose')
+
+
+def _assert_no_unsafe_action(content: str) -> None:
+    for pattern in UNSAFE_ACTION_PATTERNS:
+        if pattern.search(content):
+            raise UltraCompactViolation(f'unsafe action target: {pattern.pattern}')
+
+
+def _assert_parseable_action(content: str) -> None:
+    stripped = content.strip()
+    action = stripped
+    if stripped.startswith('SCRATCH<=32:\n'):
+        try:
+            _, action = stripped.split('\n\n', 1)
+        except ValueError as exc:
+            raise UltraCompactViolation('SCRATCH<=32 must lead to parseable ACTION/FINAL') from exc
+    if not action.startswith('ACTION '):
+        return
+    match = re.match(r'^ACTION\s+([A-Za-z_][A-Za-z0-9_]*)\s+(\{.*\})$', action.strip(), re.S)
+    if not match:
+        raise UltraCompactViolation('ACTION must be `ACTION tool {json}`')
+    try:
+        args = json.loads(match.group(2))
+    except json.JSONDecodeError as exc:
+        raise UltraCompactViolation(f'ACTION JSON must parse: {exc.msg}') from exc
+    if not isinstance(args, dict):
+        raise UltraCompactViolation('ACTION args must be a JSON object')
+
+
 def validate_ultra_compact_assistant(content: str) -> None:
     stripped = content.strip()
     if not stripped:
         raise UltraCompactViolation('assistant content must be non-empty')
+    _assert_no_reasoning_contamination(stripped)
+    _assert_not_long_generic_final(stripped)
+    _assert_no_unsafe_action(stripped)
+    _assert_parseable_action(stripped)
     if 'SCRATCH<=80' in stripped or 'SCRATCH<=64' in stripped or 'SCRATCH<=96' in stripped:
         raise UltraCompactViolation('use SCRATCH<=32, ACTION-only, or FINAL-only')
 
@@ -70,6 +144,8 @@ def validate_gpt55_compact_assistant(content: str) -> None:
     stripped = content.strip()
     if not stripped:
         raise UltraCompactViolation('assistant content must be non-empty')
+    _assert_no_reasoning_contamination(stripped)
+    _assert_not_long_generic_final(stripped)
     if stripped.startswith('ACTION ') or stripped.startswith('FINAL:'):
         return
     if stripped.startswith('SCRATCH<=96:\n'):
@@ -281,18 +357,21 @@ def build_ultra_compact_examples(paths: Iterable[str | Path]) -> list[dict[str, 
         load_chat_jsonl(path)
         for row in _read_jsonl(path):
             messages = [dict(message) for message in row['messages']]
-            user_text = next(
-                (m['content'] for m in reversed(messages[:-1]) if m.get('role') == 'user'),
-                '',
-            )
             source_style = row.get('style', SOURCE_STYLE)
-            if source_style == GPT55_STYLE_NAME:
-                messages[-1]['content'] = messages[-1]['content'].strip()
-                output_style = GPT55_STYLE_NAME
-                validate_training_assistant(messages[-1]['content'], output_style)
-            else:
-                messages[-1]['content'] = compress_assistant_content(user_text, messages[-1]['content'])
+            last_user_text = ''
+            try:
+                for message in messages:
+                    role = message.get('role')
+                    if role == 'user':
+                        last_user_text = str(message.get('content', ''))
+                    elif role == 'assistant':
+                        message['content'] = compress_assistant_content(
+                            last_user_text,
+                            str(message.get('content', '')),
+                        )
                 output_style = STYLE_NAME
+            except UltraCompactViolation:
+                continue
             new_row = {
                 **{k: v for k, v in row.items() if k != 'messages'},
                 'messages': messages,

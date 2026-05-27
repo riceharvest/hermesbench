@@ -76,15 +76,16 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 7032
+  --min-examples 6441
 ```
 
 ## Alignment checks
 
 The checked-in v0 SFT and preference data must stay aligned with `hermes-ultra-compact-v0`:
 
-- no `SCRATCH<=64/80` targets, and `SCRATCH<=96` only in imported GPT-5.5 teacher traces;
-- assistant targets must be `ACTION tool {json}`, `SCRATCH<=32/96` + `ACTION/FINAL`, or `FINAL:`;
+- no `SCRATCH<=64/80/96` targets in active SFT;
+- assistant targets must be `ACTION tool {json}`, `SCRATCH<=32` + `ACTION/FINAL`, or `FINAL:`;
+- raw verbose reasoning markers (`Here's a thinking process`, `thinking process`, `Analyze User Input`, numbered `**Analyze` plans, raw `<think>`) are rejected from assistant targets;
 - `ACTION` arguments must parse as JSON objects;
 - active train/eval inputs must remain disjoint;
 - raw secret-looking credential values must not be checked in.

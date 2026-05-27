@@ -31,6 +31,38 @@ def test_validate_rejects_old_scratch_80_style():
         )
 
 
+def test_validate_rejects_verbose_thinking_process_contamination():
+    with pytest.raises(UltraCompactViolation, match='forbidden reasoning contamination'):
+        validate_ultra_compact_assistant(
+            "FINAL:\nHere's a thinking process:\n1.  **Analyze User Input**: explain before answering."
+        )
+    with pytest.raises(UltraCompactViolation, match='forbidden reasoning contamination'):
+        validate_ultra_compact_assistant('ACTION terminal {"command":"date"}\n<think>hidden</think>')
+
+
+def test_validate_rejects_long_generic_final_prose():
+    words = ' '.join(['generic'] * 81)
+    with pytest.raises(UltraCompactViolation, match='FINAL exceeds'):
+        validate_ultra_compact_assistant(f'FINAL:\n{words}')
+
+
+def test_validate_rejects_destructive_terminal_targets():
+    unsafe_targets = [
+        'ACTION terminal {"command":"rm -rf /tmp/build"}',
+        'ACTION terminal {"command":"find . -name node_modules -delete"}',
+        'ACTION terminal {"command":"chmod -R 777 ."}',
+        'ACTION terminal {"command":"chown -R user:user ."}',
+    ]
+    for target in unsafe_targets:
+        with pytest.raises(UltraCompactViolation, match='unsafe action target'):
+            validate_ultra_compact_assistant(target)
+
+
+def test_validate_rejects_trailing_action_prose():
+    with pytest.raises(UltraCompactViolation, match='ACTION must'):
+        validate_ultra_compact_assistant('ACTION terminal {"command":"date"} extra explanation')
+
+
 def test_build_ultra_compact_examples_compresses_seed_traces():
     rows = build_ultra_compact_examples(['data/examples/hermes_compact_traces.seed.jsonl'])
 
