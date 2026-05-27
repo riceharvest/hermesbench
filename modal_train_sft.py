@@ -35,7 +35,6 @@ image = (
         "pyyaml",
         "hf_transfer",
         "huggingface_hub[hf_transfer]",
-        "transformers>=5.0.0",
         "trl==0.19.1",
         "unsloth",
     )
