@@ -37,6 +37,7 @@ image = (
         "hf_transfer",
         "huggingface_hub[hf_transfer]",
         "transformers>=5.0.0",
+        "compressed-tensors",
     )
     .add_local_dir("src", "/workspace/src", copy=True)
     .add_local_dir("configs", "/workspace/configs", copy=True)
