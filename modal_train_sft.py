@@ -84,20 +84,47 @@ def _format_messages(tokenizer: Any, row: dict[str, Any]) -> str:
 
 
 def _tokenize_rows(tokenizer: Any, rows: list[dict[str, Any]], max_seq_length: int) -> list[dict[str, Any]]:
+    """Tokenize rows with loss only on the assistant target.
+
+    The first smoke run trained every token in the full chat transcript. With ultra-short
+    ACTION/FINAL targets that wastes nearly all gradient on system/user/template tokens and
+    does not strongly teach the model to start with `ACTION ...`. For v0 behavior smoke we
+    want assistant-only SFT labels.
+    """
     tokenized: list[dict[str, Any]] = []
+    eos = tokenizer.eos_token or ""
     for row in rows:
-        text = _format_messages(tokenizer, row)
-        encoded = tokenizer(
-            text,
-            truncation=True,
-            max_length=max_seq_length,
-            padding=False,
-            return_attention_mask=True,
-        )
-        if len(encoded["input_ids"]) < 8:
+        messages = row.get("messages")
+        if not isinstance(messages, list) or not messages or messages[-1].get("role") != "assistant":
             continue
-        encoded["labels"] = list(encoded["input_ids"])
-        tokenized.append(encoded)
+        assistant_content = str(messages[-1].get("content", "")).strip()
+        if not assistant_content:
+            continue
+        prompt_messages = messages[:-1]
+        try:
+            prompt = tokenizer.apply_chat_template(
+                prompt_messages,
+                tokenize=False,
+                add_generation_prompt=True,
+            )
+        except Exception:
+            prompt = _format_messages(tokenizer, {"messages": prompt_messages}) + "ASSISTANT: "
+        target = assistant_content + eos
+        prompt_ids = tokenizer(prompt, add_special_tokens=False)["input_ids"]
+        target_ids = tokenizer(target, add_special_tokens=False)["input_ids"]
+        input_ids = (prompt_ids + target_ids)[:max_seq_length]
+        label_start = min(len(prompt_ids), len(input_ids))
+        labels = [-100] * label_start + input_ids[label_start:]
+        if not any(label != -100 for label in labels):
+            continue
+        tokenized.append(
+            {
+                "input_ids": input_ids,
+                "attention_mask": [1] * len(input_ids),
+                "labels": labels,
+                "label_tokens": sum(label != -100 for label in labels),
+            }
+        )
     if not tokenized:
         raise ValueError("no usable tokenized examples")
     return tokenized
@@ -183,6 +210,7 @@ def train_smoke(
 
         tokenized = _tokenize_rows(tokenizer, rows, max_seq_length=max_seq_length)
         lengths = [len(row["input_ids"]) for row in tokenized]
+        label_lengths = [int(row.get("label_tokens", 0)) for row in tokenized]
         report.update(
             {
                 "stage": "tokenized",
@@ -190,6 +218,10 @@ def train_smoke(
                 "min_tokens": min(lengths),
                 "max_tokens": max(lengths),
                 "avg_tokens": sum(lengths) / len(lengths),
+                "min_label_tokens": min(label_lengths),
+                "max_label_tokens": max(label_lengths),
+                "avg_label_tokens": sum(label_lengths) / len(label_lengths),
+                "label_masking": "assistant_only",
             }
         )
         print("[sft-smoke] tokenized", report["tokenized_rows"], "avg_tokens", report["avg_tokens"], flush=True)
@@ -266,8 +298,8 @@ def train_smoke(
 
         model.eval()
         prompt_messages = [
-            {"role": "system", "content": "You are a coding agent. Keep responses terse and parseable."},
-            {"role": "user", "content": "What time is it?"},
+            {"role": "system", "content": "You are Hermes Agent. Use ultra-compact actions. No fake verification."},
+            {"role": "user", "content": "what time is it right now?"},
         ]
         prompt = tokenizer.apply_chat_template(prompt_messages, tokenize=False, add_generation_prompt=True)
         inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
