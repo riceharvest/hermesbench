@@ -1,6 +1,5 @@
 {
   "eval_rows": 300,
-  "external_gpt55_alignment_note": "raw GPT-5.5 teacher traces are useful but not directly train-ready for v0: they use SCRATCH<=96/long scratch and include tools outside the v0 compact train tool set. Distill/import through an adapter before adding SFT rows to data/processed/hermes_v0_train.jsonl or preference pairs to DPO/ORPO training.",
   "external_gpt55_teacher_sources": {
     "/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_scratch_dpo_2k.jsonl": 2000,
     "/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_scratch_sft_2k.jsonl": 2000,
@@ -9,7 +8,9 @@
     "/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_success_tool_nocron_sft.jsonl": 2000,
     "/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_success_tool_sft_2k.jsonl": 2000
   },
+  "gpt55_import_policy": "Maintainer decided GPT-5.5 SCRATCH<=96 traces are compact enough for v0. Import keeps parseable SFT rows, dedupes exact message trajectories, and filters malformed actions plus obvious high-risk raw secret patterns.",
   "preference_chosen": {
+    "gpt55_scratch96_rows": 0,
     "invalid_action_json": 0,
     "kinds": {
       "action_only": 80,
@@ -17,8 +18,11 @@
       "scratch_action": 50
     },
     "max_scratch_words": 7,
-    "obsolete_scratch_rows": 0,
+    "obsolete_scratch80_rows": 0,
     "rows": 202,
+    "styles": {
+      "": 202
+    },
     "tools": {
       "execute_code": 40,
       "read_file": 20,
@@ -31,7 +35,7 @@
     "data/examples/hermes_preference_pairs.seed.jsonl": 2,
     "data/examples/hermes_preference_pairs.v0.jsonl": 200
   },
-  "status": "aligned_for_v0_sft_main",
+  "status": "gpt55_teacher_traces_imported_for_v0_sft_main",
   "trace_sources": {
     "data/examples/hermes_compact_traces.generated.live_verification.jsonl": 40,
     "data/examples/hermes_compact_traces.generated.repo_dev.jsonl": 40,
@@ -42,28 +46,49 @@
     "data/examples/hermes_compact_traces.multi_turn.v0.jsonl": 150,
     "data/examples/hermes_compact_traces.real_mined.v0.jsonl": 100,
     "data/examples/hermes_compact_traces.seed.jsonl": 6,
-    "data/examples/hermes_compact_traces.v0.jsonl": 24
+    "data/examples/hermes_compact_traces.v0.jsonl": 24,
+    "data/examples/hermes_gpt55_teacher_sft.v0.jsonl": 4182
   },
   "train": {
+    "gpt55_scratch96_rows": 4182,
     "invalid_action_json": 0,
     "kinds": {
       "action_only": 1511,
       "final_only": 206,
-      "scratch_action": 488,
+      "scratch_action": 4670,
       "scratch_final": 45
     },
-    "max_scratch_words": 12,
-    "obsolete_scratch_rows": 0,
-    "rows": 2250,
+    "max_scratch_words": 44,
+    "obsolete_scratch80_rows": 0,
+    "rows": 6432,
+    "styles": {
+      "hermes-gpt55-compact-v0": 4182,
+      "hermes-ultra-compact-v0": 2250
+    },
     "tools": {
-      "execute_code": 234,
-      "patch": 75,
-      "read_file": 351,
-      "search_files": 361,
-      "terminal": 716,
-      "web_extract": 81,
-      "web_search": 139,
-      "write_file": 42
+      "browser_click": 2,
+      "browser_console": 14,
+      "browser_navigate": 17,
+      "browser_type": 1,
+      "browser_vision": 2,
+      "cronjob": 3,
+      "delegate_task": 3,
+      "execute_code": 282,
+      "memory": 7,
+      "patch": 314,
+      "process": 32,
+      "read_file": 949,
+      "search_files": 903,
+      "skill_manage": 4,
+      "skill_view": 120,
+      "skills_list": 4,
+      "terminal": 3132,
+      "todo": 72,
+      "vision_analyze": 1,
+      "web_extract": 93,
+      "web_search": 149,
+      "write_file": 76,
+      "x_search": 1
     },
     "unsupported_tools": {}
   }

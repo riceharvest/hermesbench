@@ -71,17 +71,18 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl \
   --input data/examples/hermes_compact_traces.real_mined.v0.jsonl \
   --input data/examples/hermes_compact_traces.multi_turn.v0.jsonl \
+  --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 2250
+  --min-examples 6432
 ```
 
 ## Alignment checks
 
 The checked-in v0 SFT and preference data must stay aligned with `hermes-ultra-compact-v0`:
 
-- no `SCRATCH<=64/80/96` targets in active sources or processed train data;
-- assistant targets must be `ACTION tool {json}`, `SCRATCH<=32` + `ACTION/FINAL`, or `FINAL:`;
+- no `SCRATCH<=64/80` targets, and `SCRATCH<=96` only in imported GPT-5.5 teacher traces;
+- assistant targets must be `ACTION tool {json}`, `SCRATCH<=32/96` + `ACTION/FINAL`, or `FINAL:`;
 - `ACTION` arguments must parse as JSON objects;
 - active train/eval inputs must remain disjoint;
 - raw secret-looking credential values must not be checked in.
@@ -92,7 +93,13 @@ Run:
 PYTHONPATH=src uv run pytest tests/test_data_alignment.py tests/test_eval_holdout.py -q
 ```
 
-The larger GPT-5.5-ish teacher traces currently live outside this project at `/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_*`. Treat them as teacher/reference sources, not direct v0 training input: raw rows use older `SCRATCH<=96` style and include broader tools. Import them only through a distillation/adapter step that rewrites targets into `hermes-ultra-compact-v0` and re-runs the alignment tests.
+The GPT-5.5-ish teacher traces imported from `/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_*` are considered compact enough for v0 by maintainer decision. They are checked in as:
+
+```text
+data/examples/hermes_gpt55_teacher_sft.v0.jsonl
+```
+
+The import keeps parseable `SCRATCH<=96` teacher traces, dedupes exact message trajectories, and filters malformed actions or obvious raw secret patterns before adding them to processed training.
 
 Current alignment report:
 

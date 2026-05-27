@@ -10,8 +10,10 @@ from typing import Any, Iterable
 from qwen_mtp_probe.datasets import load_chat_jsonl
 
 STYLE_NAME = 'hermes-ultra-compact-v0'
+GPT55_STYLE_NAME = 'hermes-gpt55-compact-v0'
 SOURCE_STYLE = 'compact-seed'
 MAX_SCRATCH_WORDS = 32
+MAX_GPT55_SCRATCH_WORDS = 96
 
 
 class UltraCompactViolation(ValueError):
@@ -35,11 +37,22 @@ def _word_count(text: str) -> int:
     return len(re.findall(r"\S+", text))
 
 
+def _validate_scratch_assistant(content: str, marker: str, max_words: int) -> None:
+    try:
+        scratch, rest = content.removeprefix(f'{marker}:\n').split('\n\n', 1)
+    except ValueError as exc:
+        raise UltraCompactViolation(f'{marker} must be followed by blank line and ACTION/FINAL') from exc
+    if _word_count(scratch) > max_words:
+        raise UltraCompactViolation(f'{marker} scratch exceeds {max_words} words')
+    if not (rest.startswith('ACTION ') or rest.startswith('FINAL:')):
+        raise UltraCompactViolation(f'{marker} must lead to ACTION or FINAL')
+
+
 def validate_ultra_compact_assistant(content: str) -> None:
     stripped = content.strip()
     if not stripped:
         raise UltraCompactViolation('assistant content must be non-empty')
-    if 'SCRATCH<=80' in stripped or 'SCRATCH<=64' in stripped:
+    if 'SCRATCH<=80' in stripped or 'SCRATCH<=64' in stripped or 'SCRATCH<=96' in stripped:
         raise UltraCompactViolation('use SCRATCH<=32, ACTION-only, or FINAL-only')
 
     if stripped.startswith('ACTION '):
@@ -47,17 +60,32 @@ def validate_ultra_compact_assistant(content: str) -> None:
     if stripped.startswith('FINAL:'):
         return
     if stripped.startswith('SCRATCH<=32:\n'):
-        try:
-            scratch, rest = stripped.removeprefix('SCRATCH<=32:\n').split('\n\n', 1)
-        except ValueError as exc:
-            raise UltraCompactViolation('SCRATCH<=32 must be followed by blank line and ACTION/FINAL') from exc
-        if _word_count(scratch) > MAX_SCRATCH_WORDS:
-            raise UltraCompactViolation('scratch exceeds 32 words')
-        if not (rest.startswith('ACTION ') or rest.startswith('FINAL:')):
-            raise UltraCompactViolation('SCRATCH<=32 must lead to ACTION or FINAL')
+        _validate_scratch_assistant(stripped, 'SCRATCH<=32', MAX_SCRATCH_WORDS)
         return
 
     raise UltraCompactViolation('assistant must start with ACTION, FINAL:, or SCRATCH<=32')
+
+
+def validate_gpt55_compact_assistant(content: str) -> None:
+    stripped = content.strip()
+    if not stripped:
+        raise UltraCompactViolation('assistant content must be non-empty')
+    if stripped.startswith('ACTION ') or stripped.startswith('FINAL:'):
+        return
+    if stripped.startswith('SCRATCH<=96:\n'):
+        _validate_scratch_assistant(stripped, 'SCRATCH<=96', MAX_GPT55_SCRATCH_WORDS)
+        return
+    if stripped.startswith('SCRATCH<=32:\n'):
+        _validate_scratch_assistant(stripped, 'SCRATCH<=32', MAX_SCRATCH_WORDS)
+        return
+    raise UltraCompactViolation('teacher trace must start with ACTION, FINAL:, SCRATCH<=32, or SCRATCH<=96')
+
+
+def validate_training_assistant(content: str, style: str = STYLE_NAME) -> None:
+    if style == GPT55_STYLE_NAME:
+        validate_gpt55_compact_assistant(content)
+    else:
+        validate_ultra_compact_assistant(content)
 
 
 def _read_jsonl(path: str | Path) -> list[dict[str, Any]]:
@@ -154,7 +182,7 @@ def _classify_output(content: str) -> str:
         return 'action_only'
     if stripped.startswith('FINAL:'):
         return 'final_only'
-    if stripped.startswith('SCRATCH<=32:'):
+    if re.match(r'SCRATCH<=\d+:', stripped):
         _, _, rest = stripped.partition('\n\n')
         if rest.startswith('ACTION '):
             return 'scratch_action'
@@ -172,23 +200,26 @@ def _extract_tool_name(content: str) -> str | None:
 
 def _scratch_word_count(content: str) -> int:
     stripped = content.strip()
-    if not stripped.startswith('SCRATCH<=32:\n'):
+    match = re.match(r'SCRATCH<=\d+:\n(.+?)\n\n', stripped, re.S)
+    if not match:
         return 0
-    scratch = stripped.removeprefix('SCRATCH<=32:\n').split('\n\n', 1)[0]
-    return _word_count(scratch)
+    return _word_count(match.group(1))
 
 
 def summarize_ultra_compact_dataset(rows: Iterable[dict[str, Any]]) -> dict[str, Any]:
     row_list = list(rows)
     by_output_kind: Counter[str] = Counter()
+    by_style: Counter[str] = Counter()
     by_tool: Counter[str] = Counter()
     scratch_counts: list[int] = []
     invalid_examples: list[dict[str, Any]] = []
 
     for index, row in enumerate(row_list, 1):
         try:
+            style = row.get('style', STYLE_NAME)
+            by_style[style] += 1
             content = _assistant_payload(row)
-            validate_ultra_compact_assistant(content)
+            validate_training_assistant(content, style)
         except UltraCompactViolation as exc:
             invalid_examples.append({'index': index, 'reason': str(exc)})
             by_output_kind['invalid'] += 1
@@ -202,7 +233,8 @@ def summarize_ultra_compact_dataset(rows: Iterable[dict[str, Any]]) -> dict[str,
         scratch_counts.append(_scratch_word_count(content))
 
     return {
-        'style': STYLE_NAME,
+        'style': 'mixed-hermes-compact-v0' if len(by_style) > 1 else next(iter(by_style), STYLE_NAME),
+        'by_style': dict(sorted(by_style.items())),
         'total': len(row_list),
         'by_output_kind': dict(sorted(by_output_kind.items())),
         'by_tool': dict(sorted(by_tool.items())),
@@ -236,8 +268,8 @@ def validate_quality_gates(
         actual = by_kind.get(kind, 0)
         if actual < minimum:
             raise UltraCompactViolation(f'{kind} needs at least {minimum} examples, got {actual}')
-    if summary['max_scratch_words'] > MAX_SCRATCH_WORDS:
-        raise UltraCompactViolation('scratch exceeds 32 words')
+    if summary['max_scratch_words'] > MAX_GPT55_SCRATCH_WORDS:
+        raise UltraCompactViolation(f'scratch exceeds {MAX_GPT55_SCRATCH_WORDS} words')
     return summary
 
 
@@ -253,19 +285,26 @@ def build_ultra_compact_examples(paths: Iterable[str | Path]) -> list[dict[str, 
                 (m['content'] for m in reversed(messages[:-1]) if m.get('role') == 'user'),
                 '',
             )
-            messages[-1]['content'] = compress_assistant_content(user_text, messages[-1]['content'])
+            source_style = row.get('style', SOURCE_STYLE)
+            if source_style == GPT55_STYLE_NAME:
+                messages[-1]['content'] = messages[-1]['content'].strip()
+                output_style = GPT55_STYLE_NAME
+                validate_training_assistant(messages[-1]['content'], output_style)
+            else:
+                messages[-1]['content'] = compress_assistant_content(user_text, messages[-1]['content'])
+                output_style = STYLE_NAME
             new_row = {
                 **{k: v for k, v in row.items() if k != 'messages'},
                 'messages': messages,
-                'style': STYLE_NAME,
-                'source_style': row.get('style', SOURCE_STYLE),
+                'style': output_style,
+                'source_style': source_style,
             }
             fingerprint = json.dumps(new_row['messages'], sort_keys=True, ensure_ascii=False)
             if fingerprint in seen:
                 continue
             seen.add(fingerprint)
             _assistant_payload(new_row)
-            validate_ultra_compact_assistant(new_row['messages'][-1]['content'])
+            validate_training_assistant(new_row['messages'][-1]['content'], new_row['style'])
             output.append(new_row)
     return output
 
@@ -294,7 +333,7 @@ def main() -> None:
         report_path = Path(args.report)
         report_path.parent.mkdir(parents=True, exist_ok=True)
         report_path.write_text(json.dumps(summary, indent=2, sort_keys=True) + '\n')
-    print(json.dumps({'output': args.output, 'examples': len(rows), 'style': STYLE_NAME}, indent=2))
+    print(json.dumps({'output': args.output, 'examples': len(rows), 'style': summary['style']}, indent=2))
 
 
 if __name__ == '__main__':

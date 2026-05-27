@@ -18,7 +18,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: MTP-only overfit | Done | `reports/modal-mtp-overfit-probe.json` | No action unless training code changes materially |
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
-| v0-sft-main data | 2,250-example seed + mined/multi-turn passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Ready for first SFT smoke run; real raw transcripts can improve v1 |
+| v0-sft-main data | 6,432-example mixed compact set passed | `data/processed/hermes_v0_train.jsonl`, `data/examples/hermes_gpt55_teacher_sft.v0.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Ready for first SFT smoke run |
 | v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
 | v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
@@ -107,8 +107,8 @@ Behavior-first scope:
 
 Required before training:
 
-- Convert/minify successful Hermes-style traces into `data/processed/hermes_v0_train.jsonl` using the ultra-compact format. Current processed data has 2,250 examples: generated seed coverage plus 100 real-ish distilled traces and 150 multi-turn tool-result traces.
-- Prefer `ACTION`-only when obvious, `SCRATCH<=32` when a short decision note is useful, and `FINAL:` for concise evidence-backed answers.
+- Convert/minify successful Hermes-style traces into `data/processed/hermes_v0_train.jsonl`. Current processed data has 6,432 examples: 2,250 ultra-compact v0 examples plus 4,182 imported GPT-5.5 compact teacher traces accepted by maintainer decision.
+- Prefer `ACTION`-only when obvious, `SCRATCH<=32` for ultra-compact v0 rows, and imported GPT-5.5 teacher traces may keep `SCRATCH<=96` by maintainer decision.
 - Keep examples compact: action selection, tool discipline, verification, short final answers.
 - Exclude verbose generic chat traces and failed/uncertain traces unless they are explicitly negative/preference examples.
 - Expand evals beyond the seed items so the baseline and SFT checkpoint can be compared.
@@ -128,6 +128,7 @@ Primary files:
 - `data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl`
 - `data/examples/hermes_compact_traces.real_mined.v0.jsonl`
 - `data/examples/hermes_compact_traces.multi_turn.v0.jsonl`
+- `data/examples/hermes_gpt55_teacher_sft.v0.jsonl`
 - `data/examples/hermes_preference_pairs.v0.jsonl`
 - `data/processed/hermes_v0_train.jsonl`
 - `reports/hermes-v0-train-quality.json`
@@ -159,9 +160,10 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.generated.wave2.training_eval.jsonl \
   --input data/examples/hermes_compact_traces.real_mined.v0.jsonl \
   --input data/examples/hermes_compact_traces.multi_turn.v0.jsonl \
+  --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 2250
+  --min-examples 6432
 PYTHONPATH=src uv run python scripts/run_hermes_eval.py \
   --eval data/eval/hermes_v0_eval.jsonl \
   --output reports/hermes-v0-baseline-template.json
