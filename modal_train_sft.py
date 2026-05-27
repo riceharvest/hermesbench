@@ -15,6 +15,7 @@ import modal
 
 APP_NAME = "qwen36-hermes-v0-sft-smoke"
 MODEL_NAME = "unsloth/Qwen3.6-35B-A3B"
+SMOKE_MODEL_NAME = "unsloth/Qwen3.6-35B-A3B-NVFP4"
 CONFIG_PATH = Path("/workspace/configs/qwen36-hermes-v0-sft.yaml")
 TRAIN_PATH = Path("/workspace/data/processed/hermes_v0_train.jsonl")
 VOLUME_OUTPUT_DIR = Path("/checkpoints/qwen36-hermes-v0-sft-smoke")
@@ -35,9 +36,7 @@ image = (
         "pyyaml",
         "hf_transfer",
         "huggingface_hub[hf_transfer]",
-        "transformers==5.0.0",
-        "trl==0.19.1",
-        "unsloth",
+        "transformers>=5.0.0",
     )
     .add_local_dir("src", "/workspace/src", copy=True)
     .add_local_dir("configs", "/workspace/configs", copy=True)
@@ -142,11 +141,13 @@ def train_smoke(
     lora_r: int = 16,
     lora_alpha: int = 32,
     grad_accum: int = 16,
+    model_name: str = SMOKE_MODEL_NAME,
 ) -> dict[str, Any]:
     started = time.time()
     report: dict[str, Any] = {
         "stage": "start",
-        "model": MODEL_NAME,
+        "base_model": MODEL_NAME,
+        "model": model_name,
         "gpu_request": "A100-80GB",
         "max_steps": max_steps,
         "max_seq_length": max_seq_length,
@@ -161,8 +162,9 @@ def train_smoke(
     try:
         import torch
         import yaml
+        from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
         from torch.utils.data import DataLoader
-        from unsloth import FastLanguageModel
+        from transformers import AutoModelForCausalLM, AutoTokenizer
 
         torch.manual_seed(42)
         print("[sft-smoke] torch", torch.__version__, "cuda", torch.version.cuda, flush=True)
@@ -173,13 +175,7 @@ def train_smoke(
         report.update({"stage": "data", "loaded_rows": len(rows), "config_run_name": config["run_name"]})
         print(f"[sft-smoke] loaded {len(rows)} rows", flush=True)
 
-        model, tokenizer = FastLanguageModel.from_pretrained(
-            model_name=MODEL_NAME,
-            max_seq_length=max_seq_length,
-            dtype=torch.bfloat16,
-            load_in_4bit=True,
-            trust_remote_code=True,
-        )
+        tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
         if tokenizer.pad_token is None:
             tokenizer.pad_token = tokenizer.eos_token
         tokenizer.padding_side = "right"
@@ -193,26 +189,32 @@ def train_smoke(
                 "min_tokens": min(lengths),
                 "max_tokens": max(lengths),
                 "avg_tokens": sum(lengths) / len(lengths),
-                "cuda_memory_allocated_gb_after_4bit_load": torch.cuda.memory_allocated() / 1e9,
-                "cuda_memory_reserved_gb_after_4bit_load": torch.cuda.memory_reserved() / 1e9,
             }
         )
         print("[sft-smoke] tokenized", report["tokenized_rows"], "avg_tokens", report["avg_tokens"], flush=True)
 
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            torch_dtype="auto",
+            device_map="auto",
+            trust_remote_code=True,
+            low_cpu_mem_usage=True,
+        )
+        model.config.use_cache = False
+        model = prepare_model_for_kbit_training(model, use_gradient_checkpointing=True)
+
         lora_modules = config["lora"]["target_modules"]
         # Explicitly no router modules in v0-sft-main.
         lora_modules = [module for module in lora_modules if "router" not in module.lower()]
-        model = FastLanguageModel.get_peft_model(
-            model,
+        peft_config = LoraConfig(
             r=lora_r,
-            target_modules=lora_modules,
             lora_alpha=lora_alpha,
             lora_dropout=float(config["lora"].get("dropout", 0.05)),
             bias="none",
-            use_gradient_checkpointing="unsloth",
-            random_state=42,
+            task_type="CAUSAL_LM",
+            target_modules=lora_modules,
         )
-        FastLanguageModel.for_training(model)
+        model = get_peft_model(model, peft_config)
         model.train()
         trainable_params, all_params = model.get_nb_trainable_parameters()
         report.update(
@@ -261,7 +263,6 @@ def train_smoke(
         model.save_pretrained(VOLUME_OUTPUT_DIR)
         tokenizer.save_pretrained(VOLUME_OUTPUT_DIR)
 
-        FastLanguageModel.for_inference(model)
         model.eval()
         prompt_messages = [
             {"role": "system", "content": "You are a coding agent. Keep responses terse and parseable."},
@@ -316,6 +317,7 @@ def main(
     lora_r: int = 16,
     lora_alpha: int = 32,
     grad_accum: int = 16,
+    model_name: str = SMOKE_MODEL_NAME,
 ) -> None:
     report = train_smoke.remote(
         max_steps=max_steps,
@@ -325,5 +327,6 @@ def main(
         lora_r=lora_r,
         lora_alpha=lora_alpha,
         grad_accum=grad_accum,
+        model_name=model_name,
     )
     print(json.dumps(report, indent=2, sort_keys=True))
