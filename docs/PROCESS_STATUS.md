@@ -4,9 +4,9 @@ This is the canonical tracker for where the project is in the specialization pip
 
 ## Current position
 
-We are **past the MTP feasibility probe** and currently at **v0-sft-main preparation**.
+We are **past the MTP feasibility probe** and currently in the **v0-sft-main behavior smoke loop**.
 
-The next real work is not another MTP probe, serving optimization, or RL. It is changing normal model behavior first: use the now-passing 7,032-row mixed compact SFT set (2,850 ultra-compact rows including 600 converted HF agent rows + 4,182 GPT-5.5 compact teacher traces) and held-out behavior eval coverage to run `v0-sft-main` safely. Serving, MTP refresh, and throughput comparisons stay later.
+The next real work is not another MTP probe, serving optimization, or RL. It is changing normal model behavior first. The active train set is now the cleaned 6,441-row `hermes-ultra-compact-v0` set; verbose GPT-style teacher traces were removed from active SFT after a smoke run proved that loss can drop while behavior stays verbose. Serving, MTP refresh, and throughput comparisons stay later.
 
 ## Stage tracker
 
@@ -18,9 +18,9 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: MTP-only overfit | Done | `reports/modal-mtp-overfit-probe.json` | No action unless training code changes materially |
 | Probe: MTP refresh export | Done | `reports/modal-mtp-export-probe.json`, `reports/qwen36-mtp-refresh-export-manifest.json` | Reuse export pattern after real SFT |
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
-| v0-sft-main data | 7,032-example mixed compact set passed | `data/processed/hermes_v0_train.jsonl`, `data/examples/hermes_gpt55_teacher_sft.v0.jsonl`, `data/examples/hermes_hf_openhands_swe.v0.jsonl`, `data/examples/hermes_hf_openthoughts_terminal.v0.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Ready for first SFT smoke run |
+| v0-sft-main data | 6,441-example ultra-compact set passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Use active set for behavior smoke/full SFT |
 | v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
-| v0-sft-main train | Not started | `src/qwen_mtp_probe/train_sft.py` dry-run only | Run only after data/eval gates pass |
+| v0-sft-main train | Smoke passed behavior start gate | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-assistant-only.json` | Run longer behavior eval/checkpoint only if smoke stays compact |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
 | v1 RL | Later | none | Do not start until SFT is clearly useful |
@@ -85,6 +85,24 @@ SGLANG_ENABLE_SPEC_V2=1 python -m sglang.launch_server \
 
 vLLM is not the default path right now. The Modal TP=2 H100 attempts loaded or began loading the checkpoint but stalled around post-load/shared-memory startup/profiling. Revisit only if SGLang fails a real requirement.
 
+## SFT smoke status
+
+Dual-H100 BF16 PEFT is the known-working 35B training path. Single 80GB attempts remain too tight for this trainer path; do not keep poking them without a materially different stack.
+
+Important smoke lesson: the first cleaned-data smoke still used full-transcript labels, so the loss dropped but the model generated verbose `Here's a thinking process...`. The Modal trainer now masks labels to assistant target tokens only.
+
+Assistant-only smoke result from `reports/modal/qwen36-hermes-v0-sft-smoke-assistant-only.json`:
+
+- command: `modal run modal_train_sft.py --model-name unsloth/Qwen3.6-35B-A3B --max-steps 20 --max-seq-length 2048 --train-limit 1024 --grad-accum 16 --lora-r 16 --lora-alpha 32`
+- GPU: Modal `H100:2`
+- label masking: `assistant_only`
+- optimizer steps: `20`; micro steps: `320`
+- initial loss: `5.0293`; final loss: `1.5878`; loss delta: `3.4414`
+- avg tokens: `72.51`; avg label tokens: `27.95`
+- smoke generation: `ACTION terminal {"command":"date +%T"}`
+
+Interpretation: assistant-only masking fixed the immediate behavior start gate for the held smoke prompt. Do not treat this as full eval success yet; run held-out behavior eval/checkpoint evaluation before MTP refresh or RL.
+
 ## Active plan
 
 ### 1. Finish v0-sft-main preparation
@@ -99,8 +117,8 @@ Behavior-first scope:
 
 Required before training:
 
-- Convert/minify successful Hermes-style traces into `data/processed/hermes_v0_train.jsonl`. Current processed data has 7,032 examples: 2,850 ultra-compact v0 examples, including 600 converted HF OpenHands/OpenThoughts rows, plus 4,182 imported GPT-5.5 compact teacher traces accepted by maintainer decision.
-- Prefer `ACTION`-only when obvious, `SCRATCH<=32` for ultra-compact v0 rows, and imported GPT-5.5 teacher traces may keep `SCRATCH<=96` by maintainer decision.
+- Convert/minify successful Hermes-style traces into `data/processed/hermes_v0_train.jsonl`. Current active processed data has 6,441 `hermes-ultra-compact-v0` examples. GPT-style compact teacher traces are kept as source material but excluded from active SFT until they can be proven not to reintroduce verbose reasoning.
+- Prefer `ACTION`-only when obvious and `SCRATCH<=32` only when a small amount of reasoning is needed.
 - Keep examples compact: action selection, tool discipline, verification, short final answers.
 - Exclude verbose generic chat traces and failed/uncertain traces unless they are explicitly negative/preference examples.
 - Expand evals beyond the seed items so the baseline and SFT checkpoint can be compared.
