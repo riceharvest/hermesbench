@@ -36,6 +36,7 @@ image = (
         "hf_transfer",
         "huggingface_hub[hf_transfer]",
         "transformers>=5.0.0",
+        "trl==0.19.1",
         "unsloth",
     )
     .add_local_dir("src", "/workspace/src", copy=True)
