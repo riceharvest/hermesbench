@@ -173,6 +173,7 @@ def train_smoke(
     grad_accum: int = 16,
     model_name: str = SMOKE_MODEL_NAME,
     eval_limit: int = 20,
+    max_train_tokens: int | None = 512,
 ) -> dict[str, Any]:
     started = time.time()
     report: dict[str, Any] = {
@@ -188,6 +189,7 @@ def train_smoke(
         "lora_alpha": lora_alpha,
         "grad_accum": grad_accum,
         "eval_limit": eval_limit,
+        "max_train_tokens": max_train_tokens,
         "error": None,
     }
 
@@ -196,6 +198,7 @@ def train_smoke(
         import yaml
         from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
         from qwen_mtp_probe.modal_smoke_eval import evaluate_smoke_generations, select_smoke_eval_items
+        from qwen_mtp_probe.modal_training_token_filter import filter_tokenized_examples_by_length
         from torch.utils.data import DataLoader
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -214,6 +217,12 @@ def train_smoke(
         tokenizer.padding_side = "right"
 
         tokenized = _tokenize_rows(tokenizer, rows, max_seq_length=max_seq_length)
+        tokenized, token_filter_stats = filter_tokenized_examples_by_length(
+            tokenized,
+            max_tokens=max_train_tokens,
+        )
+        if not tokenized:
+            raise ValueError("no usable tokenized examples after token budget filter")
         lengths = [len(row["input_ids"]) for row in tokenized]
         label_lengths = [int(row.get("label_tokens", 0)) for row in tokenized]
         report.update(
@@ -227,6 +236,7 @@ def train_smoke(
                 "max_label_tokens": max(label_lengths),
                 "avg_label_tokens": sum(label_lengths) / len(label_lengths),
                 "label_masking": "assistant_only",
+                "token_filter": token_filter_stats,
             }
         )
         print("[sft-smoke] tokenized", report["tokenized_rows"], "avg_tokens", report["avg_tokens"], flush=True)
@@ -366,6 +376,7 @@ def main(
     grad_accum: int = 16,
     model_name: str = SMOKE_MODEL_NAME,
     eval_limit: int = 20,
+    max_train_tokens: int | None = 512,
 ) -> None:
     report = train_smoke.remote(
         max_steps=max_steps,
@@ -377,5 +388,6 @@ def main(
         grad_accum=grad_accum,
         model_name=model_name,
         eval_limit=eval_limit,
+        max_train_tokens=max_train_tokens,
     )
     print(json.dumps(report, indent=2, sort_keys=True))
