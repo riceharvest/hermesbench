@@ -20,7 +20,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
 | v0-sft-main data | 6,505-example ultra-compact set passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Use active set for behavior smoke/full SFT |
 | v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
-| v0-sft-main train | 60-step balanced smoke passed 75/80 held-out items | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-60step-balanced.json` | Fix verification-discipline failures before full run; do not start MTP yet |
+| v0-sft-main train | 60-step verification-hardened balanced smoke passed 77/80 held-out items | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-60step-verification-hardened.json` | Patch remaining verification/eval-format failures before full run; do not start MTP yet |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
 | v1 RL | Later | none | Do not start until SFT is clearly useful |
@@ -125,7 +125,20 @@ Broader balanced smoke result from `reports/modal/qwen36-hermes-v0-sft-smoke-60s
 - smoke generation: `ACTION terminal {"command":"date -u"}`
 - failures concentrate in `verification_required`: four premature `FINAL:` answers without evidence-gathering action, plus one terminal `grep` evidence action that exposed an eval-scorer gap fixed in `src/qwen_mtp_probe/eval_usecase.py`.
 
-Interpretation: assistant-only masking fixed compact behavior and the broader balanced eval mostly holds. The next data/training work should target verification discipline specifically: prompts that require checking reports/tests/files must emit evidence-gathering `ACTION` before any `FINAL:`. Do not start MTP refresh or RL yet.
+Verification-hardened balanced smoke result from `reports/modal/qwen36-hermes-v0-sft-smoke-60step-verification-hardened.json`:
+
+- command: `modal run modal_train_sft.py --model-name unsloth/Qwen3.6-35B-A3B --max-steps 60 --max-seq-length 2048 --max-train-tokens 512 --train-limit 4096 --grad-accum 16 --lora-r 16 --lora-alpha 32 --eval-limit 80`
+- GPU: Modal `H100:2`
+- label masking: `assistant_only`
+- token filter: 4,047 tokenized rows before cap, 2,887 after dropping rows over 512 tokens
+- optimizer steps: `60`; micro steps: `960`; elapsed: `1310.93s`
+- initial loss: `4.4263`; final loss: `0.3136`; loss delta: `4.1126`; tail losses remain noisy because rows are short and heterogeneous
+- held-out smoke eval: `77/80` passed task scorer + ultra-compact style scorer (`96.25%`), improving from `75/80`
+- balanced scorer mix: tool use `14`, repo inspection `14`, verification `13`, concise final `13`, no-clarify `13`, ultra-compact style `13`
+- smoke generation: `ACTION terminal {"command":"date -u"}`
+- remaining failures: one verification prompt still asks to verify rather than taking action (`FINAL: No. I need to verify...`), one verification prompt chooses weak `ls -la data/`, and one concise-final prompt emits a malformed/truncated terminal action. Patch these before calling v0 SFT behavior ready.
+
+Interpretation: verification hardening helped, but the last gate is still evidence-action specificity and malformed-action avoidance on report-style prompts. Do not start MTP refresh or RL yet.
 
 ## Active plan
 
