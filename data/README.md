@@ -77,7 +77,7 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 6505
+  --min-examples 6542
 ```
 
 ## Alignment checks
@@ -97,7 +97,7 @@ Run:
 PYTHONPATH=src uv run pytest tests/test_data_alignment.py tests/test_eval_holdout.py -q
 ```
 
-Current active processed set: `6,505` rows. The verification-hardening slice is checked in as:
+Current active processed set: `6,542` rows. The verification-hardening slice is checked in as:
 
 ```text
 data/examples/hermes_compact_traces.verification_hardening.v0.jsonl

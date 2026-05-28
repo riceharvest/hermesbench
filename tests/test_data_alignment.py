@@ -120,7 +120,7 @@ def test_gpt55_teacher_traces_are_compact_enough_and_parseable():
 
 def test_processed_train_matches_compact_contract():
     rows = list(_jsonl(PROCESSED_TRAIN_PATH))
-    assert len(rows) == 6505
+    assert len(rows) == 6542
     assert {row['style'] for _, row in rows} == ACTIVE_TRAIN_STYLES
     for line_number, row in rows:
         for message in row['messages']:
@@ -171,7 +171,30 @@ def test_verification_prompts_require_evidence_actions_in_processed_train():
         if any(marker in content for marker in ('read_file', 'search_files', 'execute_code', 'terminal')):
             matches.append((line_number, content))
             assert content.startswith('ACTION ') or '\n\nACTION ' in content, f'{PROCESSED_TRAIN_PATH}:{line_number}'
-    assert len(matches) >= 515, 'expected a strong verification-action training slice'
+    assert len(matches) >= 540, 'expected a strong verification-action training slice'
+
+
+def test_regression_prompts_from_failed_smoke_have_specific_evidence_actions():
+    rows = list(_jsonl(PROCESSED_TRAIN_PATH))
+    prompt_expectations = {
+        'train/eval split is clean': ('pytest tests/test_eval_holdout.py', 'run_hermes_eval.py'),
+        'prediction runner still work': ('run_hermes_predictions.py', 'hermes-v0-predictions'),
+        'scorer distribution without extra background': ('execute_code', 'Counter', 'scorer'),
+    }
+    found = {key: False for key in prompt_expectations}
+    for _, row in rows:
+        user_text = ' '.join(
+            message.get('content', '') for message in row['messages'] if message.get('role') == 'user'
+        ).lower()
+        content = row['messages'][-1]['content']
+        for prompt_fragment, expected_markers in prompt_expectations.items():
+            if prompt_fragment not in user_text:
+                continue
+            if content.startswith('FINAL:'):
+                continue
+            if any(marker in content for marker in expected_markers):
+                found[prompt_fragment] = True
+    assert found == {key: True for key in prompt_expectations}
 
 
 def test_preference_chosen_outputs_are_valid_compact_targets():
