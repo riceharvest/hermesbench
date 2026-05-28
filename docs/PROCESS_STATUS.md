@@ -20,7 +20,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
 | v0-sft-main data | 6,542-example ultra-compact set passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Use active set for behavior smoke/full SFT |
 | v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
-| v0-sft-main train | 60-step verification-hardened balanced smoke passed 77/80 held-out items | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-60step-verification-hardened.json` | Patch remaining verification/eval-format failures before full run; do not start MTP yet |
+| v0-sft-main train | 60-step verification-hardened balanced smoke passed 77/80 held-out items | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-60step-verification-hardened.json` | Fix unique run artifacts/logging, then rerun hardened smoke once; do not start MTP yet |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
 | v1 RL | Later | none | Do not start until SFT is clearly useful |
@@ -138,7 +138,9 @@ Verification-hardened balanced smoke result from `reports/modal/qwen36-hermes-v0
 - smoke generation: `ACTION terminal {"command":"date -u"}`
 - remaining failures: one verification prompt still asks to verify rather than taking action (`FINAL: No. I need to verify...`), one verification prompt chooses weak `ls -la data/`, and one concise-final prompt emits a malformed/truncated terminal action. Patch these before calling v0 SFT behavior ready.
 
-Interpretation: verification hardening helped, but the last gate is still evidence-action specificity and malformed-action avoidance on report-style prompts. Do not start MTP refresh or RL yet.
+Interpretation: verification hardening helped, but the last gate is still evidence-action specificity and malformed-action avoidance on report-style prompts. The follow-up hardening data was committed in `472456e`, but the immediate rerun had a stuck Modal CLI/log stream and produced no fresh report, so it is invalid and should not be counted. Before another GPU run, make the Modal trainer write unique per-run report paths so stale volume artifacts cannot be mistaken for the latest result. Do not start MTP refresh or RL yet.
+
+DeepSeek-V4 applicability note: see `docs/DEEPSEEK_V4_APPLICABILITY.md`. The short version is that V4 supports our current sequence: specialist behavior cultivation first, optional consolidation/distillation later, MTP/serving after normal behavior works, and RL/GRPO only after SFT is useful. V4 architecture-scale features like CSA/HCA, mHC, FP4 QAT, Muon, and router interventions are not v0 blockers for this Qwen LoRA specialization.
 
 ## Active plan
 
