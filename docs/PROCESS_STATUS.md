@@ -20,7 +20,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
 | v0-sft-main data | 6,542-example ultra-compact set passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Use active set for behavior smoke/full SFT |
 | v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
-| v0-sft-main train | 60-step verification-hardened balanced smoke passed 77/80 held-out items | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-60step-verification-hardened.json` | Fix unique run artifacts/logging, then rerun hardened smoke once; do not start MTP yet |
+| v0-sft-main train | Lightning RTXP_6000_X_2 60-step smoke passed 72/80 held-out items | `scripts/runpod_train_sft_smoke.py`, `reports/lightning/lightning-rtxpro2-60step-rerun-20260528T150621Z.json` | Harden verification-action examples/scorers, then rerun once; do not start MTP yet |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
 | v1 RL | Later | none | Do not start until SFT is clearly useful |
@@ -138,7 +138,19 @@ Verification-hardened balanced smoke result from `reports/modal/qwen36-hermes-v0
 - smoke generation: `ACTION terminal {"command":"date -u"}`
 - remaining failures: one verification prompt still asks to verify rather than taking action (`FINAL: No. I need to verify...`), one verification prompt chooses weak `ls -la data/`, and one concise-final prompt emits a malformed/truncated terminal action. Patch these before calling v0 SFT behavior ready.
 
-Interpretation: verification hardening helped, but the last gate is still evidence-action specificity and malformed-action avoidance on report-style prompts. The follow-up hardening data was committed in `472456e`, but the immediate rerun had a stuck Modal CLI/log stream and produced no fresh report, so it is invalid and should not be counted. Before another GPU run, make the Modal trainer write unique per-run report paths so stale volume artifacts cannot be mistaken for the latest result. Do not start MTP refresh or RL yet.
+Lightning RTXP_6000_X_2 smoke result from `reports/lightning/lightning-rtxpro2-60step-rerun-20260528T150621Z.json`:
+
+- command: `PYTHONPATH=src uv run python scripts/runpod_train_sft_smoke.py --max-steps 60 --max-seq-length 2048 --max-train-tokens 512 --train-limit 4096 --grad-accum 16 --lora-r 16 --lora-alpha 32 --eval-limit 80`
+- GPU: Lightning AI `RTXP_6000_X_2`, 2x NVIDIA RTX PRO 6000 Blackwell Server Edition, ~97.9GB VRAM each
+- label masking: `assistant_only`
+- token filter: 4,047 tokenized rows before cap, 2,915 after dropping rows over 512 tokens
+- optimizer steps: `60`; micro steps: `960`; elapsed: `1241.26s`
+- initial loss: `1.7021`; final loss: `0.1651`; loss delta: `1.5371`
+- held-out smoke eval: `72/80` passed task scorer + ultra-compact style scorer (`90.00%`)
+- smoke generation: `ACTION terminal {"command":"date"}`
+- remaining failures: seven verification prompts still produce premature `FINAL:`/non-evidence answers, and one concise-final prompt emits a malformed/truncated terminal action.
+
+Interpretation: Lightning worked as a viable free/credit-backed GPU path and the model is trainable on 2x RTX PRO 6000, but this rerun regressed from the best Modal smoke score (`77/80`). Do not start MTP refresh or RL yet. The next gate is narrower: add targeted verification-action and malformed-action hardening, then rerun one balanced 60-step smoke.
 
 DeepSeek-V4 applicability note: see `docs/DEEPSEEK_V4_APPLICABILITY.md`. The short version is that V4 supports our current sequence: specialist behavior cultivation first, optional consolidation/distillation later, MTP/serving after normal behavior works, and RL/GRPO only after SFT is useful. V4 architecture-scale features like CSA/HCA, mHC, FP4 QAT, Muon, and router interventions are not v0 blockers for this Qwen LoRA specialization.
 
