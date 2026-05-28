@@ -26,6 +26,14 @@ def test_verification_required_accepts_evidence_gathering_action():
     assert result.passed
 
 
+def test_verification_required_accepts_terminal_evidence_commands():
+    result = score_output(
+        'verification_required',
+        'ACTION terminal {"command":"grep -r \'scorer\' data/eval | wc -l"}',
+    )
+    assert result.passed
+
+
 def test_concise_final_required_enforces_word_budget():
     assert score_output('concise_final_required', 'FINAL:\nDone. 11 tests pass.', max_words=20).passed
     assert not score_output('concise_final_required', ' '.join(['word'] * 30), max_words=20).passed

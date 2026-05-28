@@ -49,6 +49,10 @@ def score_output(scorer: str, output: str, *, max_words: int = 120) -> ScoreResu
             'git status',
             'benchmark',
             'report',
+            'grep ',
+            'wc -l',
+            'jq ',
+            'python ',
         ]
         passed = any(marker in lowered for marker in evidence_markers) or (
             _has_action(text) and any(marker in lowered for marker in evidence_action_markers)
