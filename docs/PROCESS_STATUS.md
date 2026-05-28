@@ -20,7 +20,7 @@ The next real work is not another MTP probe, serving optimization, or RL. It is 
 | Probe: serving smoke | Done for SGLang, blocked for vLLM | `reports/modal-sglang-bench.json`, `reports/modal-vllm-bench-attempt.json` | Use SGLang as default serving path |
 | v0-sft-main data | 6,441-example ultra-compact set passed | `data/processed/hermes_v0_train.jsonl`, `reports/hermes-v0-train-quality.json`, `scripts/build_hermes_train.py` | Use active set for behavior smoke/full SFT |
 | v0-sft-main eval | 300 held-out items + OpenRouter baseline | `data/eval/hermes_v0_eval.jsonl`, `reports/hermes-v0-eval.openrouter-qwen36.json`, `scripts/run_hermes_predictions.py` | Compare SFT checkpoint against base-model baseline |
-| v0-sft-main train | Smoke passed behavior start gate | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-assistant-only.json` | Run longer behavior eval/checkpoint only if smoke stays compact |
+| v0-sft-main train | 40-step smoke passed first 30 held-out items | `modal_train_sft.py`, `reports/modal/qwen36-hermes-v0-sft-smoke-40step-eval30.json` | Broaden held-out eval before full run; do not start MTP yet |
 | v0-mtp-refresh | Waiting on SFT | `docs/plans/hermes-agent-v0-mtp-refresh.md` | Refresh after `v0-sft-main` checkpoint exists |
 | v0 benchmark | Waiting on SFT + MTP refresh | SGLang smoke only | Compare normal vs MTP on target prompts |
 | v1 RL | Later | none | Do not start until SFT is clearly useful |
@@ -101,7 +101,18 @@ Assistant-only smoke result from `reports/modal/qwen36-hermes-v0-sft-smoke-assis
 - avg tokens: `72.51`; avg label tokens: `27.95`
 - smoke generation: `ACTION terminal {"command":"date +%T"}`
 
-Interpretation: assistant-only masking fixed the immediate behavior start gate for the held smoke prompt. Do not treat this as full eval success yet; run held-out behavior eval/checkpoint evaluation before MTP refresh or RL.
+Broader smoke result from `reports/modal/qwen36-hermes-v0-sft-smoke-40step-eval30.json`:
+
+- command: `modal run modal_train_sft.py --model-name unsloth/Qwen3.6-35B-A3B --max-steps 40 --max-seq-length 2048 --train-limit 2048 --grad-accum 16 --lora-r 16 --lora-alpha 32 --eval-limit 30`
+- GPU: Modal `H100:2`
+- label masking: `assistant_only`
+- optimizer steps: `40`; micro steps: `640`
+- initial loss: `3.9447`; final loss: `3.4153`; tail losses are noisy because the examples are very short and heterogeneous
+- held-out smoke eval: `30/30` passed task scorer + ultra-compact style scorer
+- smoke generation: `ACTION terminal {"command":"date"}`
+- contamination scan over the 30 outputs found 0 verbose reasoning markers and 0 blocked destructive command markers.
+
+Interpretation: assistant-only masking fixed the immediate behavior start gate and the first held-out tool-choice slice. Do not treat this as full eval success yet; broaden held-out behavior eval/checkpoint evaluation before MTP refresh or RL.
 
 ## Active plan
 
