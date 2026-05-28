@@ -315,9 +315,10 @@ def train_smoke(
             return tokenizer.decode(output_ids[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True).strip()
 
         smoke_generation = generate_for_user("what time is it right now?")
-        eval_items = select_smoke_eval_items(_load_jsonl(EVAL_PATH, limit=eval_limit), limit=eval_limit)
+        eval_items = select_smoke_eval_items(_load_jsonl(EVAL_PATH), limit=eval_limit)
         eval_generations = {str(item["id"]): generate_for_user(str(item["input"])) for item in eval_items}
         smoke_eval = evaluate_smoke_generations(eval_items, eval_generations)
+        smoke_eval["scorer_counts"] = eval_items.scorer_counts
 
         report.update(
             {
