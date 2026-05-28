@@ -63,6 +63,7 @@ Build the current processed seed set with:
 uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.seed.jsonl \
   --input data/examples/hermes_compact_traces.v0.jsonl \
+  --input data/examples/hermes_compact_traces.verification_hardening.v0.jsonl \
   --input data/examples/hermes_compact_traces.generated.repo_dev.jsonl \
   --input data/examples/hermes_compact_traces.generated.live_verification.jsonl \
   --input data/examples/hermes_compact_traces.generated.training_process.jsonl \
@@ -76,7 +77,7 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 6441
+  --min-examples 6505
 ```
 
 ## Alignment checks
@@ -95,6 +96,14 @@ Run:
 ```bash
 PYTHONPATH=src uv run pytest tests/test_data_alignment.py tests/test_eval_holdout.py -q
 ```
+
+Current active processed set: `6,505` rows. The verification-hardening slice is checked in as:
+
+```text
+data/examples/hermes_compact_traces.verification_hardening.v0.jsonl
+```
+
+It was added after a balanced 60-step smoke showed premature `FINAL:` answers on verification prompts; these examples teach evidence-gathering `ACTION` before any success/failure claim.
 
 The GPT-5.5-ish teacher traces imported from `/home/dario/Documents/dev workspace/gemma4-e2b-coder-prune/data/hermes_gpt55_*` are considered compact enough for v0 by maintainer decision. They are checked in as:
 

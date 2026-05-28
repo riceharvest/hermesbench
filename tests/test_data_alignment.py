@@ -120,7 +120,7 @@ def test_gpt55_teacher_traces_are_compact_enough_and_parseable():
 
 def test_processed_train_matches_compact_contract():
     rows = list(_jsonl(PROCESSED_TRAIN_PATH))
-    assert len(rows) == 6441
+    assert len(rows) == 6505
     assert {row['style'] for _, row in rows} == ACTIVE_TRAIN_STYLES
     for line_number, row in rows:
         for message in row['messages']:
@@ -147,6 +147,31 @@ def test_live_tool_prompts_have_action_targets_in_processed_train():
             assert content.startswith('ACTION terminal '), f'{PROCESSED_TRAIN_PATH}:{line_number}'
             assert 'date' in content, f'{PROCESSED_TRAIN_PATH}:{line_number}'
     assert matches, 'expected at least one What time is it? regression row'
+
+
+def test_verification_prompts_require_evidence_actions_in_processed_train():
+    rows = list(_jsonl(PROCESSED_TRAIN_PATH))
+    verification_markers = (
+        'verify',
+        'verified',
+        'check whether',
+        'did the',
+        'does the report',
+        'after the run',
+        'tests pass',
+    )
+    matches = []
+    for line_number, row in rows:
+        user_text = ' '.join(
+            message.get('content', '') for message in row['messages'] if message.get('role') == 'user'
+        ).lower()
+        if not any(marker in user_text for marker in verification_markers):
+            continue
+        content = row['messages'][-1]['content']
+        if any(marker in content for marker in ('read_file', 'search_files', 'execute_code', 'terminal')):
+            matches.append((line_number, content))
+            assert content.startswith('ACTION ') or '\n\nACTION ' in content, f'{PROCESSED_TRAIN_PATH}:{line_number}'
+    assert len(matches) >= 515, 'expected a strong verification-action training slice'
 
 
 def test_preference_chosen_outputs_are_valid_compact_targets():
