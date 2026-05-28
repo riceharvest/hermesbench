@@ -120,7 +120,7 @@ def test_gpt55_teacher_traces_are_compact_enough_and_parseable():
 
 def test_processed_train_matches_compact_contract():
     rows = list(_jsonl(PROCESSED_TRAIN_PATH))
-    assert len(rows) == 6542
+    assert len(rows) == 6579
     assert {row['style'] for _, row in rows} == ACTIVE_TRAIN_STYLES
     for line_number, row in rows:
         for message in row['messages']:

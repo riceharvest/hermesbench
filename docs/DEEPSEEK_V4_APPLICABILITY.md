@@ -16,9 +16,9 @@ We are in `v0-sft-main` behavior shaping, not MTP refresh, serving tuning, or RL
 
 Current local evidence:
 
-- active train: `6,542` `hermes-ultra-compact-v0` examples
-- quality: `invalid_examples: []`, `max_scratch_words: 14`, `avg_scratch_words: 2.30`
-- tests: `68 passed`
+- active train: `6,579` `hermes-ultra-compact-v0` examples
+- quality: `invalid_examples: []`, `max_scratch_words: 14`, `avg_scratch_words: 2.28`
+- tests: `70 passed`
 - best valid balanced smoke: `77/80` (`96.25%`) on 80 held-out items
 - latest extra-hardening rerun was invalid/stalled; do not count it
 - current issue: remaining failures are verification-action specificity and malformed-action avoidance

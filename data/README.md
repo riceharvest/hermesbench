@@ -64,6 +64,7 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_compact_traces.seed.jsonl \
   --input data/examples/hermes_compact_traces.v0.jsonl \
   --input data/examples/hermes_compact_traces.verification_hardening.v0.jsonl \
+  --input data/examples/hermes_compact_traces.lightning_failure_hardening.v0.jsonl \
   --input data/examples/hermes_compact_traces.generated.repo_dev.jsonl \
   --input data/examples/hermes_compact_traces.generated.live_verification.jsonl \
   --input data/examples/hermes_compact_traces.generated.training_process.jsonl \
@@ -77,7 +78,7 @@ uv run python scripts/build_hermes_train.py \
   --input data/examples/hermes_gpt55_teacher_sft.v0.jsonl \
   --output data/processed/hermes_v0_train.jsonl \
   --report reports/hermes-v0-train-quality.json \
-  --min-examples 6542
+  --min-examples 6579
 ```
 
 ## Alignment checks
@@ -97,10 +98,11 @@ Run:
 PYTHONPATH=src uv run pytest tests/test_data_alignment.py tests/test_eval_holdout.py -q
 ```
 
-Current active processed set: `6,542` rows. The verification-hardening slice is checked in as:
+Current active processed set: `6,579` rows. The verification-hardening slices are checked in as:
 
 ```text
 data/examples/hermes_compact_traces.verification_hardening.v0.jsonl
+data/examples/hermes_compact_traces.lightning_failure_hardening.v0.jsonl
 ```
 
 It was added after a balanced 60-step smoke showed premature `FINAL:` answers on verification prompts; these examples teach evidence-gathering `ACTION` before any success/failure claim.
