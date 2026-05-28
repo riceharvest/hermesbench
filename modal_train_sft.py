@@ -18,6 +18,7 @@ MODEL_NAME = "unsloth/Qwen3.6-35B-A3B"
 SMOKE_MODEL_NAME = "unsloth/Qwen3.6-35B-A3B-NVFP4"
 CONFIG_PATH = Path("/workspace/configs/qwen36-hermes-v0-sft.yaml")
 TRAIN_PATH = Path("/workspace/data/processed/hermes_v0_train.jsonl")
+EVAL_PATH = Path("/workspace/data/eval/hermes_v0_eval.jsonl")
 VOLUME_OUTPUT_DIR = Path("/checkpoints/qwen36-hermes-v0-sft-smoke")
 REPORT_PATH = Path("/checkpoints/reports/qwen36-hermes-v0-sft-smoke.json")
 
@@ -42,6 +43,7 @@ image = (
     .add_local_dir("src", "/workspace/src", copy=True)
     .add_local_dir("configs", "/workspace/configs", copy=True)
     .add_local_dir("data/processed", "/workspace/data/processed", copy=True)
+    .add_local_dir("data/eval", "/workspace/data/eval", copy=True)
     .env(
         {
             "HF_HUB_ENABLE_HF_TRANSFER": "1",
@@ -170,6 +172,7 @@ def train_smoke(
     lora_alpha: int = 32,
     grad_accum: int = 16,
     model_name: str = SMOKE_MODEL_NAME,
+    eval_limit: int = 20,
 ) -> dict[str, Any]:
     started = time.time()
     report: dict[str, Any] = {
@@ -184,6 +187,7 @@ def train_smoke(
         "lora_r": lora_r,
         "lora_alpha": lora_alpha,
         "grad_accum": grad_accum,
+        "eval_limit": eval_limit,
         "error": None,
     }
 
@@ -191,6 +195,7 @@ def train_smoke(
         import torch
         import yaml
         from peft import LoraConfig, get_peft_model, prepare_model_for_kbit_training
+        from qwen_mtp_probe.modal_smoke_eval import evaluate_smoke_generations, select_smoke_eval_items
         from torch.utils.data import DataLoader
         from transformers import AutoModelForCausalLM, AutoTokenizer
 
@@ -297,15 +302,22 @@ def train_smoke(
         tokenizer.save_pretrained(VOLUME_OUTPUT_DIR)
 
         model.eval()
-        prompt_messages = [
-            {"role": "system", "content": "You are Hermes Agent. Use ultra-compact actions. No fake verification."},
-            {"role": "user", "content": "what time is it right now?"},
-        ]
-        prompt = tokenizer.apply_chat_template(prompt_messages, tokenize=False, add_generation_prompt=True)
-        inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-        with torch.no_grad():
-            output_ids = model.generate(**inputs, max_new_tokens=64, do_sample=False, use_cache=True)
-        generated = tokenizer.decode(output_ids[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True)
+
+        def generate_for_user(user_input: str) -> str:
+            prompt_messages = [
+                {"role": "system", "content": "You are Hermes Agent. Use ultra-compact actions. No fake verification."},
+                {"role": "user", "content": user_input},
+            ]
+            prompt = tokenizer.apply_chat_template(prompt_messages, tokenize=False, add_generation_prompt=True)
+            inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
+            with torch.no_grad():
+                output_ids = model.generate(**inputs, max_new_tokens=64, do_sample=False, use_cache=True)
+            return tokenizer.decode(output_ids[0][inputs["input_ids"].shape[1] :], skip_special_tokens=True).strip()
+
+        smoke_generation = generate_for_user("what time is it right now?")
+        eval_items = select_smoke_eval_items(_load_jsonl(EVAL_PATH, limit=eval_limit), limit=eval_limit)
+        eval_generations = {str(item["id"]): generate_for_user(str(item["input"])) for item in eval_items}
+        smoke_eval = evaluate_smoke_generations(eval_items, eval_generations)
 
         report.update(
             {
@@ -317,7 +329,8 @@ def train_smoke(
                 "loss_delta": (step_losses[0] - step_losses[-1]) if len(step_losses) >= 2 else None,
                 "step_losses_tail": step_losses[-20:],
                 "adapter_dir": str(VOLUME_OUTPUT_DIR),
-                "smoke_generation": generated.strip(),
+                "smoke_generation": smoke_generation,
+                "smoke_eval": smoke_eval,
                 "cuda_memory_allocated_gb_final": torch.cuda.memory_allocated() / 1e9,
                 "cuda_memory_reserved_gb_final": torch.cuda.memory_reserved() / 1e9,
                 "elapsed_seconds": time.time() - started,
@@ -351,6 +364,7 @@ def main(
     lora_alpha: int = 32,
     grad_accum: int = 16,
     model_name: str = SMOKE_MODEL_NAME,
+    eval_limit: int = 20,
 ) -> None:
     report = train_smoke.remote(
         max_steps=max_steps,
@@ -361,5 +375,6 @@ def main(
         lora_alpha=lora_alpha,
         grad_accum=grad_accum,
         model_name=model_name,
+        eval_limit=eval_limit,
     )
     print(json.dumps(report, indent=2, sort_keys=True))
