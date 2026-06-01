@@ -1,13 +1,54 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>HermesBench</title>
-<style>body{margin:0;background:#08090a;color:#f4f4f5;font-family:Inter,system-ui,Segoe UI,sans-serif;line-height:1.55}nav{position:sticky;top:0;background:#0b0c10e6;backdrop-filter:blur(8px);padding:18px 28px;border-bottom:1px solid #25262b;z-index:1}nav a{margin-right:18px;color:#cfe3ff;text-decoration:none}main{max-width:1120px;margin:auto;padding:44px 24px}.hero{padding:42px 0}.eyebrow{color:#9cc9ff;text-transform:uppercase;letter-spacing:.12em;font-size:12px}h1{font-size:clamp(38px,7vw,76px);line-height:1;margin:8px 0 18px}h2{margin-top:0}.muted{color:#a1a1aa}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}.card{background:#111217;border:1px solid #292b33;border-radius:16px;padding:22px;margin:16px 0}.badge{display:inline-block;border:1px solid #3a3d49;border-radius:999px;padding:3px 10px;color:#d4d4d8}table{width:100%;border-collapse:collapse;overflow:hidden}th,td{border-bottom:1px solid #292b33;padding:10px;text-align:left}th{color:#a1a1aa}code{background:#1b1d24;padding:2px 5px;border-radius:5px}footer{padding:32px;color:#71717a;text-align:center}</style></head><body>
-<nav><strong>HermesBench</strong> <a href="#methodology">Methodology</a><a href="#tasks">Tasks</a><a href="#leaderboard">Leaderboard</a><a href="#result">Result</a><a href="#submissions">Submissions</a><a href="#why">Why</a></nav>
-<main><section class="hero"><div class="eyebrow">Execution-based agent benchmark</div><h1>Real-world agent benchmarks are hard.</h1><p class="muted">HermesBench measures tool-using agents with files, terminals, fixtures, scoring evidence, false-done penalties, and public/private/fresh/anchor task splits.</p></section>
-<section class="grid"><div class="card"><h2>Public/dev</h2><p>Open tasks for local iteration.</p></div><div class="card"><h2>Fresh rolling</h2><p>Current waves with contamination review.</p></div><div class="card"><h2>Anchor</h2><p>Stable deterministic longitudinal tasks.</p></div></section>
-<section id="methodology" class="card"><h2>Methodology</h2><p>Scores come from normalized result JSON and deterministic/test evidence. Official scores require maintainer-controlled private/fresh/anchor packs and archived manifests. LLM judges are secondary only.</p></section>
-<section id="tasks" class="card"><h2>Tasks</h2><p>Task pages are static for v0.1. Each task records category, fixtures, expected artifacts, scoring checks, contamination notes, freshness window where relevant, and hidden-check policy.</p></section>
-<section id="leaderboard" class="card"><h2>Leaderboard</h2><table id="leaderboard-table"><thead><tr><th>Rank</th><th>Agent</th><th>Model</th><th>Score</th><th>Pass@1</th><th>False done</th><th>Official</th></tr></thead><tbody></tbody></table></section>
-<section id="result" class="card"><h2>Result detail</h2><div id="result-detail"></div></section>
-<section id="submissions" class="card"><h2>Submissions</h2><p>For v0.1, self-submitted public/dev results are unofficial. Run <code>uv run hermesbench run --agent mock --suite public-dev</code>, score locally, inspect for secrets/local paths, then publish normalized JSON.</p></section>
-<section id="why" class="card"><h2>Why real-world agent benchmarks are hard</h2><p>Agents can overfit static prompts, claim success without artifacts, or pass shallow checks while missing operational details. HermesBench separates development tasks from hidden/private/fresh/anchor evaluation and renders evidence so users can audit why a score was awarded.</p></section>
-</main><footer>HermesBench static demo · unofficial data</footer><script src="app.js"></script></body></html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="HermesBench is an execution-based benchmark for Hermes-style tool-using agents.">
+  <title>HermesBench — execution-based agent benchmark</title>
+  <style>
+    :root{color-scheme:dark;--bg:#07080b;--panel:#101217;--panel2:#151821;--line:#262a35;--muted:#a2a8b6;--text:#f7f8fb;--blue:#8bc6ff;--green:#7ff0b2;--orange:#ffca7a;--red:#ff8c9a}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:radial-gradient(circle at 20% 0%,#162033 0,#07080b 34%,#07080b 100%);color:var(--text);font-family:Inter,ui-sans-serif,system-ui,Segoe UI,sans-serif;line-height:1.55}a{color:var(--blue);text-decoration:none}a:hover{text-decoration:underline}nav{position:sticky;top:0;z-index:10;background:rgba(7,8,11,.78);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}.nav-inner{max-width:1180px;margin:auto;padding:16px 24px;display:flex;gap:18px;align-items:center;justify-content:space-between}.brand{font-weight:750;letter-spacing:-.02em}.nav-links{display:flex;gap:16px;flex-wrap:wrap}.nav-links a{color:#d6deee;font-size:14px}main{max-width:1180px;margin:auto;padding:44px 24px}.hero{padding:62px 0 34px}.eyebrow{color:var(--blue);text-transform:uppercase;letter-spacing:.16em;font-size:12px;font-weight:700}.hero h1{font-size:clamp(42px,7vw,86px);line-height:.96;margin:10px 0 20px;letter-spacing:-.06em;max-width:980px}.lead{font-size:clamp(18px,2.4vw,24px);color:#c8ceda;max-width:840px}.actions{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px}.button{display:inline-flex;align-items:center;justify-content:center;min-height:44px;border-radius:999px;padding:0 18px;font-weight:700;border:1px solid var(--line);background:#171b24;color:#f7f8fb}.button.primary{background:linear-gradient(135deg,#dbeafe,#7dd3fc);color:#07111d;border:0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:34px 0}.stat,.card{background:linear-gradient(180deg,rgba(255,255,255,.045),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:18px;box-shadow:0 16px 60px rgba(0,0,0,.24)}.stat{padding:18px}.stat strong{display:block;font-size:30px;letter-spacing:-.04em}.muted{color:var(--muted)}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}.card{padding:24px;margin:16px 0}h2{font-size:clamp(26px,4vw,42px);letter-spacing:-.04em;margin:0 0 12px}h3{margin:0 0 8px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid #3a3f4d;border-radius:999px;padding:5px 10px;color:#d9e1ef;font-size:13px;background:#11141c}.split{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;align-items:start}.code{background:#0b0d12;border:1px solid var(--line);border-radius:16px;padding:18px;overflow:auto}.code code{white-space:pre;color:#dbeafe;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:13px}table{width:100%;border-collapse:collapse;overflow:hidden}th,td{border-bottom:1px solid var(--line);padding:12px;text-align:left;vertical-align:top}th{color:var(--muted);font-size:13px}.score{color:var(--green);font-weight:800}.warn{color:var(--orange)}.bad{color:var(--red)}.task-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px}.task-chip{border:1px solid var(--line);border-radius:12px;padding:10px;background:#0e1118;color:#d7ddea}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}.mini{padding:14px;border-radius:14px;background:#0e1118;border:1px solid var(--line)}footer{padding:40px 24px;color:#777f91;text-align:center;border-top:1px solid var(--line);margin-top:30px}@media(max-width:760px){.nav-inner{align-items:flex-start;flex-direction:column}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.split{grid-template-columns:1fr}.hero{padding-top:36px}.actions .button{width:100%}}
+  </style>
+</head>
+<body>
+<nav><div class="nav-inner"><div class="brand">HermesBench</div><div class="nav-links"><a href="#methodology">Methodology</a><a href="#tasks">Tasks</a><a href="#leaderboard">Leaderboard</a><a href="#submissions">Submissions</a><a href="https://github.com/riceharvest/hermesbench">GitHub</a></div></div></nav>
+<main>
+  <section class="hero">
+    <div class="eyebrow">Execution-based agent benchmark</div>
+    <h1>Stop rewarding agents for saying done.</h1>
+    <p class="lead">HermesBench measures whether tool-using agents can inspect fixtures, run commands, produce artifacts, pass deterministic checks, and leave auditable evidence — without leaking the private tasks that make leaderboards meaningful.</p>
+    <div class="actions"><a class="button primary" href="https://github.com/riceharvest/hermesbench">Run the benchmark</a><a class="button" href="#leaderboard">View demo leaderboard</a><a class="button" href="#methodology">Read methodology</a></div>
+    <div class="stats"><div class="stat"><strong>45</strong><span class="muted">tasks/templates</span></div><div class="stat"><strong>30</strong><span class="muted">public/dev tasks</span></div><div class="stat"><strong>0%</strong><span class="muted">mock false-done rate</span></div><div class="stat"><strong>CI</strong><span class="muted">green on GitHub</span></div></div>
+  </section>
+
+  <section id="methodology" class="split">
+    <div class="card"><span class="pill">Why this exists</span><h2>Static benchmarks are benchmaxxed.</h2><p class="muted">Public prompts leak into training data, benchmark harnesses become optimization targets, and simple Q&A scores stop predicting real agent reliability. HermesBench keeps public tasks useful for development while reserving private/fresh/anchor packs for official scoring.</p><div class="grid"><div><h3>Execution first</h3><p class="muted">Deterministic, artifact, and test-based checks beat subjective grading wherever possible.</p></div><div><h3>False-done aware</h3><p class="muted">Claiming success without artifacts is tracked as a measurable failure mode.</p></div><div><h3>Auditable</h3><p class="muted">Result JSON preserves task evidence, wall time, tool calls, cost fields, timeouts, and category scores.</p></div></div></div>
+    <div class="code"><code>uv run hermesbench validate-tasks
+uv run hermesbench run \
+  --agent mock \
+  --suite public-dev \
+  --output-dir /tmp/hermesbench-results
+uv run hermesbench score \
+  /tmp/hermesbench-results/*.json</code></div>
+  </section>
+
+  <section id="tasks" class="card"><span class="pill">Task model</span><h2>Designed for Hermes-style tool use.</h2><p class="muted">Tasks are Markdown + YAML specs with fixtures, expected artifacts, deterministic checks, hidden-check notes, contamination risk, freshness windows, safety notes, and human-baseline fields.</p><div class="task-list" id="task-list"></div></section>
+
+  <section id="leaderboard" class="card"><span class="pill">Demo data · unofficial</span><h2>Leaderboard scaffold</h2><p class="muted">This is static demo data until official private/fresh/anchor runs are launched. Self-submitted public/dev results are useful, but not comparable to official hidden-pack runs.</p><table id="leaderboard-table"><thead><tr><th>Rank</th><th>Agent</th><th>Model</th><th>Score</th><th>Pass@1</th><th>False done</th><th>Official</th></tr></thead><tbody></tbody></table></section>
+
+  <section id="result" class="card"><span class="pill">Audit trail</span><h2>Result detail</h2><div id="result-detail"><p class="muted">Loading demo result…</p></div></section>
+
+  <section id="submissions" class="split">
+    <div class="card"><span class="pill">Submissions</span><h2>Unofficial first. Official only with private packs.</h2><p class="muted">Public uploads are unofficial by default. Official runs require maintainer-controlled task packs, run manifests, score hashes, and archived evidence.</p><p><a href="https://github.com/riceharvest/hermesbench/blob/main/docs/official-runs.md">Official-run policy →</a></p></div>
+    <div class="code"><code>uv run hermesbench serve-api \
+  --host 127.0.0.1 \
+  --port 8787
+
+POST /v1/results
+GET  /v1/leaderboard
+GET  /health</code></div>
+  </section>
+</main>
+<footer>HermesBench · execution evidence over benchmark theater · <a href="https://github.com/riceharvest/hermesbench">GitHub</a></footer>
+<script src="app.js"></script>
+</body>
+</html>
