@@ -17,7 +17,7 @@
     <h1>Stop rewarding agents for saying done.</h1>
     <p class="lead">HermesBench measures whether tool-using agents can inspect fixtures, run commands, produce artifacts, pass deterministic checks, and leave auditable evidence — without leaking the private tasks that make leaderboards meaningful.</p>
     <div class="actions"><a class="button primary" href="https://github.com/riceharvest/hermesbench">Run the benchmark</a><a class="button" href="#leaderboard">View demo leaderboard</a><a class="button" href="#methodology">Read methodology</a></div>
-    <div class="stats"><div class="stat"><strong>45</strong><span class="muted">tasks/templates</span></div><div class="stat"><strong>30</strong><span class="muted">public/dev tasks</span></div><div class="stat"><strong>0%</strong><span class="muted">mock false-done rate</span></div><div class="stat"><strong>CI</strong><span class="muted">green on GitHub</span></div></div>
+    <div class="stats"><div class="stat"><strong>50</strong><span class="muted">tasks/templates</span></div><div class="stat"><strong>35</strong><span class="muted">public/dev tasks</span></div><div class="stat"><strong>single-run</strong><span class="muted">samples are not rankings</span></div><div class="stat"><strong>CI</strong><span class="muted">green on GitHub</span></div></div>
   </section>
 
   <section id="methodology" class="split">
@@ -33,7 +33,7 @@ uv run hermesbench score \
 
   <section id="tasks" class="card"><span class="pill">Task model</span><h2>Designed for Hermes-style tool use.</h2><p class="muted">Tasks are Markdown + YAML specs with fixtures, expected artifacts, deterministic checks, hidden-check notes, contamination risk, freshness windows, safety notes, and human-baseline fields.</p><div class="task-list" id="task-list"></div></section>
 
-  <section id="leaderboard" class="card"><span class="pill">Generated data · official/unofficial split</span><h2>Leaderboard</h2><p class="muted">Official rows require maintainer-controlled private/fresh packs and manifests. Public-dev submissions, including the current OpenAI Codex GPT-5.5 low run, are clearly marked unofficial and are not comparable to official hidden-pack runs.</p><table id="leaderboard-table"><thead><tr><th>Rank</th><th>Agent</th><th>Model</th><th>Score</th><th>Pass@1</th><th>False done</th><th>Status</th></tr></thead><tbody></tbody></table></section>
+  <section id="leaderboard" class="card"><span class="pill">Generated data · official/unofficial split</span><h2>Leaderboard</h2><p class="muted">Official rows require maintainer-controlled private/fresh packs and repeated-run manifests. Public-dev submissions are single-run smoke samples by default: useful for debugging tasks and telemetry, but not valid model rankings and not evidence that one reasoning setting is better than another.</p><table id="leaderboard-table"><thead><tr><th>Class</th><th>Agent</th><th>Model</th><th>Score</th><th>Pass@1</th><th>False done</th><th>Status</th></tr></thead><tbody></tbody></table></section>
 
   <section id="result" class="card"><span class="pill">Audit trail</span><h2>Result detail</h2><div id="result-detail"><p class="muted">Loading demo result…</p></div></section>
 
