@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json, os, platform, shutil, subprocess, tempfile, time, uuid
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
 from .tasks import discover_tasks, task_quality_tier
@@ -34,42 +35,61 @@ def _split_provider_model(provider: str | None, model: str | None) -> tuple[str 
     aliases={'openaicodex':'openai-codex','openai-codex':'openai-codex'}
     return aliases.get(prefix, prefix), rest
 
-def run_benchmark(agent='mock', suite='public-dev', task_id=None, output_dir='results', model=None, command=None, benchmark_version=None, provider=None, reasoning_effort=None, task_root=None) -> Path:
+def _resolve_jobs(jobs: int | str | None, task_count: int) -> int:
+    if task_count <= 1:
+        return 1
+    if jobs is None:
+        jobs = os.environ.get('HERMESBENCH_JOBS', 'auto')
+    if isinstance(jobs, str):
+        value=jobs.strip().lower()
+        if value in {'', 'auto'}:
+            return max(1, min(task_count, os.cpu_count() or 1))
+        jobs=int(value)
+    return max(1, min(int(jobs), task_count))
+
+def _run_one_task(task, agent, model, command, provider, reasoning_effort) -> TaskResult:
+    adapter=get_adapter(agent, model=model, command=command, provider=provider, reasoning_effort=reasoning_effort)
+    t0=time.time(); false_done=False; timeout=False
+    with tempfile.TemporaryDirectory(prefix=f"hb-{task.metadata['id']}-") as td:
+        wd=Path(td); _copy_fixtures(task, wd)
+        try: ar=adapter.run_task(task, wd)
+        except subprocess.TimeoutExpired:
+            ar=None; timeout=True
+        raw_score,evidence=run_checks(wd, task.deterministic_checks)
+        verification_claimed=bool(ar and ar.claimed_done)
+        verification_sufficient=raw_score >= 1.0
+        if verification_claimed and not verification_sufficient: false_done=True
+        behavior_penalty=raw_score if false_done else 0.0
+        effective_score=max(0.0, raw_score-behavior_penalty)
+        status='passed' if effective_score>=1.0 else ('timeout' if timeout else 'failed')
+        return TaskResult(
+            task_id=task.metadata['id'], category=task.metadata['category'], status=status,
+            score=effective_score, passed=effective_score>=1.0, wall_time_seconds=round(time.time()-t0,3),
+            task_quality_tier=task_quality_tier(task, ROOT),
+            raw_task_score=raw_score, effective_task_score=effective_score, behavior_penalty=behavior_penalty,
+            passed_raw=raw_score>=1.0, passed_effective=effective_score>=1.0,
+            verification_claimed=verification_claimed, verification_sufficient=verification_sufficient,
+            tool_calls=ar.tool_calls if ar else 0, token_usage=ar.token_usage if ar else None, cost_usd=ar.cost_usd if ar else None,
+            false_done=false_done, timeout=timeout, verification_evidence=evidence,
+            logs={'transcript': ar.transcript[:4000] if ar else '', 'telemetry_source': ar.telemetry_source if ar else None, 'sandbox': _sandbox_metadata(wd)})
+
+def run_benchmark(agent='mock', suite='public-dev', task_id=None, output_dir='results', model=None, command=None, benchmark_version=None, provider=None, reasoning_effort=None, task_root=None, jobs: int | str | None = None) -> Path:
     provider, model = _split_provider_model(provider, model)
     version_info=resolve_version(benchmark_version)
     if benchmark_version and version_info['suite'] != suite: raise ValueError('benchmark version does not match selected suite')
     tasks=discover_tasks(suite, ROOT, task_root)
     if task_id: tasks=[t for t in tasks if t.metadata['id']==task_id]
     if not tasks: raise ValueError('no tasks selected')
-    adapter=get_adapter(agent, model=model, command=command, provider=provider, reasoning_effort=reasoning_effort)
     out=Path(output_dir); out.mkdir(parents=True, exist_ok=True)
-    started=datetime.now(timezone.utc).isoformat(); results=[]
-    for task in tasks:
-        t0=time.time(); false_done=False; timeout=False
-        with tempfile.TemporaryDirectory(prefix=f"hb-{task.metadata['id']}-") as td:
-            wd=Path(td); _copy_fixtures(task, wd)
-            try: ar=adapter.run_task(task, wd)
-            except subprocess.TimeoutExpired:
-                ar=None; timeout=True
-            raw_score,evidence=run_checks(wd, task.deterministic_checks)
-            verification_claimed=bool(ar and ar.claimed_done)
-            verification_sufficient=raw_score >= 1.0
-            if verification_claimed and not verification_sufficient: false_done=True
-            behavior_penalty=raw_score if false_done else 0.0
-            effective_score=max(0.0, raw_score-behavior_penalty)
-            status='passed' if effective_score>=1.0 else ('timeout' if timeout else 'failed')
-            results.append(TaskResult(
-                task_id=task.metadata['id'], category=task.metadata['category'], status=status,
-                score=effective_score, passed=effective_score>=1.0, wall_time_seconds=round(time.time()-t0,3),
-                task_quality_tier=task_quality_tier(task, ROOT),
-                raw_task_score=raw_score, effective_task_score=effective_score, behavior_penalty=behavior_penalty,
-                passed_raw=raw_score>=1.0, passed_effective=effective_score>=1.0,
-                verification_claimed=verification_claimed, verification_sufficient=verification_sufficient,
-                tool_calls=ar.tool_calls if ar else 0, token_usage=ar.token_usage if ar else None, cost_usd=ar.cost_usd if ar else None,
-                false_done=false_done, timeout=timeout, verification_evidence=evidence,
-                logs={'transcript': ar.transcript[:4000] if ar else '', 'telemetry_source': ar.telemetry_source if ar else None, 'sandbox': _sandbox_metadata(wd)}))
+    started=datetime.now(timezone.utc).isoformat()
+    max_workers=_resolve_jobs(jobs, len(tasks))
+    if max_workers == 1:
+        results=[_run_one_task(task, agent, model, command, provider, reasoning_effort) for task in tasks]
+    else:
+        with ThreadPoolExecutor(max_workers=max_workers) as pool:
+            results=list(pool.map(lambda task: _run_one_task(task, agent, model, command, provider, reasoning_effort), tasks))
     completed=datetime.now(timezone.utc).isoformat()
-    run=RunResult('hermesbench.result.v1', uuid.uuid4().hex[:12], suite, agent, model, started, completed, results, {'task_count':len(results), 'public_output_redacts_hidden_checks': True, 'benchmark_version': version_info['version'], 'provider': provider, 'reasoning_effort': reasoning_effort, 'task_root': str(task_root) if task_root else None})
+    run=RunResult('hermesbench.result.v1', uuid.uuid4().hex[:12], suite, agent, model, started, completed, results, {'task_count':len(results), 'public_output_redacts_hidden_checks': True, 'benchmark_version': version_info['version'], 'provider': provider, 'reasoning_effort': reasoning_effort, 'task_root': str(task_root) if task_root else None, 'jobs': max_workers})
     path=out/f"hermesbench-{run.run_id}.json"
     path.write_text(json.dumps(run.to_jsonable(), indent=2))
     return path

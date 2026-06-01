@@ -9,7 +9,7 @@ from .versions import list_versions
 def main(argv=None):
     p=argparse.ArgumentParser(prog='hermesbench')
     sub=p.add_subparsers(dest='cmd', required=True)
-    r=sub.add_parser('run'); r.add_argument('--agent', default='mock'); r.add_argument('--provider'); r.add_argument('--model'); r.add_argument('--reasoning-effort', choices=['none','minimal','low','medium','high','xhigh']); r.add_argument('--suite', default='public-dev'); r.add_argument('--task'); r.add_argument('--output-dir', default='results'); r.add_argument('--command'); r.add_argument('--benchmark-version'); r.add_argument('--task-root')
+    r=sub.add_parser('run'); r.add_argument('--agent', default='mock'); r.add_argument('--provider'); r.add_argument('--model'); r.add_argument('--reasoning-effort', choices=['none','minimal','low','medium','high','xhigh']); r.add_argument('--suite', default='public-dev'); r.add_argument('--task'); r.add_argument('--output-dir', default='results'); r.add_argument('--command'); r.add_argument('--benchmark-version'); r.add_argument('--task-root'); r.add_argument('--jobs', default='auto', help='parallel task workers: auto, 1, or an integer')
     s=sub.add_parser('score'); s.add_argument('result')
     vt=sub.add_parser('validate-tasks'); vt.add_argument('--task-root')
     e=sub.add_parser('export'); e.add_argument('--format', choices=['jsonl'], default='jsonl'); e.add_argument('--suite', default='public-dev'); e.add_argument('--task-root')
@@ -28,7 +28,7 @@ def main(argv=None):
             print(f'ok (with {len(quality)} quality findings)')
         else:
             print('ok')
-    elif a.cmd=='run': print(run_benchmark(a.agent,a.suite,a.task,a.output_dir,a.model,a.command,a.benchmark_version,a.provider,a.reasoning_effort,a.task_root))
+    elif a.cmd=='run': print(run_benchmark(a.agent,a.suite,a.task,a.output_dir,a.model,a.command,a.benchmark_version,a.provider,a.reasoning_effort,a.task_root,a.jobs))
     elif a.cmd=='score': print(json.dumps(aggregate(a.result), indent=2))
     elif a.cmd=='export':
         for t in discover_tasks(a.suite, task_root=a.task_root): print(json.dumps({'id':t.metadata['id'],'title':t.metadata['title'],'category':t.metadata['category'],'prompt':t.prompt}))

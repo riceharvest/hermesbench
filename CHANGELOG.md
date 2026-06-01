@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+- Added parallel task execution for benchmark runs via `--jobs auto|N`, with isolated per-task sandboxes and ordered result output.
+
 - Made the core `hermesbench` install lightweight by keeping only runtime benchmark dependencies in `[project.dependencies]`.
 - Moved heavy legacy model-probing dependencies (`torch`, `transformers`, `accelerate`, `safetensors`) to the optional `ml` extra/dependency group.
 - Moved `pytest` out of runtime dependencies and into test/dev extras and the `dev` dependency group so `uv run pytest` remains supported for contributors.

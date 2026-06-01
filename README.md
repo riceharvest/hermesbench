@@ -57,10 +57,10 @@ uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite publi
 ```bash
 uv run hermesbench validate-tasks
 uv run hermesbench versions
-uv run hermesbench run --agent mock --suite public-dev
-uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low
-uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1
-uv run hermesbench run --agent shell --command './my-agent-runner.sh'
+uv run hermesbench run --agent mock --suite public-dev --jobs auto
+uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --jobs auto
+uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1 --jobs 1
+uv run hermesbench run --agent shell --command './my-agent-runner.sh' --jobs 4
 uv run hermesbench score results/<run>.json
 uv run hermesbench export --format jsonl
 uv run hermesbench upload results/<run>.json
@@ -93,7 +93,7 @@ tests/                    parser, runner, API, storage, official-run, and websit
 
 | Suite | Count | Purpose | Credential-free |
 |---|---:|---|---|
-| `public-dev` | 35 | Public local development and regression suite | Yes |
+| `public-dev` | 55 | Public local development and regression suite | Yes |
 | `anchor` | 5 | Stable longitudinal comparison templates/tasks | Yes |
 | `fresh-rolling` | 5 | Fresh-wave workflow starters | Yes |
 | `private-holdout` | 5 | Public templates for private holdout shape; not official hidden tasks | Yes |
