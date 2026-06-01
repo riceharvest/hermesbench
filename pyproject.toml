@@ -18,14 +18,16 @@ ml = [
   "torch",
   "transformers>=5.0.0",
 ]
-test = ["pytest"]
+test = ["pytest", "pytest-xdist"]
 dev = [
   "pytest",
+  "pytest-xdist",
 ]
 
 [dependency-groups]
 dev = [
   "pytest",
+  "pytest-xdist",
 ]
 ml = [
   "accelerate",
@@ -43,3 +45,4 @@ packages = ["src/hermesbench"]
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]
 testpaths = ["tests"]
+addopts = "-n auto"
