@@ -1,5 +1,6 @@
 {
   "agent": "hermes",
+  "avg_tool_calls_per_task": 0.0,
   "category_scores": {
     "artifact-audit": 1.0,
     "browser-automation": 1.0,
@@ -34,13 +35,24 @@
   },
   "classification": "unofficial",
   "cost_per_successful_task_usd": null,
+  "cost_per_task_usd": null,
   "cost_usd": null,
+  "failed_task_count": 0,
+  "false_done_count": 0,
   "false_done_rate": 0.0,
+  "input_tokens": null,
+  "max_score": 30,
+  "max_wall_time_seconds": 29.886,
+  "mean_wall_time_seconds": 21.1059,
   "median_wall_time_seconds": 20.005000000000003,
+  "min_wall_time_seconds": 14.362,
   "model": "gpt-5.5",
   "official": false,
+  "output_tokens": null,
   "overall_score": 1.0,
+  "p95_wall_time_seconds": 29.768,
   "pass_at_1": 1.0,
+  "passed_task_count": 30,
   "provider": "openai-codex",
   "raw_category_scores": {
     "artifact-audit": 1.0,
@@ -75,9 +87,12 @@
     "tool-call-planning": 1.0
   },
   "raw_overall_score": 1.0,
+  "raw_total_score": 30.0,
   "reasoning_effort": "low",
   "run_id": "ba262d5d589a",
   "schema_version": "hermesbench.score.v1",
+  "score_per_dollar": null,
+  "score_percentage": 1.0,
   "source": "results/openaicodex-gpt55-low-public-dev/hermesbench-ba262d5d589a.json",
   "suite": "public-dev",
   "task_count": 30,
@@ -291,9 +306,15 @@
       "wall_time_seconds": 19.086
     }
   ],
+  "timeout_count": 0,
   "timeout_rate": 0.0,
   "token_usage": null,
+  "tokens_per_successful_task": null,
+  "tokens_per_task": null,
   "tool_call_count": 0,
+  "total_cost_usd": null,
+  "total_execution_time_seconds": 633.177,
+  "total_score": 30.0,
   "total_tokens": null,
   "verification_compliance": 1.0
 }

@@ -9,6 +9,10 @@
   "overall_score": 0.9714285714285714,
   "raw_overall_score": 0.9971428571428571,
   "pass_at_1": 0.9714285714285714,
+  "score_percentage": 0.9714285714285714,
+  "total_score": 34.0,
+  "raw_total_score": 34.9,
+  "max_score": 35,
   "category_scores": {
     "ambiguous-logs": 1.0,
     "artifact-audit": 1.0,
@@ -83,18 +87,35 @@
     "stale-docs": 1.0,
     "tool-call-planning": 1.0
   },
+  "task_count": 35,
+  "passed_task_count": 34,
+  "failed_task_count": 1,
   "cost_per_successful_task_usd": null,
+  "cost_per_task_usd": null,
   "cost_usd": null,
+  "total_cost_usd": null,
+  "score_per_dollar": null,
   "token_usage": {
     "input_tokens": 1359198,
     "output_tokens": 23407,
     "total_tokens": 1382605
   },
+  "input_tokens": 1359198,
+  "output_tokens": 23407,
   "total_tokens": 1382605,
+  "tokens_per_task": 39503.0,
+  "tokens_per_successful_task": 40664.85294117647,
+  "total_execution_time_seconds": 904.53,
   "median_wall_time_seconds": 22.514,
+  "mean_wall_time_seconds": 25.843714285714285,
+  "min_wall_time_seconds": 15.757,
+  "max_wall_time_seconds": 74.786,
+  "p95_wall_time_seconds": 45.825,
   "tool_call_count": 120,
+  "avg_tool_calls_per_task": 3.4285714285714284,
   "verification_compliance": 1.0,
+  "false_done_count": 1,
   "false_done_rate": 0.02857142857142857,
-  "timeout_rate": 0.0,
-  "task_count": 35
+  "timeout_count": 0,
+  "timeout_rate": 0.0
 }

@@ -16,12 +16,16 @@ def _result(path: Path, run_id="r1", official=False):
 
 def test_website_data_generated_from_results_and_splits(tmp_path):
     _result(tmp_path/"results/u/hermesbench-u.json", "u", False)
+    _result(tmp_path/"results/u2/hermesbench-u2.json", "u2", False)
     _result(tmp_path/"results/o/hermesbench-o.json", "o", True)
     lb, latest = build_data(tmp_path/"results", tmp_path/"out")
     data=json.loads(lb.read_text())
     assert data["official"][0]["run_id"] == "o"
     assert data["unofficial"][0]["classification"] == "unofficial"
-    assert json.loads(latest.read_text())["run_id"] in {"o","u"}
+    unofficial_summary = next(s for s in data["model_summaries"] if s["classification"] == "unofficial")
+    assert unofficial_summary["submission_count"] == 2
+    assert unofficial_summary.keys() >= {"best_score_percentage", "average_score_percentage", "score_stddev", "score_ci95_low", "score_ci95_high", "best_submission_id"}
+    assert json.loads(latest.read_text())["run_id"] in {"o","u","u2"}
 
 
 def test_upload_payload_strips_logs_and_marks_unofficial(tmp_path):
