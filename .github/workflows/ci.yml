@@ -1,0 +1,17 @@
+name: CI
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v4
+      - run: uv run pytest
+      - run: uv run hermesbench validate-tasks
+      - run: uv run hermesbench run --agent mock --suite public-dev --output-dir /tmp/hermesbench-results
+      - run: uv run hermesbench score /tmp/hermesbench-results/*.json
+      - uses: pnpm/action-setup@v4
+        with: {version: 9}
+      - uses: actions/setup-node@v4
+        with: {node-version: 20}
+      - run: cd website && pnpm install && pnpm build

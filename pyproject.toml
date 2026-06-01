@@ -1,18 +1,28 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
-name = "qwen-mtp-probe"
+name = "hermesbench"
 version = "0.1.0"
-description = "Feasibility probe for Qwen3.6 MTP fine-tuning gradients and auxiliary loss."
+description = "Real-world benchmark harness for Hermes-style tool-using agents."
 requires-python = ">=3.11"
 dependencies = [
+  "pyyaml",
   "torch",
   "transformers>=5.0.0",
   "accelerate",
   "safetensors",
-  "pyyaml",
 ]
 
 [project.optional-dependencies]
 test = ["pytest"]
+
+[project.scripts]
+hermesbench = "hermesbench.cli:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/hermesbench", "src/qwen_mtp_probe"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

@@ -11,3 +11,5 @@ checkpoints/
 wandb/
 .env
 .env.*
+website/dist/
+submissions/
