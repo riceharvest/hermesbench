@@ -145,7 +145,7 @@ Public uploads are unofficial by default. `metadata.official=true` is maintainer
 
 ## Website
 
-Live site: **https://website-darios-projects-ec573629.vercel.app**
+Live site: **https://hermesbench.site**
 
 The static website lives in [`website/`](website/) and is deployable to GitHub Pages, Vercel, or any static host:
 
