@@ -6,4 +6,4 @@ The installable HermesBench package is `src/hermesbench/` only. The legacy `qwen
 
 The public/dev task format is not a blind conversion of the old JSONL. The old artifacts are provenance for Hermes-style verification behavior; HermesBench tasks add richer metadata, public/private/fresh/anchor split design, deterministic artifact checks, hidden-check hooks, and normalized result scoring.
 
-Current manifest counts are documented in `REPOSITORY_MAP.md`: 60 manifest entries total, including 45 public-dev tasks. Public private-holdout files are executable sample/template tasks; official private packs remain outside the repository.
+Current manifest counts are documented in `README.md`: 70 manifest entries total, including 55 public-dev tasks. Public private-holdout files are executable sample/template tasks; official private packs remain outside the repository.

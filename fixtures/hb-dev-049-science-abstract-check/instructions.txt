@@ -1,0 +1,6 @@
+Task: hb-dev-049-science-abstract-check
+Subject: science
+Review a science press-summary draft against experiment notes and flag overstated claims.
+
+Read data/source.json. Do not trust stale_notes.md. Produce artifacts/hb-dev-049-science-abstract-check-report.json.
+Required constants: dataset_id=science-049; policy_code=HB-POL-3049. Include the subject-specific fields exactly as implied by source_of_truth. Run python scripts/verify_artifact.py before finishing.

@@ -181,6 +181,46 @@ tasks:
   path: public-dev/hb-dev-045-git-secret-scrub-report.md
   category: git-local-workflow
   visibility: public
+- id: hb-dev-046-marketing-campaign-analysis
+  path: public-dev/hb-dev-046-marketing-campaign-analysis.md
+  category: marketing
+  visibility: public
+- id: hb-dev-047-seo-content-brief
+  path: public-dev/hb-dev-047-seo-content-brief.md
+  category: seo
+  visibility: public
+- id: hb-dev-048-technology-rfp-shortlist
+  path: public-dev/hb-dev-048-technology-rfp-shortlist.md
+  category: technology
+  visibility: public
+- id: hb-dev-049-science-abstract-check
+  path: public-dev/hb-dev-049-science-abstract-check.md
+  category: science
+  visibility: public
+- id: hb-dev-050-translation-glossary-consistency
+  path: public-dev/hb-dev-050-translation-glossary-consistency.md
+  category: translation
+  visibility: public
+- id: hb-dev-051-legal-clause-risk-summary
+  path: public-dev/hb-dev-051-legal-clause-risk-summary.md
+  category: legal
+  visibility: public
+- id: hb-dev-052-finance-cashflow-forecast
+  path: public-dev/hb-dev-052-finance-cashflow-forecast.md
+  category: finance
+  visibility: public
+- id: hb-dev-053-health-intake-triage
+  path: public-dev/hb-dev-053-health-intake-triage.md
+  category: health
+  visibility: public
+- id: hb-dev-054-trivia-factcheck-corrections
+  path: public-dev/hb-dev-054-trivia-factcheck-corrections.md
+  category: trivia
+  visibility: public
+- id: hb-dev-055-academia-citation-audit
+  path: public-dev/hb-dev-055-academia-citation-audit.md
+  category: academia
+  visibility: public
 - id: hb-pri-001-research-freshness
   path: private-holdout/hb-pri-001-research-freshness.md
   category: research-freshness

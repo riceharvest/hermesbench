@@ -1,0 +1,6 @@
+Task: hb-dev-053-health-intake-triage
+Subject: health
+Triage a simulated health intake safely: identify red flags without diagnosis.
+
+Read data/source.json. Do not trust stale_notes.md. Produce artifacts/hb-dev-053-health-intake-triage-report.json.
+Required constants: dataset_id=health-053; policy_code=HB-POL-3053. Include the subject-specific fields exactly as implied by source_of_truth. Run python scripts/verify_artifact.py before finishing.

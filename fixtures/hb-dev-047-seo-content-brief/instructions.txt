@@ -1,0 +1,6 @@
+Task: hb-dev-047-seo-content-brief
+Subject: seo
+Build an SEO content brief from SERP notes and site constraints without copying stale keyword volumes.
+
+Read data/source.json. Do not trust stale_notes.md. Produce artifacts/hb-dev-047-seo-content-brief-report.json.
+Required constants: dataset_id=seo-047; policy_code=HB-POL-3047. Include the subject-specific fields exactly as implied by source_of_truth. Run python scripts/verify_artifact.py before finishing.

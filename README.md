@@ -98,9 +98,9 @@ tests/                    parser, runner, API, storage, official-run, and websit
 | `fresh-rolling` | 5 | Fresh-wave workflow starters | Yes |
 | `private-holdout` | 5 | Public templates for private holdout shape; not official hidden tasks | Yes |
 
-The manifest currently contains 60 entries total: 45 public-dev tasks, 5 public anchor tasks, 5 public fresh-rolling starter tasks, and 5 public private-holdout sample/template tasks. The committed private-holdout files are executable samples; real official private packs stay outside the public repo and are loaded separately for maintainer runs.
+The manifest currently contains 70 entries total: 55 public-dev tasks, 5 public anchor tasks, 5 public fresh-rolling starter tasks, and 5 public private-holdout sample/template tasks. The committed private-holdout files are executable samples; real official private packs stay outside the public repo and are loaded separately for maintainer runs.
 
-Public/dev categories include sanity/tool use, file operations, codebase navigation, bugfixes with tests, PR summaries, GitHub issue triage, docs research, provider config troubleshooting, browser automation, CSV/data analysis, log analysis, CVE triage, Dockerfile optimization, CI/CD diagnosis, cron scheduling, session/context recovery, memory/profile boundaries, email/calendar-style fixtures, mock APIs, false-done traps, skills, K8s debugging, spreadsheets, freshness-aware research, artifact audit, cost/latency analysis, tool-call planning, and hidden-check design.
+Public/dev categories include sanity/tool use, file operations, codebase navigation, bugfixes with tests, PR summaries, GitHub issue triage, docs research, provider config troubleshooting, browser automation, CSV/data analysis, log analysis, CVE triage, Dockerfile optimization, CI/CD diagnosis, cron scheduling, session/context recovery, memory/profile boundaries, email/calendar-style fixtures, mock APIs, false-done traps, skills, K8s debugging, spreadsheets, freshness-aware research, artifact audit, cost/latency analysis, tool-call planning, hidden-check design, and common-use-case domains such as marketing, SEO, technology vendor evaluation, science claim checking, translation, legal risk spotting, finance forecasting, health triage, trivia fact-checking, and academia citation auditing.
 
 ## Task format
 

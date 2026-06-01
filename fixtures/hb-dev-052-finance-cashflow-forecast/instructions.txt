@@ -1,0 +1,6 @@
+Task: hb-dev-052-finance-cashflow-forecast
+Subject: finance
+Compute cashflow/runway from CSV fixtures and ignore stale board memo totals.
+
+Read data/source.json. Do not trust stale_notes.md. Produce artifacts/hb-dev-052-finance-cashflow-forecast-report.json.
+Required constants: dataset_id=finance-052; policy_code=HB-POL-3052. Include the subject-specific fields exactly as implied by source_of_truth. Run python scripts/verify_artifact.py before finishing.

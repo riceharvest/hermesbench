@@ -1,0 +1,6 @@
+Task: hb-dev-048-technology-rfp-shortlist
+Subject: technology
+Shortlist a vendor from an RFP matrix with conflicting sales notes and hard requirements.
+
+Read data/source.json. Do not trust stale_notes.md. Produce artifacts/hb-dev-048-technology-rfp-shortlist-report.json.
+Required constants: dataset_id=rfp-048; policy_code=HB-POL-3048. Include the subject-specific fields exactly as implied by source_of_truth. Run python scripts/verify_artifact.py before finishing.

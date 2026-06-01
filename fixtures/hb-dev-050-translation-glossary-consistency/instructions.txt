@@ -1,0 +1,6 @@
+Task: hb-dev-050-translation-glossary-consistency
+Subject: translation
+Correct Dutch marketing copy using a glossary and style guide while preserving meaning.
+
+Read data/source.json. Do not trust stale_notes.md. Produce artifacts/hb-dev-050-translation-glossary-consistency-report.json.
+Required constants: dataset_id=translation-050; policy_code=HB-POL-3050. Include the subject-specific fields exactly as implied by source_of_truth. Run python scripts/verify_artifact.py before finishing.

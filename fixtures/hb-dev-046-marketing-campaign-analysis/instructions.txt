@@ -1,0 +1,6 @@
+Task: hb-dev-046-marketing-campaign-analysis
+Subject: marketing
+Analyze campaign metrics, audience notes, and decoy executive summary. Recommend the winning variant and risk level.
+
+Read data/source.json. Do not trust stale_notes.md. Produce artifacts/hb-dev-046-marketing-campaign-analysis-report.json.
+Required constants: dataset_id=campaign-046; policy_code=HB-POL-3046. Include the subject-specific fields exactly as implied by source_of_truth. Run python scripts/verify_artifact.py before finishing.
