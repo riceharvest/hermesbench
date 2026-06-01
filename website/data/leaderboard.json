@@ -61,6 +61,12 @@
       "pass_at_1": 1.0,
       "passed_task_count": 35,
       "provider": "openai-codex",
+      "quality_tier_counts": {
+        "unknown": 35
+      },
+      "quality_tier_scores": {
+        "unknown": 1.0
+      },
       "rank": 1,
       "raw_category_scores": {
         "ambiguous-logs": 1.0,
@@ -100,6 +106,9 @@
         "tool-call-planning": 1.0
       },
       "raw_overall_score": 1.0,
+      "raw_quality_tier_scores": {
+        "unknown": 1.0
+      },
       "raw_total_score": 35.0,
       "reasoning_effort": "low",
       "run_id": "4eeb2e32d618",
@@ -120,7 +129,7 @@
       "tokens_per_task": 40243.28571428572,
       "tool_call_count": 119,
       "total_cost_usd": null,
-      "total_execution_time_seconds": 885.6509999999998,
+      "total_execution_time_seconds": 885.651,
       "total_score": 35.0,
       "total_tokens": 1408515,
       "verification_compliance": 1.0
@@ -181,6 +190,12 @@
       "pass_at_1": 1.0,
       "passed_task_count": 30,
       "provider": "openai-codex",
+      "quality_tier_counts": {
+        "unknown": 30
+      },
+      "quality_tier_scores": {
+        "unknown": 1.0
+      },
       "rank": 2,
       "raw_category_scores": {
         "artifact-audit": 1.0,
@@ -215,6 +230,9 @@
         "tool-call-planning": 1.0
       },
       "raw_overall_score": 1.0,
+      "raw_quality_tier_scores": {
+        "unknown": 1.0
+      },
       "raw_total_score": 30.0,
       "reasoning_effort": "low",
       "run_id": "ba262d5d589a",
@@ -234,6 +252,174 @@
       "total_execution_time_seconds": 633.177,
       "total_score": 30.0,
       "total_tokens": null,
+      "verification_compliance": 1.0
+    },
+    {
+      "agent": "hermes",
+      "avg_tool_calls_per_task": 3.9272727272727272,
+      "category_scores": {
+        "academia": 1.0,
+        "ambiguous-logs": 1.0,
+        "artifact-audit": 1.0,
+        "browser-admin-workflow": 1.0,
+        "browser-automation": 1.0,
+        "browser-ish-workflow": 1.0,
+        "bugfix-with-tests": 1.0,
+        "calendar-scheduling": 1.0,
+        "cicd-failure-diagnosis": 1.0,
+        "codebase-navigation": 1.0,
+        "context-recovery": 1.0,
+        "cost-latency-analysis": 1.0,
+        "cron-scheduling": 1.0,
+        "csv-data-analysis": 1.0,
+        "data-bugfix": 1.0,
+        "dependency-debugging": 1.0,
+        "dockerfile-optimization": 1.0,
+        "docs-research-synthesis": 1.0,
+        "email-triage": 1.0,
+        "false-done-verification": 1.0,
+        "file-operations": 1.0,
+        "finance": 1.0,
+        "git-local-workflow": 1.0,
+        "github-issue-triage": 1.0,
+        "github-pr-risk": 1.0,
+        "health": 1.0,
+        "hidden-check-design": 1.0,
+        "k8s-debugging": 1.0,
+        "legal": 1.0,
+        "local-api-workflow": 1.0,
+        "local-http-workflow": 1.0,
+        "log-analysis": 1.0,
+        "marketing": 1.0,
+        "memory-boundary": 1.0,
+        "memory-privacy-boundary": 0.0,
+        "mock-api-workflow": 1.0,
+        "multi-file-bugfix": 1.0,
+        "pr-summary-writing": 1.0,
+        "privacy-data-workflow": 1.0,
+        "provider-config-troubleshooting": 1.0,
+        "research-freshness": 1.0,
+        "sanity-basic-tool-use": 1.0,
+        "science": 1.0,
+        "security-cve-triage": 1.0,
+        "seo": 1.0,
+        "skills-workflow": 1.0,
+        "spreadsheet-analysis": 1.0,
+        "stale-docs": 1.0,
+        "technology": 1.0,
+        "tool-call-planning": 1.0,
+        "translation": 1.0,
+        "trivia": 1.0
+      },
+      "classification": "unofficial",
+      "cost_per_successful_task_usd": null,
+      "cost_per_task_usd": null,
+      "cost_usd": null,
+      "failed_task_count": 1,
+      "false_done_count": 1,
+      "false_done_rate": 0.01818181818181818,
+      "input_tokens": 3378304,
+      "max_score": 55,
+      "max_wall_time_seconds": 170.359,
+      "mean_wall_time_seconds": 26.308236363636365,
+      "median_wall_time_seconds": 22.588,
+      "min_wall_time_seconds": 13.93,
+      "model": "deepseek/deepseek-v4-flash",
+      "official": false,
+      "output_tokens": 87217,
+      "overall_score": 0.9818181818181818,
+      "p95_wall_time_seconds": 36.976,
+      "pass_at_1": 0.9818181818181818,
+      "passed_task_count": 54,
+      "provider": "openrouter",
+      "quality_tier_counts": {
+        "gold": 55
+      },
+      "quality_tier_scores": {
+        "gold": 0.9818181818181818
+      },
+      "rank": 3,
+      "raw_category_scores": {
+        "academia": 1.0,
+        "ambiguous-logs": 1.0,
+        "artifact-audit": 1.0,
+        "browser-admin-workflow": 1.0,
+        "browser-automation": 1.0,
+        "browser-ish-workflow": 1.0,
+        "bugfix-with-tests": 1.0,
+        "calendar-scheduling": 1.0,
+        "cicd-failure-diagnosis": 1.0,
+        "codebase-navigation": 1.0,
+        "context-recovery": 1.0,
+        "cost-latency-analysis": 1.0,
+        "cron-scheduling": 1.0,
+        "csv-data-analysis": 1.0,
+        "data-bugfix": 1.0,
+        "dependency-debugging": 1.0,
+        "dockerfile-optimization": 1.0,
+        "docs-research-synthesis": 1.0,
+        "email-triage": 1.0,
+        "false-done-verification": 1.0,
+        "file-operations": 1.0,
+        "finance": 1.0,
+        "git-local-workflow": 1.0,
+        "github-issue-triage": 1.0,
+        "github-pr-risk": 1.0,
+        "health": 1.0,
+        "hidden-check-design": 1.0,
+        "k8s-debugging": 1.0,
+        "legal": 1.0,
+        "local-api-workflow": 1.0,
+        "local-http-workflow": 1.0,
+        "log-analysis": 1.0,
+        "marketing": 1.0,
+        "memory-boundary": 1.0,
+        "memory-privacy-boundary": 0.9285714285714286,
+        "mock-api-workflow": 1.0,
+        "multi-file-bugfix": 1.0,
+        "pr-summary-writing": 1.0,
+        "privacy-data-workflow": 1.0,
+        "provider-config-troubleshooting": 1.0,
+        "research-freshness": 1.0,
+        "sanity-basic-tool-use": 1.0,
+        "science": 1.0,
+        "security-cve-triage": 1.0,
+        "seo": 1.0,
+        "skills-workflow": 1.0,
+        "spreadsheet-analysis": 1.0,
+        "stale-docs": 1.0,
+        "technology": 1.0,
+        "tool-call-planning": 1.0,
+        "translation": 1.0,
+        "trivia": 1.0
+      },
+      "raw_overall_score": 0.9987012987012988,
+      "raw_quality_tier_scores": {
+        "gold": 0.9987012987012988
+      },
+      "raw_total_score": 54.92857142857143,
+      "reasoning_effort": "high",
+      "run_id": "ce03a1a84a4e",
+      "schema_version": "hermesbench.score.v1",
+      "score_per_dollar": null,
+      "score_percentage": 0.9818181818181818,
+      "source": "results/openrouter-deepseek-v4-flash-high-public-dev-20260602-013708/hermesbench-ce03a1a84a4e.json",
+      "suite": "public-dev",
+      "task_count": 55,
+      "timeout_count": 0,
+      "timeout_rate": 0.0,
+      "token_usage": {
+        "input_tokens": 3378304,
+        "output_tokens": 87217,
+        "total_tokens": 3465521
+      },
+      "tokens_per_successful_task": 64176.31481481482,
+      "tokens_per_task": 63009.472727272725,
+      "tool_call_count": 216,
+      "total_cost_usd": null,
+      "total_execution_time_seconds": 1446.953,
+      "total_score": 54.0,
+      "total_tokens": 3465521,
       "verification_compliance": 1.0
     },
     {
@@ -297,7 +483,13 @@
       "pass_at_1": 0.9714285714285714,
       "passed_task_count": 34,
       "provider": "openai-codex",
-      "rank": 3,
+      "quality_tier_counts": {
+        "unknown": 35
+      },
+      "quality_tier_scores": {
+        "unknown": 0.9714285714285714
+      },
+      "rank": 4,
       "raw_category_scores": {
         "ambiguous-logs": 1.0,
         "artifact-audit": 1.0,
@@ -336,6 +528,9 @@
         "tool-call-planning": 1.0
       },
       "raw_overall_score": 0.9971428571428571,
+      "raw_quality_tier_scores": {
+        "unknown": 0.9971428571428571
+      },
       "raw_total_score": 34.9,
       "reasoning_effort": "medium",
       "run_id": "043bd4d0b393",
@@ -422,7 +617,13 @@
       "pass_at_1": 0.9428571428571428,
       "passed_task_count": 33,
       "provider": "openrouter",
-      "rank": 4,
+      "quality_tier_counts": {
+        "unknown": 35
+      },
+      "quality_tier_scores": {
+        "unknown": 0.9428571428571428
+      },
+      "rank": 5,
       "raw_category_scores": {
         "ambiguous-logs": 1.0,
         "artifact-audit": 1.0,
@@ -460,8 +661,11 @@
         "stale-docs": 0.9166666666666666,
         "tool-call-planning": 1.0
       },
-      "raw_overall_score": 0.9954212454212452,
-      "raw_total_score": 34.839743589743584,
+      "raw_overall_score": 0.9954212454212454,
+      "raw_quality_tier_scores": {
+        "unknown": 0.9954212454212454
+      },
+      "raw_total_score": 34.83974358974359,
       "reasoning_effort": "high",
       "run_id": "25e5e54a61c3",
       "schema_version": "hermesbench.score.v1",
@@ -537,24 +741,24 @@
     {
       "agent": "hermes",
       "average_cost_usd": null,
-      "average_execution_time_seconds": 1213.684,
-      "average_false_done_rate": 0.05714285714285714,
-      "average_pass_at_1": 0.9428571428571428,
-      "average_score_percentage": 0.9428571428571428,
+      "average_execution_time_seconds": 1330.3184999999999,
+      "average_false_done_rate": 0.03766233766233766,
+      "average_pass_at_1": 0.9623376623376623,
+      "average_score_percentage": 0.9623376623376623,
       "average_timeout_rate": 0.0,
-      "average_tool_call_count": 136,
-      "average_total_tokens": 1967834,
-      "best_score_percentage": 0.9428571428571428,
-      "best_submission_id": "25e5e54a61c3",
+      "average_tool_call_count": 176,
+      "average_total_tokens": 2716677.5,
+      "best_score_percentage": 0.9818181818181818,
+      "best_submission_id": "ce03a1a84a4e",
       "classification": "unofficial",
       "model": "deepseek/deepseek-v4-flash",
       "official": false,
       "provider": "openrouter",
       "reasoning_effort": "high",
-      "score_ci95_high": 0.9428571428571428,
-      "score_ci95_low": 0.9428571428571428,
-      "score_stddev": 0.0,
-      "submission_count": 1
+      "score_ci95_high": 1,
+      "score_ci95_low": 0.9241558441558441,
+      "score_stddev": 0.02754961485142394,
+      "submission_count": 2
     }
   ],
   "official": [],
@@ -621,6 +825,12 @@
       "pass_at_1": 1.0,
       "passed_task_count": 35,
       "provider": "openai-codex",
+      "quality_tier_counts": {
+        "unknown": 35
+      },
+      "quality_tier_scores": {
+        "unknown": 1.0
+      },
       "rank": 1,
       "raw_category_scores": {
         "ambiguous-logs": 1.0,
@@ -660,6 +870,9 @@
         "tool-call-planning": 1.0
       },
       "raw_overall_score": 1.0,
+      "raw_quality_tier_scores": {
+        "unknown": 1.0
+      },
       "raw_total_score": 35.0,
       "reasoning_effort": "low",
       "run_id": "4eeb2e32d618",
@@ -680,7 +893,7 @@
       "tokens_per_task": 40243.28571428572,
       "tool_call_count": 119,
       "total_cost_usd": null,
-      "total_execution_time_seconds": 885.6509999999998,
+      "total_execution_time_seconds": 885.651,
       "total_score": 35.0,
       "total_tokens": 1408515,
       "verification_compliance": 1.0
@@ -741,6 +954,12 @@
       "pass_at_1": 1.0,
       "passed_task_count": 30,
       "provider": "openai-codex",
+      "quality_tier_counts": {
+        "unknown": 30
+      },
+      "quality_tier_scores": {
+        "unknown": 1.0
+      },
       "rank": 2,
       "raw_category_scores": {
         "artifact-audit": 1.0,
@@ -775,6 +994,9 @@
         "tool-call-planning": 1.0
       },
       "raw_overall_score": 1.0,
+      "raw_quality_tier_scores": {
+        "unknown": 1.0
+      },
       "raw_total_score": 30.0,
       "reasoning_effort": "low",
       "run_id": "ba262d5d589a",
@@ -794,6 +1016,174 @@
       "total_execution_time_seconds": 633.177,
       "total_score": 30.0,
       "total_tokens": null,
+      "verification_compliance": 1.0
+    },
+    {
+      "agent": "hermes",
+      "avg_tool_calls_per_task": 3.9272727272727272,
+      "category_scores": {
+        "academia": 1.0,
+        "ambiguous-logs": 1.0,
+        "artifact-audit": 1.0,
+        "browser-admin-workflow": 1.0,
+        "browser-automation": 1.0,
+        "browser-ish-workflow": 1.0,
+        "bugfix-with-tests": 1.0,
+        "calendar-scheduling": 1.0,
+        "cicd-failure-diagnosis": 1.0,
+        "codebase-navigation": 1.0,
+        "context-recovery": 1.0,
+        "cost-latency-analysis": 1.0,
+        "cron-scheduling": 1.0,
+        "csv-data-analysis": 1.0,
+        "data-bugfix": 1.0,
+        "dependency-debugging": 1.0,
+        "dockerfile-optimization": 1.0,
+        "docs-research-synthesis": 1.0,
+        "email-triage": 1.0,
+        "false-done-verification": 1.0,
+        "file-operations": 1.0,
+        "finance": 1.0,
+        "git-local-workflow": 1.0,
+        "github-issue-triage": 1.0,
+        "github-pr-risk": 1.0,
+        "health": 1.0,
+        "hidden-check-design": 1.0,
+        "k8s-debugging": 1.0,
+        "legal": 1.0,
+        "local-api-workflow": 1.0,
+        "local-http-workflow": 1.0,
+        "log-analysis": 1.0,
+        "marketing": 1.0,
+        "memory-boundary": 1.0,
+        "memory-privacy-boundary": 0.0,
+        "mock-api-workflow": 1.0,
+        "multi-file-bugfix": 1.0,
+        "pr-summary-writing": 1.0,
+        "privacy-data-workflow": 1.0,
+        "provider-config-troubleshooting": 1.0,
+        "research-freshness": 1.0,
+        "sanity-basic-tool-use": 1.0,
+        "science": 1.0,
+        "security-cve-triage": 1.0,
+        "seo": 1.0,
+        "skills-workflow": 1.0,
+        "spreadsheet-analysis": 1.0,
+        "stale-docs": 1.0,
+        "technology": 1.0,
+        "tool-call-planning": 1.0,
+        "translation": 1.0,
+        "trivia": 1.0
+      },
+      "classification": "unofficial",
+      "cost_per_successful_task_usd": null,
+      "cost_per_task_usd": null,
+      "cost_usd": null,
+      "failed_task_count": 1,
+      "false_done_count": 1,
+      "false_done_rate": 0.01818181818181818,
+      "input_tokens": 3378304,
+      "max_score": 55,
+      "max_wall_time_seconds": 170.359,
+      "mean_wall_time_seconds": 26.308236363636365,
+      "median_wall_time_seconds": 22.588,
+      "min_wall_time_seconds": 13.93,
+      "model": "deepseek/deepseek-v4-flash",
+      "official": false,
+      "output_tokens": 87217,
+      "overall_score": 0.9818181818181818,
+      "p95_wall_time_seconds": 36.976,
+      "pass_at_1": 0.9818181818181818,
+      "passed_task_count": 54,
+      "provider": "openrouter",
+      "quality_tier_counts": {
+        "gold": 55
+      },
+      "quality_tier_scores": {
+        "gold": 0.9818181818181818
+      },
+      "rank": 3,
+      "raw_category_scores": {
+        "academia": 1.0,
+        "ambiguous-logs": 1.0,
+        "artifact-audit": 1.0,
+        "browser-admin-workflow": 1.0,
+        "browser-automation": 1.0,
+        "browser-ish-workflow": 1.0,
+        "bugfix-with-tests": 1.0,
+        "calendar-scheduling": 1.0,
+        "cicd-failure-diagnosis": 1.0,
+        "codebase-navigation": 1.0,
+        "context-recovery": 1.0,
+        "cost-latency-analysis": 1.0,
+        "cron-scheduling": 1.0,
+        "csv-data-analysis": 1.0,
+        "data-bugfix": 1.0,
+        "dependency-debugging": 1.0,
+        "dockerfile-optimization": 1.0,
+        "docs-research-synthesis": 1.0,
+        "email-triage": 1.0,
+        "false-done-verification": 1.0,
+        "file-operations": 1.0,
+        "finance": 1.0,
+        "git-local-workflow": 1.0,
+        "github-issue-triage": 1.0,
+        "github-pr-risk": 1.0,
+        "health": 1.0,
+        "hidden-check-design": 1.0,
+        "k8s-debugging": 1.0,
+        "legal": 1.0,
+        "local-api-workflow": 1.0,
+        "local-http-workflow": 1.0,
+        "log-analysis": 1.0,
+        "marketing": 1.0,
+        "memory-boundary": 1.0,
+        "memory-privacy-boundary": 0.9285714285714286,
+        "mock-api-workflow": 1.0,
+        "multi-file-bugfix": 1.0,
+        "pr-summary-writing": 1.0,
+        "privacy-data-workflow": 1.0,
+        "provider-config-troubleshooting": 1.0,
+        "research-freshness": 1.0,
+        "sanity-basic-tool-use": 1.0,
+        "science": 1.0,
+        "security-cve-triage": 1.0,
+        "seo": 1.0,
+        "skills-workflow": 1.0,
+        "spreadsheet-analysis": 1.0,
+        "stale-docs": 1.0,
+        "technology": 1.0,
+        "tool-call-planning": 1.0,
+        "translation": 1.0,
+        "trivia": 1.0
+      },
+      "raw_overall_score": 0.9987012987012988,
+      "raw_quality_tier_scores": {
+        "gold": 0.9987012987012988
+      },
+      "raw_total_score": 54.92857142857143,
+      "reasoning_effort": "high",
+      "run_id": "ce03a1a84a4e",
+      "schema_version": "hermesbench.score.v1",
+      "score_per_dollar": null,
+      "score_percentage": 0.9818181818181818,
+      "source": "results/openrouter-deepseek-v4-flash-high-public-dev-20260602-013708/hermesbench-ce03a1a84a4e.json",
+      "suite": "public-dev",
+      "task_count": 55,
+      "timeout_count": 0,
+      "timeout_rate": 0.0,
+      "token_usage": {
+        "input_tokens": 3378304,
+        "output_tokens": 87217,
+        "total_tokens": 3465521
+      },
+      "tokens_per_successful_task": 64176.31481481482,
+      "tokens_per_task": 63009.472727272725,
+      "tool_call_count": 216,
+      "total_cost_usd": null,
+      "total_execution_time_seconds": 1446.953,
+      "total_score": 54.0,
+      "total_tokens": 3465521,
       "verification_compliance": 1.0
     },
     {
@@ -857,7 +1247,13 @@
       "pass_at_1": 0.9714285714285714,
       "passed_task_count": 34,
       "provider": "openai-codex",
-      "rank": 3,
+      "quality_tier_counts": {
+        "unknown": 35
+      },
+      "quality_tier_scores": {
+        "unknown": 0.9714285714285714
+      },
+      "rank": 4,
       "raw_category_scores": {
         "ambiguous-logs": 1.0,
         "artifact-audit": 1.0,
@@ -896,6 +1292,9 @@
         "tool-call-planning": 1.0
       },
       "raw_overall_score": 0.9971428571428571,
+      "raw_quality_tier_scores": {
+        "unknown": 0.9971428571428571
+      },
       "raw_total_score": 34.9,
       "reasoning_effort": "medium",
       "run_id": "043bd4d0b393",
@@ -982,7 +1381,13 @@
       "pass_at_1": 0.9428571428571428,
       "passed_task_count": 33,
       "provider": "openrouter",
-      "rank": 4,
+      "quality_tier_counts": {
+        "unknown": 35
+      },
+      "quality_tier_scores": {
+        "unknown": 0.9428571428571428
+      },
+      "rank": 5,
       "raw_category_scores": {
         "ambiguous-logs": 1.0,
         "artifact-audit": 1.0,
@@ -1020,8 +1425,11 @@
         "stale-docs": 0.9166666666666666,
         "tool-call-planning": 1.0
       },
-      "raw_overall_score": 0.9954212454212452,
-      "raw_total_score": 34.839743589743584,
+      "raw_overall_score": 0.9954212454212454,
+      "raw_quality_tier_scores": {
+        "unknown": 0.9954212454212454
+      },
+      "raw_total_score": 34.83974358974359,
       "reasoning_effort": "high",
       "run_id": "25e5e54a61c3",
       "schema_version": "hermesbench.score.v1",

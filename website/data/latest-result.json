@@ -54,6 +54,12 @@
   "pass_at_1": 1.0,
   "passed_task_count": 30,
   "provider": "openai-codex",
+  "quality_tier_counts": {
+    "unknown": 30
+  },
+  "quality_tier_scores": {
+    "unknown": 1.0
+  },
   "raw_category_scores": {
     "artifact-audit": 1.0,
     "browser-automation": 1.0,
@@ -87,6 +93,9 @@
     "tool-call-planning": 1.0
   },
   "raw_overall_score": 1.0,
+  "raw_quality_tier_scores": {
+    "unknown": 1.0
+  },
   "raw_total_score": 30.0,
   "reasoning_effort": "low",
   "run_id": "ba262d5d589a",
