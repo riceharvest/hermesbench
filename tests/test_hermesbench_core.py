@@ -10,6 +10,36 @@ def test_task_suite_has_30_valid_public_tasks():
     assert len(tasks) >= 30
     assert not validate_tasks()
 
+def test_public_dev_tasks_are_not_marker_only():
+    tasks=discover_tasks('public-dev')
+    shallow=[]
+    for task in tasks:
+        prompt=task.prompt.lower(); rubric=task.scoring_rubric.lower()
+        fixture_dir=Path('fixtures')/task.metadata['id']
+        fixture_files=[p for p in fixture_dir.rglob('*') if p.is_file() and p.name.lower()!='readme.txt'] if fixture_dir.exists() else []
+        has_fixture=bool(fixture_files) or task.metadata.get('no_fixture_required') is True
+        quality_notes=str(task.metadata.get('quality_notes',''))
+        checks_text=' '.join(str(c) for c in task.deterministic_checks).lower()
+        facts=sum(1 for token in ['fixture_version','expected_total','record_count','incident_id','policy_code','checksum','dataset_id','owner','deadline'] if token in prompt or token in rubric or token in checks_text)
+        generic_marker=all(a.endswith('completion.txt') or a.endswith('marker.txt') for a in task.expected_artifacts)
+        scoring_words=[task.metadata['category'].replace('-',' '), 'json', 'evidence', 'verify', 'deterministic']
+        if (not has_fixture or facts < 2 or generic_marker or len(task.metadata.get('contamination_notes','')) < 40 or not any(w in rubric for w in scoring_words) or len(quality_notes) < 30):
+            shallow.append(task.metadata['id'])
+    assert not shallow
+
+def test_grader_supports_json_field_literals_and_command_passes(tmp_path):
+    from hermesbench.graders.deterministic import run_checks
+    (tmp_path/'artifacts').mkdir()
+    (tmp_path/'artifacts/report.json').write_text('{"ok": true, "count": 3, "name": "alpha"}')
+    checks=[
+        {'type':'json_field','path':'artifacts/report.json','expr':'ok=true'},
+        {'type':'json_field','path':'artifacts/report.json','expr':'count=3'},
+        {'type':'command_passes','command':'test -f artifacts/report.json'},
+    ]
+    score,evidence=run_checks(tmp_path, checks)
+    assert score == 1.0
+    assert all('PASS' in e for e in evidence)
+
 def test_task_markdown_parser_extracts_checks():
     task=discover_tasks('public-dev')[0]
     parsed=parse_task_markdown(task.path)

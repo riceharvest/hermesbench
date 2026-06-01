@@ -1,0 +1,11 @@
+Task id: hb-dev-006-github-issue-triage
+Category: github-issue-triage
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-006
+Policy_code: HB-POL-1006
+Expected_total: 55
+Record_count: 8
+Checksum: hb006cafe
+Owner: owner-06@example.test
+Deadline: 2026-06-07
+Instruction: produce JSON report with these exact normalized fields and verified true.

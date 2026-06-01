@@ -1,0 +1,11 @@
+Task id: hb-dev-023-github-pr-risk
+Category: github-pr-risk
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-023
+Policy_code: HB-POL-1023
+Expected_total: 174
+Record_count: 25
+Checksum: hb023cafe
+Owner: owner-23@example.test
+Deadline: 2026-06-24
+Instruction: produce JSON report with these exact normalized fields and verified true.

@@ -1,0 +1,11 @@
+Task id: hb-dev-025-spreadsheet-analysis
+Category: spreadsheet-analysis
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-025
+Policy_code: HB-POL-1025
+Expected_total: 188
+Record_count: 27
+Checksum: hb025cafe
+Owner: owner-25@example.test
+Deadline: 2026-06-26
+Instruction: produce JSON report with these exact normalized fields and verified true.

@@ -1,0 +1,11 @@
+Task id: hb-dev-028-cost-latency-analysis
+Category: cost-latency-analysis
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-028
+Policy_code: HB-POL-1028
+Expected_total: 209
+Record_count: 30
+Checksum: hb028cafe
+Owner: owner-28@example.test
+Deadline: 2026-06-01
+Instruction: produce JSON report with these exact normalized fields and verified true.

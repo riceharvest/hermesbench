@@ -1,0 +1,53 @@
+{
+  "schema": "hermesbench.website.demo_result.v1",
+  "run_id": "demo-mock-public-dev",
+  "benchmark_version": "hermesbench-v0.1",
+  "agent": "Hermes mock",
+  "model": "mock",
+  "provider": "local",
+  "suite": "public-dev",
+  "official": false,
+  "overall_score": 1.0,
+  "category_scores": {
+    "sanity": 1.0,
+    "files": 1.0,
+    "code": 1.0
+  },
+  "summary": {
+    "pass_at_1": 1.0,
+    "false_done_rate": 0.0,
+    "timeout_rate": 0.0,
+    "median_wall_time_seconds": 0.0,
+    "tool_call_count": 0,
+    "cost_per_successful_task_usd": 0.0
+  },
+  "tasks": [
+    {
+      "task_id": "hb-dev-001-sanity-basic-tool-use",
+      "category": "sanity",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": 0.0,
+      "tool_calls": 0,
+      "evidence": [
+        "Mock adapter created required artifact.",
+        "Deterministic checks passed."
+      ]
+    },
+    {
+      "task_id": "hb-dev-002-file-operations",
+      "category": "files",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": 0.0,
+      "tool_calls": 0,
+      "evidence": [
+        "File inventory artifact present."
+      ]
+    }
+  ]
+}

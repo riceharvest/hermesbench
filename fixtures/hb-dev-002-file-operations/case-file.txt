@@ -1,0 +1,11 @@
+Task id: hb-dev-002-file-operations
+Category: file-operations
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-002
+Policy_code: HB-POL-1002
+Expected_total: 27
+Record_count: 4
+Checksum: hb002cafe
+Owner: owner-02@example.test
+Deadline: 2026-06-03
+Instruction: produce JSON report with these exact normalized fields and verified true.

@@ -1,0 +1,11 @@
+Task id: hb-dev-011-log-analysis
+Category: log-analysis
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-011
+Policy_code: HB-POL-1011
+Expected_total: 90
+Record_count: 13
+Checksum: hb011cafe
+Owner: owner-11@example.test
+Deadline: 2026-06-12
+Instruction: produce JSON report with these exact normalized fields and verified true.

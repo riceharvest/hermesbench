@@ -1,0 +1,11 @@
+Task id: hb-dev-015-cron-scheduling
+Category: cron-scheduling
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-015
+Policy_code: HB-POL-1015
+Expected_total: 118
+Record_count: 17
+Checksum: hb015cafe
+Owner: owner-15@example.test
+Deadline: 2026-06-16
+Instruction: produce JSON report with these exact normalized fields and verified true.

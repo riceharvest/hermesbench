@@ -1,0 +1,22 @@
+{
+  "benchmark_version": "hermesbench-v0.1",
+  "generated_at": "2026-06-01T00:00:00Z",
+  "entries": [
+    {
+      "rank": 1,
+      "run_id": "demo-mock-public-dev",
+      "agent": "Hermes mock",
+      "model": "mock",
+      "provider": "local",
+      "suite": "public-dev",
+      "overall_score": 1.0,
+      "pass_at_1": 1.0,
+      "false_done_rate": 0.0,
+      "timeout_rate": 0.0,
+      "median_wall_time_seconds": 0.0,
+      "tool_call_count": 0,
+      "cost_per_successful_task_usd": 0.0,
+      "official": false
+    }
+  ]
+}

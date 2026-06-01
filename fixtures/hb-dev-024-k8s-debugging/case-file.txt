@@ -1,0 +1,11 @@
+Task id: hb-dev-024-k8s-debugging
+Category: k8s-debugging
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-024
+Policy_code: HB-POL-1024
+Expected_total: 181
+Record_count: 26
+Checksum: hb024cafe
+Owner: owner-24@example.test
+Deadline: 2026-06-25
+Instruction: produce JSON report with these exact normalized fields and verified true.

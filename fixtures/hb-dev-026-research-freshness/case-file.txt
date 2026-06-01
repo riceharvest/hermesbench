@@ -1,0 +1,11 @@
+Task id: hb-dev-026-research-freshness
+Category: research-freshness
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-026
+Policy_code: HB-POL-1026
+Expected_total: 195
+Record_count: 28
+Checksum: hb026cafe
+Owner: owner-26@example.test
+Deadline: 2026-06-27
+Instruction: produce JSON report with these exact normalized fields and verified true.

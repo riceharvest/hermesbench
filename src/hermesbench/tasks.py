@@ -27,10 +27,13 @@ def parse_task_markdown(path: str | Path) -> Task:
         elif item.startswith('json_field:'):
             _, rest=item.split(':',1); file, expr=rest.strip().split('=>',1)
             checks.append({'type':'json_field','path':file.strip(),'expr':expr.strip()})
+        elif item.startswith('command_passes:'):
+            checks.append({'type':'command_passes','command':item.split(':',1)[1].strip()})
     return Task(meta, sections.get('Prompt','').strip(), sections.get('Setup','').strip(), lines('Expected artifacts'), sections.get('Scoring rubric','').strip(), checks, lines('Hidden checks'), sections.get('Cleanup','').strip(), str(path))
 
 def discover_tasks(suite='public-dev', root: Path = ROOT) -> list[Task]:
-    return sorted([parse_task_markdown(p) for p in (root/'tasks'/suite).glob('*.md')], key=lambda t:t.metadata['id'])
+    task_files=[p for p in (root/'tasks'/suite).glob('*.md') if p.name.lower() != 'readme.md' and p.name != 'TASK_TEMPLATE.md']
+    return sorted([parse_task_markdown(p) for p in task_files], key=lambda t:t.metadata['id'])
 
 def validate_tasks(root: Path = ROOT) -> list[str]:
     errors=[]; ids=set()

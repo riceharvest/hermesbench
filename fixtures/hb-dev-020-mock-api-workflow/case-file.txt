@@ -1,0 +1,11 @@
+Task id: hb-dev-020-mock-api-workflow
+Category: mock-api-workflow
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-020
+Policy_code: HB-POL-1020
+Expected_total: 153
+Record_count: 22
+Checksum: hb020cafe
+Owner: owner-20@example.test
+Deadline: 2026-06-21
+Instruction: produce JSON report with these exact normalized fields and verified true.

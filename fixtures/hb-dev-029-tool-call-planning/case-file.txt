@@ -1,0 +1,11 @@
+Task id: hb-dev-029-tool-call-planning
+Category: tool-call-planning
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-029
+Policy_code: HB-POL-1029
+Expected_total: 216
+Record_count: 31
+Checksum: hb029cafe
+Owner: owner-29@example.test
+Deadline: 2026-06-02
+Instruction: produce JSON report with these exact normalized fields and verified true.

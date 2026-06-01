@@ -6,6 +6,10 @@ HermesBench is a real-world benchmark for Hermes-style tool-using agents. It tes
 
 Static LLM benchmarks are benchmaxxed: contaminated, overfit, and too far from messy agent work. HermesBench is different: execution-based scoring, public/dev plus private/fresh/anchor splits, hidden-check support, cost/latency/tool-call tracking, and explicit false-done penalties when an agent claims success without verified artifacts.
 
+## Project status
+
+HermesBench is public and CI-green, but official leaderboard runs are not launched yet. See `docs/PROCESS_STATUS.md` for the current stage tracker and gates.
+
 ## Quick start
 
 ```bash
@@ -35,7 +39,7 @@ Copy `tasks/TASK_TEMPLATE.md`, add YAML metadata, prompt/setup/artifacts/rubric/
 
 ## Submit results
 
-For now, publish the normalized result JSON. The upload/API contract is scaffolded in `docs/api.md`; official hidden/private runs are reserved for maintainers.
+For now, publish the normalized result JSON. The upload/API contract is scaffolded in `docs/api.md`; official hidden/private runs are reserved for maintainers. See `docs/official-runs.md` for the official-run policy: community/API uploads are unofficial by default, and only maintainer-operated private/fresh-pack runs with archived manifests may be marked official.
 
 ## Reproducibility
 
@@ -44,3 +48,11 @@ Public/dev tasks require no external credentials. The runner creates isolated te
 ## Provenance
 
 This repo preserves the previous qwen-mtp-probe Hermes eval artifacts alongside HermesBench. See `docs/provenance.md`.
+
+## Website and deployment
+
+The static website lives in `website/` and builds with `cd website && pnpm install && pnpm build`. Deployment instructions are in `docs/deployment-website.md`.
+
+## Release process
+
+Benchmark releases use the checklist in `docs/release-process.md`; do not label a release as official until `docs/launch-readiness-v0.1.md` is satisfied.

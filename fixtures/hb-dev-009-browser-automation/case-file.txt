@@ -1,0 +1,11 @@
+Task id: hb-dev-009-browser-automation
+Category: browser-automation
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-009
+Policy_code: HB-POL-1009
+Expected_total: 76
+Record_count: 11
+Checksum: hb009cafe
+Owner: owner-09@example.test
+Deadline: 2026-06-10
+Instruction: produce JSON report with these exact normalized fields and verified true.

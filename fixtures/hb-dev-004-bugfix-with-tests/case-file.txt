@@ -1,0 +1,11 @@
+Task id: hb-dev-004-bugfix-with-tests
+Category: bugfix-with-tests
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-004
+Policy_code: HB-POL-1004
+Expected_total: 41
+Record_count: 6
+Checksum: hb004cafe
+Owner: owner-04@example.test
+Deadline: 2026-06-05
+Instruction: produce JSON report with these exact normalized fields and verified true.

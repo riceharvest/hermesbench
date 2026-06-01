@@ -1,0 +1,16 @@
+run_id: official-YYYYMMDD-model
+benchmark_version: hermesbench-v0.1
+operator: maintainer-name
+agent: hermes
+model: provider/model
+provider: provider
+agent_version: x.y.z
+runner_commit: sha
+started_at: '2026-06-01T00:00:00Z'
+completed_at: '2026-06-01T01:00:00Z'
+hardware: maintainer hardware description
+os: linux
+timeout_policy: task defaults
+private_pack_id: maintainer-pack-id
+result_json_sha256: replace-with-result-sha256
+notes: describe retries, conflicts, and anomalies

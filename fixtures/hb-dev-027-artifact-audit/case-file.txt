@@ -1,0 +1,11 @@
+Task id: hb-dev-027-artifact-audit
+Category: artifact-audit
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-027
+Policy_code: HB-POL-1027
+Expected_total: 202
+Record_count: 29
+Checksum: hb027cafe
+Owner: owner-27@example.test
+Deadline: 2026-06-28
+Instruction: produce JSON report with these exact normalized fields and verified true.

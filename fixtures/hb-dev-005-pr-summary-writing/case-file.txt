@@ -1,0 +1,11 @@
+Task id: hb-dev-005-pr-summary-writing
+Category: pr-summary-writing
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-005
+Policy_code: HB-POL-1005
+Expected_total: 48
+Record_count: 7
+Checksum: hb005cafe
+Owner: owner-05@example.test
+Deadline: 2026-06-06
+Instruction: produce JSON report with these exact normalized fields and verified true.

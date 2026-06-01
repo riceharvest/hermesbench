@@ -1,0 +1,11 @@
+Task id: hb-dev-017-memory-boundary
+Category: memory-boundary
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-017
+Policy_code: HB-POL-1017
+Expected_total: 132
+Record_count: 19
+Checksum: hb017cafe
+Owner: owner-17@example.test
+Deadline: 2026-06-18
+Instruction: produce JSON report with these exact normalized fields and verified true.

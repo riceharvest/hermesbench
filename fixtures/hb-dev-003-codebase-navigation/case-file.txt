@@ -1,0 +1,11 @@
+Task id: hb-dev-003-codebase-navigation
+Category: codebase-navigation
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-003
+Policy_code: HB-POL-1003
+Expected_total: 34
+Record_count: 5
+Checksum: hb003cafe
+Owner: owner-03@example.test
+Deadline: 2026-06-04
+Instruction: produce JSON report with these exact normalized fields and verified true.

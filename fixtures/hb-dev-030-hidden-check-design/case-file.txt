@@ -1,0 +1,11 @@
+Task id: hb-dev-030-hidden-check-design
+Category: hidden-check-design
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-030
+Policy_code: HB-POL-1030
+Expected_total: 223
+Record_count: 32
+Checksum: hb030cafe
+Owner: owner-30@example.test
+Deadline: 2026-06-03
+Instruction: produce JSON report with these exact normalized fields and verified true.

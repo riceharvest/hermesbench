@@ -1,0 +1,41 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+jobs:
+  build-release-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - name: Install Python dependencies
+        run: uv sync
+      - name: Validate tasks
+        run: uv run hermesbench validate-tasks
+      - name: Run tests
+        run: uv run pytest
+      - name: Build website
+        run: cd website && pnpm install && pnpm build
+      - name: Export public tasks
+        run: uv run hermesbench export --format jsonl > hermesbench-public-dev-v0.1.jsonl
+      - name: Package score schema docs
+        run: cp docs/api.md hermesbench-score-schema.md
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hermesbench-release-artifacts
+          path: |
+            hermesbench-public-dev-v0.1.jsonl
+            hermesbench-score-schema.md
+            website/dist

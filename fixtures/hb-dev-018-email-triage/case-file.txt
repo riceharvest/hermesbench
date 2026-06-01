@@ -1,0 +1,11 @@
+Task id: hb-dev-018-email-triage
+Category: email-triage
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-018
+Policy_code: HB-POL-1018
+Expected_total: 139
+Record_count: 20
+Checksum: hb018cafe
+Owner: owner-18@example.test
+Deadline: 2026-06-19
+Instruction: produce JSON report with these exact normalized fields and verified true.

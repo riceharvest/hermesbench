@@ -1,0 +1,11 @@
+Task id: hb-dev-008-provider-config-troubleshooting
+Category: provider-config-troubleshooting
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-008
+Policy_code: HB-POL-1008
+Expected_total: 69
+Record_count: 10
+Checksum: hb008cafe
+Owner: owner-08@example.test
+Deadline: 2026-06-09
+Instruction: produce JSON report with these exact normalized fields and verified true.

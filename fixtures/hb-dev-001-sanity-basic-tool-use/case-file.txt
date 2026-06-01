@@ -1,0 +1,11 @@
+Task id: hb-dev-001-sanity-basic-tool-use
+Category: sanity-basic-tool-use
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-001
+Policy_code: HB-POL-1001
+Expected_total: 20
+Record_count: 3
+Checksum: hb001cafe
+Owner: owner-01@example.test
+Deadline: 2026-06-02
+Instruction: produce JSON report with these exact normalized fields and verified true.

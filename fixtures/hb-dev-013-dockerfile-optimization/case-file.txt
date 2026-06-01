@@ -1,0 +1,11 @@
+Task id: hb-dev-013-dockerfile-optimization
+Category: dockerfile-optimization
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-013
+Policy_code: HB-POL-1013
+Expected_total: 104
+Record_count: 15
+Checksum: hb013cafe
+Owner: owner-13@example.test
+Deadline: 2026-06-14
+Instruction: produce JSON report with these exact normalized fields and verified true.

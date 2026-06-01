@@ -1,0 +1,11 @@
+Task id: hb-dev-014-cicd-failure-diagnosis
+Category: cicd-failure-diagnosis
+Fixture_version: public-dev-v1
+Dataset_id: public-dev-dataset-014
+Policy_code: HB-POL-1014
+Expected_total: 111
+Record_count: 16
+Checksum: hb014cafe
+Owner: owner-14@example.test
+Deadline: 2026-06-15
+Instruction: produce JSON report with these exact normalized fields and verified true.
