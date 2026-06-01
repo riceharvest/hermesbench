@@ -25,6 +25,13 @@ class TaskResult:
     score: float
     passed: bool
     wall_time_seconds: float
+    raw_task_score: float | None = None
+    effective_task_score: float | None = None
+    behavior_penalty: float = 0.0
+    passed_raw: bool | None = None
+    passed_effective: bool | None = None
+    verification_claimed: bool = False
+    verification_sufficient: bool = False
     tool_calls: int = 0
     token_usage: dict[str, int | float] | None = None
     cost_usd: float | None = None

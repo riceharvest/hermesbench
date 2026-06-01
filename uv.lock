@@ -172,30 +172,54 @@ name = "hermesbench"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
-    { name = "accelerate" },
-    { name = "pytest" },
     { name = "pyyaml" },
+]
+
+[package.optional-dependencies]
+dev = [
+    { name = "pytest" },
+]
+ml = [
+    { name = "accelerate" },
+    { name = "safetensors" },
+    { name = "torch" },
+    { name = "transformers" },
+]
+test = [
+    { name = "pytest" },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "pytest" },
+]
+ml = [
+    { name = "accelerate" },
     { name = "safetensors" },
     { name = "torch" },
     { name = "transformers" },
 ]
 
-[package.optional-dependencies]
-test = [
-    { name = "pytest" },
-]
-
 [package.metadata]
 requires-dist = [
-    { name = "accelerate" },
-    { name = "pytest" },
+    { name = "accelerate", marker = "extra == 'ml'" },
+    { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest", marker = "extra == 'test'" },
     { name = "pyyaml" },
+    { name = "safetensors", marker = "extra == 'ml'" },
+    { name = "torch", marker = "extra == 'ml'" },
+    { name = "transformers", marker = "extra == 'ml'", specifier = ">=5.0.0" },
+]
+provides-extras = ["ml", "test", "dev"]
+
+[package.metadata.requires-dev]
+dev = [{ name = "pytest" }]
+ml = [
+    { name = "accelerate" },
     { name = "safetensors" },
     { name = "torch" },
     { name = "transformers", specifier = ">=5.0.0" },
 ]
-provides-extras = ["test"]
 
 [[package]]
 name = "hf-xet"

@@ -9,21 +9,36 @@ description = "Real-world benchmark harness for Hermes-style tool-using agents."
 requires-python = ">=3.11"
 dependencies = [
   "pyyaml",
-  "torch",
-  "transformers>=5.0.0",
-  "accelerate",
-  "safetensors",
-  "pytest",
 ]
 
 [project.optional-dependencies]
+ml = [
+  "accelerate",
+  "safetensors",
+  "torch",
+  "transformers>=5.0.0",
+]
 test = ["pytest"]
+dev = [
+  "pytest",
+]
+
+[dependency-groups]
+dev = [
+  "pytest",
+]
+ml = [
+  "accelerate",
+  "safetensors",
+  "torch",
+  "transformers>=5.0.0",
+]
 
 [project.scripts]
 hermesbench = "hermesbench.cli:main"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/hermesbench", "src/qwen_mtp_probe"]
+packages = ["src/hermesbench"]
 
 [tool.pytest.ini_options]
 pythonpath = ["src", "."]

@@ -38,7 +38,7 @@ def test_upload_payload_strips_logs_and_marks_unofficial(tmp_path):
 
 def test_discover_tasks_uses_task_root(tmp_path):
     root=tmp_path/"packs"; suite=root/"fresh"; suite.mkdir(parents=True)
-    (root/"manifest.yaml").write_text("tasks:\n- id: hb-private-001\n")
+    (root/"manifest.yaml").write_text("tasks:\n- id: hb-private-001\n  path: fresh/task.md\n")
     (suite/"task.md").write_text("""---
 id: hb-private-001
 title: Private

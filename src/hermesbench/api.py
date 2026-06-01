@@ -8,6 +8,14 @@ from typing import Any
 from .schemas import validate_result_schema
 from .scoring import aggregate
 
+API_SCHEMA_VERSION = 'hermesbench.api.v0-dev'
+API_PRODUCTION_READINESS = {
+    'server': 'wsgiref/local development only; run behind a production WSGI/ASGI server before internet exposure',
+    'auth': 'shared submission_token placeholder for unofficial uploads; replace with scoped tokens/OIDC for production',
+    'rate_limit': 'not enforced in-process; configure reverse-proxy/platform limits for POST /v1/results',
+    'review_workflow': 'public uploads stay unofficial until maintainer review and private/fresh-pack re-run',
+}
+
 
 @dataclass
 class SubmissionStore:

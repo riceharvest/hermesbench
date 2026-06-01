@@ -17,8 +17,8 @@ def aggregate(path: str | Path) -> dict:
     rs=data['results']; n=len(rs) or 1
     cats={}
     for r in rs: cats.setdefault(r['category'], []).append(r)
-    def raw_score(r): return float(r.get('score') or 0)
-    def effective_score(r): return 0.0 if r.get('false_done') else raw_score(r)
+    def raw_score(r): return float(r.get('raw_task_score', r.get('score') or 0) or 0)
+    def effective_score(r): return float(r.get('effective_task_score', 0.0 if r.get('false_done') else r.get('score') or 0) or 0)
     def total(xs): return sum(effective_score(x) for x in xs)
     def raw_total(xs): return sum(raw_score(x) for x in xs)
     def avg(xs): return total(xs)/len(xs) if xs else 0

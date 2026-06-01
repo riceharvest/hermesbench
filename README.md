@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml/badge.svg)](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Tasks](https://img.shields.io/badge/tasks-45-orange)
+![Tasks](https://img.shields.io/badge/tasks-50-orange)
 ![Status](https://img.shields.io/badge/status-pre--official-blue)
 
 HermesBench is an execution-based benchmark for Hermes-style tool-using agents: agents that read files, run commands, inspect fixtures, write artifacts, recover context, and verify work before claiming success.
@@ -30,6 +30,13 @@ cd hermesbench
 uv run hermesbench validate-tasks
 uv run hermesbench run --agent mock --suite public-dev --output-dir /tmp/hermesbench-results
 uv run hermesbench score /tmp/hermesbench-results/*.json
+```
+
+The default install is intentionally lightweight. ML/model-probing dependencies are optional and are not needed for HermesBench task validation, mock runs, scoring, or the public CLI:
+
+```bash
+uv sync --dev                    # development/test tools
+uv sync --extra ml               # legacy Qwen/model-probing research tools only
 ```
 
 Run one task:
@@ -63,10 +70,13 @@ uv run hermesbench archive-official --result results/run.json --manifest officia
 
 ## Repository layout
 
+See [`REPOSITORY_MAP.md`](REPOSITORY_MAP.md) for a more explicit identity/provenance map.
+
 ```text
 src/hermesbench/          Python CLI, runner, schemas, adapters, graders, API/storage
 src/hermesbench/adapters/ mock, Hermes CLI, and shell adapter implementations
 src/hermesbench/graders/  deterministic artifact/test checks
+src/qwen_mtp_probe/       legacy research/provenance namespace; not packaged as HermesBench
 tasks/                    benchmark task markdown and manifest
 tasks/public-dev/         public development suite
 tasks/anchor/             stable anchor templates/tasks
@@ -83,10 +93,12 @@ tests/                    parser, runner, API, storage, official-run, and websit
 
 | Suite | Count | Purpose | Credential-free |
 |---|---:|---|---|
-| `public-dev` | 30 | Public local development and regression suite | Yes |
+| `public-dev` | 35 | Public local development and regression suite | Yes |
 | `anchor` | 5 | Stable longitudinal comparison templates/tasks | Yes |
 | `fresh-rolling` | 5 | Fresh-wave workflow starters | Yes |
 | `private-holdout` | 5 | Public templates for private holdout shape; not official hidden tasks | Yes |
+
+The manifest currently contains 50 entries total: 35 public-dev tasks, 5 public anchor tasks, 5 public fresh-rolling starter tasks, and 5 public private-holdout templates. The private-holdout files in this repository document shape only; real official private packs stay outside the public repo.
 
 Public/dev categories include sanity/tool use, file operations, codebase navigation, bugfixes with tests, PR summaries, GitHub issue triage, docs research, provider config troubleshooting, browser automation, CSV/data analysis, log analysis, CVE triage, Dockerfile optimization, CI/CD diagnosis, cron scheduling, session/context recovery, memory/profile boundaries, email/calendar-style fixtures, mock APIs, false-done traps, skills, K8s debugging, spreadsheets, freshness-aware research, artifact audit, cost/latency analysis, tool-call planning, and hidden-check design.
 
@@ -195,7 +207,7 @@ cd website && pnpm install && pnpm build
 
 ## Provenance
 
-This repository started from the `qwen-mtp-probe` working repo and preserves older Hermes eval artifacts for auditability. See [`docs/provenance.md`](docs/provenance.md). The benchmark package lives in `src/hermesbench/`; legacy model-specialization files remain separate and should not be treated as HermesBench task definitions.
+This repository started from the `qwen-mtp-probe` working repo and preserves older Hermes eval artifacts for auditability. See [`docs/provenance.md`](docs/provenance.md). The shipped Python package is `hermesbench` from `src/hermesbench/`; legacy model-specialization files in `src/qwen_mtp_probe/` remain source-tree research/provenance material and are not included in the HermesBench wheel.
 
 ## License
 
