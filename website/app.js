@@ -1,20 +1,116 @@
 async function loadJson(path){const r=await fetch(path); if(!r.ok) throw new Error(path); return r.json();}
-function pct(x){return `${Math.round((x||0)*100)}%`;}
+function pct(x,d=0){return x==null?'—':`${(Number(x)*100).toFixed(d)}%`;}
 function num(x,d=0){return x==null?'—':Number(x).toLocaleString(undefined,{maximumFractionDigits:d,minimumFractionDigits:d});}
 function money(x){return x==null?'—':`$${Number(x).toFixed(x<1?4:2)}`;}
-function seconds(x){return x==null?'—':`${Number(x).toFixed(1)}s`;}
+function seconds(x){return x==null?'—':`${Number(x).toFixed(Number(x)<10?1:0)}s`;}
+function modelName(e){return [e.provider,e.model].filter(Boolean).join('/')+(e.reasoning_effort?` · reasoning ${e.reasoning_effort}`:'');}
+function valueOrDash(v,fmt){return v==null?'—':fmt(v);}
+function escapeHtml(s){return String(s ?? '').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
 const categories=['file operations','codebase navigation','bugfixes','issue triage','docs research','provider config','browser automation','CSV/data','logs','CVE triage','Docker/CI','cron','context recovery','memory boundary','email/calendar','mock APIs','false-done traps','cost/latency'];
 const taskList=document.querySelector('#task-list');
 if(taskList){categories.forEach(c=>{const div=document.createElement('div'); div.className='task-chip'; div.textContent=c; taskList.appendChild(div);});}
+
+function normalizeSummaries(leader){
+  const summaries=leader.model_summaries||[];
+  if(summaries.length) return summaries;
+  return (leader.entries||[]).map(e=>({...e,submission_count:1,best_score_percentage:e.score_percentage??e.overall_score,average_score_percentage:e.score_percentage??e.overall_score,score_ci95_low:null,score_ci95_high:null,best_submission_id:e.run_id,best_submission:e}));
+}
+
+function renderSummaryCards(leader){
+  const target=document.querySelector('#leaderboard-summary');
+  if(!target) return;
+  const summaries=normalizeSummaries(leader).slice(0,6);
+  if(!summaries.length){target.innerHTML='<p class="muted">No leaderboard data yet.</p>';return;}
+  target.innerHTML=summaries.map((s,i)=>{
+    const official=Boolean(s.official);
+    const model=[s.provider,s.model].filter(Boolean).join('/') || s.model_key || 'unknown model';
+    const ci=s.score_ci95_low==null?'CI pending':`${pct(s.score_ci95_low,1)}–${pct(s.score_ci95_high,1)} 95% CI`;
+    const runs=s.submission_count??1;
+    const score=s.average_score_percentage??s.best_score_percentage??s.score_percentage??s.overall_score;
+    const falseDone=s.average_false_done_rate??s.false_done_rate;
+    const timeout=s.average_timeout_rate??s.timeout_rate;
+    const time=s.average_total_execution_time_seconds??s.total_execution_time_seconds;
+    const tokens=s.average_total_tokens??s.total_tokens;
+    const tools=s.average_tool_call_count??s.tool_call_count;
+    const cost=s.average_total_cost_usd??s.total_cost_usd??s.cost_usd;
+    return `<article class="summary-card ${official?'official':''}">
+      <span class="rank">${official?'Official':'Sample'} #${i+1}</span>
+      <div class="model">${escapeHtml(model)}</div>
+      <div class="meta">${escapeHtml(s.agent||'agent')} · ${runs} run${runs===1?'':'s'} · best ${escapeHtml(s.best_submission_id||s.run_id||'—')}</div>
+      <div class="score-row"><span class="big-score">${pct(score)}</span><span class="ci">${ci}</span></div>
+      <div class="metric-strip">
+        <div class="metric"><b>${pct(falseDone)}</b><span>false done</span></div>
+        <div class="metric"><b>${pct(timeout)}</b><span>timeout</span></div>
+        <div class="metric"><b>${seconds(time)}</b><span>wall time</span></div>
+        <div class="metric"><b>${money(cost)}</b><span>cost</span></div>
+        <div class="metric"><b>${num(tokens)}</b><span>tokens</span></div>
+        <div class="metric"><b>${num(tools)}</b><span>tools</span></div>
+      </div>
+    </article>`;
+  }).join('');
+}
+
+function renderRuns(leader){
+  const body=document.querySelector('#leaderboard-table tbody');
+  if(!body) return;
+  const rows=[...(leader.official||[]),...(leader.unofficial||[])];
+  body.innerHTML='';
+  if(!(leader.official||[]).length){
+    const tr=document.createElement('tr');
+    tr.innerHTML='<td colspan="10" class="muted">No official private/fresh-pack runs have been published yet. Rows below are public-dev smoke samples.</td>';
+    body.appendChild(tr);
+  }
+  rows.forEach(e=>{
+    const tr=document.createElement('tr');
+    const score=e.score_percentage??e.overall_score;
+    const status=e.official?'Official private/fresh repeated run':'Single public-dev smoke sample';
+    tr.innerHTML=`
+      <td><span class="mono">${escapeHtml(e.run_id||'—')}</span><br><span class="small">${escapeHtml(e.suite||'public-dev')}</span></td>
+      <td><strong>${escapeHtml(e.agent||'—')}</strong><br><span class="small">${escapeHtml(modelName(e)||'—')}</span></td>
+      <td class="score">${pct(score)}</td>
+      <td>${pct(e.pass_at_1)}</td>
+      <td class="${e.false_done_rate ? 'bad' : 'good'}">${pct(e.false_done_rate)}</td>
+      <td class="hide-compact">${seconds(e.total_execution_time_seconds)}</td>
+      <td class="hide-compact">${money(e.total_cost_usd??e.cost_usd)}</td>
+      <td class="hide-compact">${num(e.total_tokens)}</td>
+      <td class="hide-compact">${num(e.tool_call_count)}</td>
+      <td><span class="status-pill ${e.official?'official':'sample'}">${escapeHtml(status)}</span></td>`;
+    body.appendChild(tr);
+  });
+}
+
+function renderResult(result){
+  const detail=document.querySelector('#result-detail');
+  if(!detail) return;
+  const metricCards=[
+    ['Overall',pct(result.overall_score)],['Total score',`${num(result.total_score,2)} / ${num(result.max_score)}`],['Raw score',pct(result.raw_overall_score)],['Pass@1',pct(result.pass_at_1)],
+    ['False done',pct(result.false_done_rate)],['Timeout',pct(result.timeout_rate)],['Verification',pct(result.verification_compliance)],['Total time',seconds(result.total_execution_time_seconds)],
+    ['Median task',seconds(result.median_wall_time_seconds)],['P95 task',seconds(result.p95_wall_time_seconds)],['Tool calls',num(result.tool_call_count)],['Avg tools/task',num(result.avg_tool_calls_per_task,1)],
+    ['Total tokens',num(result.total_tokens)],['Input tokens',num(result.input_tokens)],['Output tokens',num(result.output_tokens)],['Cost',money(result.total_cost_usd??result.cost_usd)]
+  ].map(([k,v])=>`<div class="mini"><strong>${escapeHtml(k)}</strong><span class="value">${escapeHtml(v)}</span></div>`).join('');
+  const cats=Object.entries(result.category_scores||{}).sort((a,b)=>a[0].localeCompare(b[0])).slice(0,14).map(([k,v])=>`<div class="bar-row"><div class="bar-label">${escapeHtml(k)}</div><div class="bar"><div class="bar-fill" style="width:${Math.max(0,Math.min(100,Number(v||0)*100))}%"></div></div><div class="score">${pct(v)}</div></div>`).join('');
+  const tasks=(result.tasks||[]).slice(0,6).map(t=>`<div class="mini"><strong>${escapeHtml(t.task_id)}</strong><span class="value">${pct(t.score)}</span><span class="small">${escapeHtml(t.status)} · false_done=${Boolean(t.false_done)} · timeout=${Boolean(t.timeout)} · tools=${num(t.tool_calls)}</span></div>`).join('');
+  const modelLine=modelName(result);
+  detail.innerHTML=`<p><span class="pill">${result.official?'Official':'Unofficial demo'}</span> <strong>${escapeHtml(result.run_id)}</strong> — ${escapeHtml(modelLine)} — <span class="score">overall ${pct(result.overall_score)}</span></p><div class="result-grid">${metricCards}</div><h3 style="margin-top:28px">Category scores</h3><div class="category-bars">${cats}</div><h3 style="margin-top:28px">Task evidence sample</h3><div class="result-grid">${tasks}</div>`;
+}
+
+function wireTabs(){
+  const tabs=[...document.querySelectorAll('.tab')];
+  const summary=document.querySelector('#leaderboard-summary');
+  const table=document.querySelector('.table-wrap');
+  tabs.forEach(tab=>tab.addEventListener('click',()=>{
+    tabs.forEach(t=>t.classList.toggle('active',t===tab));
+    const view=tab.dataset.view;
+    if(summary) summary.style.display=view==='summary'?'grid':'none';
+    if(table) table.style.display=view==='runs'?'block':'none';
+  }));
+  if(table) table.style.display='none';
+}
+
 Promise.all([loadJson('data/leaderboard.json'),loadJson('data/latest-result.json')]).then(([leader,result])=>{
- const body=document.querySelector('#leaderboard-table tbody');
- const render=(rows,label)=>{rows.forEach(e=>{const tr=document.createElement('tr'); const model=[e.provider,e.model].filter(Boolean).join('/')+(e.reasoning_effort?` · reasoning ${e.reasoning_effort}`:''); const cls=e.official?`${label} #${e.rank}`:'Unofficial sample'; tr.innerHTML=`<td>${cls}</td><td><strong>${e.agent}</strong></td><td>${model}</td><td class="score">${pct(e.score_percentage??e.overall_score)}</td><td>${pct(e.pass_at_1)}</td><td class="${e.false_done_rate ? 'bad' : ''}">${pct(e.false_done_rate)}</td><td>${pct(e.timeout_rate)}</td><td>${seconds(e.total_execution_time_seconds)}</td><td>${money(e.total_cost_usd??e.cost_usd)}</td><td>${e.score_per_dollar==null?'—':num(e.score_per_dollar,1)}</td><td>${num(e.total_tokens)}</td><td>${num(e.tool_call_count)}</td><td>${e.official?'Official hidden/private repeated run':'Single public-dev run; not ranked'}</td>`; body.appendChild(tr);});};
- render(leader.official||[],'Official'); render(leader.unofficial||[],'Unofficial');
- if(!(leader.official||[]).length){const tr=document.createElement('tr'); tr.innerHTML='<td colspan="13" class="muted">No official private/fresh-pack runs have been published yet.</td>'; body.prepend(tr);}
- const detail=document.querySelector('#result-detail');
- const metricCards=[['Total score',`${num(result.total_score,2)} / ${num(result.max_score)}`],['Raw score',pct(result.raw_overall_score)],['Total time',seconds(result.total_execution_time_seconds)],['Median task time',seconds(result.median_wall_time_seconds)],['P95 task time',seconds(result.p95_wall_time_seconds)],['Tool calls',num(result.tool_call_count)],['Avg tools/task',num(result.avg_tool_calls_per_task,1)],['Total tokens',num(result.total_tokens)],['Input tokens',num(result.input_tokens)],['Output tokens',num(result.output_tokens)],['Cost',money(result.total_cost_usd??result.cost_usd)],['Value',result.score_per_dollar==null?'—':num(result.score_per_dollar,1)]].map(([k,v])=>`<div class="mini"><strong>${k}</strong><br><span class="score">${v}</span></div>`).join('');
- const cats=Object.entries(result.category_scores||{}).slice(0,12).map(([k,v])=>`<div class="mini"><strong>${k}</strong><br><span class="score">${pct(v)}</span></div>`).join('');
- const tasks=(result.tasks||[]).slice(0,6).map(t=>`<div class="mini"><strong>${t.task_id}</strong><br>${t.status} · score ${pct(t.score)}<br><span class="muted">false_done=${t.false_done}; timeout=${t.timeout}; tool_calls=${t.tool_calls}</span></div>`).join('');
- const modelLine=[result.provider,result.model].filter(Boolean).join('/')+(result.reasoning_effort?` · reasoning ${result.reasoning_effort}`:'');
- detail.innerHTML=`<p><span class="pill">${result.official?'Official':'Unofficial demo'}</span> <strong>${result.run_id}</strong> — ${modelLine} — <span class="score">overall ${pct(result.overall_score)}</span></p><div class="result-grid">${metricCards}</div><h3 style="margin-top:22px">Category scores</h3><div class="result-grid">${cats}</div><h3 style="margin-top:22px">Task evidence sample</h3><div class="result-grid">${tasks}</div>`;
+  renderSummaryCards(leader);
+  renderRuns(leader);
+  renderResult(result);
+  wireTabs();
 }).catch(err=>{document.querySelector('#result-detail').textContent='Unable to load demo data: '+err.message;});
