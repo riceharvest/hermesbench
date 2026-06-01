@@ -1,0 +1,4 @@
+provider: hermes-local
+dataset_id: FRE-2787-PRO
+timeout_ms: 8000
+retry_policy: HB-FRE-973

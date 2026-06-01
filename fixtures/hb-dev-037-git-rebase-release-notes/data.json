@@ -1,0 +1,10 @@
+{
+  "dataset_id": "git-release-037",
+  "expected": {
+    "release_tag": "v1.8.3",
+    "merged_commits": 6,
+    "hotfix_count": 2
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20037"
+}

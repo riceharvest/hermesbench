@@ -1,0 +1,12 @@
+fixture_version: anchor-calibration-2026-06
+fixture_kind: provider-fix
+dataset_id: ANC-1400-PRO
+policy_code: HB-ANC-799
+owner: Iris
+deadline: 2026-10-14
+records: 26,14,29,12,59,73
+expected_total: 213
+record_count: 6
+checksum: 36814e58ed40d933
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

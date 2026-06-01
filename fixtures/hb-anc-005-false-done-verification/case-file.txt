@@ -1,0 +1,12 @@
+fixture_version: anchor-calibration-2026-06
+fixture_kind: verification-audit
+dataset_id: ANC-9879-FAL
+policy_code: HB-ANC-198
+owner: Pax
+deadline: 2026-11-15
+records: 61,80,39,28,25
+expected_total: 233
+record_count: 5
+checksum: 561e76aed9327219
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

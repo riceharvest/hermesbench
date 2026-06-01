@@ -16,7 +16,10 @@ def aggregate(path: str | Path) -> dict:
     data=json.loads(Path(path).read_text()); validate_result_schema(data)
     rs=data['results']; n=len(rs) or 1
     cats={}
-    for r in rs: cats.setdefault(r['category'], []).append(r)
+    tiers={}
+    for r in rs:
+        cats.setdefault(r['category'], []).append(r)
+        tiers.setdefault(r.get('task_quality_tier') or 'unknown', []).append(r)
     def raw_score(r): return float(r.get('raw_task_score', r.get('score') or 0) or 0)
     def effective_score(r): return float(r.get('effective_task_score', 0.0 if r.get('false_done') else r.get('score') or 0) or 0)
     def total(xs): return sum(effective_score(x) for x in xs)
@@ -54,6 +57,9 @@ def aggregate(path: str | Path) -> dict:
       'score_percentage': score_percentage, 'total_score': total_score, 'raw_total_score': raw_total_score, 'max_score': max_score,
       'category_scores':{k:avg(v) for k,v in sorted(cats.items())},
       'raw_category_scores':{k:raw_avg(v) for k,v in sorted(cats.items())},
+      'quality_tier_scores':{k:avg(v) for k,v in sorted(tiers.items())},
+      'raw_quality_tier_scores':{k:raw_avg(v) for k,v in sorted(tiers.items())},
+      'quality_tier_counts':{k:len(v) for k,v in sorted(tiers.items())},
       'task_count':len(rs), 'passed_task_count':len(successes), 'failed_task_count':sum(1 for r in rs if not r.get('passed')),
       'cost_per_successful_task_usd':cost_success,
       'cost_per_task_usd': total_cost/len(rs) if total_cost is not None and rs else None,

@@ -4,6 +4,7 @@ from typing import Any
 
 REQUIRED_TASK_FIELDS = {"id","title","category","wave","visibility","created_at","freshness_window","expected_human_minutes","difficulty","required_toolsets","grading_type","timeout_seconds","contamination_notes","safety_notes"}
 GRADING_TYPES = {"deterministic","artifact","test","judge","hybrid"}
+QUALITY_TIERS = {"gold", "silver", "bronze", "experimental", "needs-review"}
 
 @dataclass
 class Task:
@@ -25,6 +26,7 @@ class TaskResult:
     score: float
     passed: bool
     wall_time_seconds: float
+    task_quality_tier: str = "unknown"
     raw_task_score: float | None = None
     effective_task_score: float | None = None
     behavior_penalty: float = 0.0

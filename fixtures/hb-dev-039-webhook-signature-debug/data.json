@@ -1,0 +1,9 @@
+{
+  "dataset_id": "webhook-039",
+  "expected": {
+    "accepted_events": 3,
+    "rejected_events": 2
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20039"
+}

@@ -1,0 +1,9 @@
+{
+  "dataset_id": "metrics-window-043",
+  "expected": {
+    "expected_total": 1287,
+    "window_minutes": 15
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20043"
+}

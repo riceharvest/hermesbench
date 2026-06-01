@@ -1,0 +1,12 @@
+fixture_version: fresh-rolling-2026-06
+fixture_kind: provider-fix
+dataset_id: FRE-2787-PRO
+policy_code: HB-FRE-973
+owner: Iris
+deadline: 2026-10-14
+records: 52,82,77,34,18,85
+expected_total: 348
+record_count: 6
+checksum: 4b387f5fc95e9b94
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

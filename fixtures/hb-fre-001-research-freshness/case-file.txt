@@ -1,0 +1,12 @@
+fixture_version: fresh-rolling-2026-06
+fixture_kind: research-brief
+dataset_id: FRE-5109-RES
+policy_code: HB-FRE-988
+owner: Mira
+deadline: 2026-07-11
+records: 70,54,91,43,94,41,53
+expected_total: 446
+record_count: 7
+checksum: b008941250694432
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

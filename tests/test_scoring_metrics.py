@@ -15,8 +15,8 @@ def test_aggregate_exposes_pinchbench_style_and_agent_metrics(tmp_path):
         'completed_at': 'c',
         'metadata': {'provider': 'p', 'reasoning_effort': 'low'},
         'results': [
-            {'task_id': 'a', 'category': 'cat', 'status': 'passed', 'score': 1, 'passed': True, 'wall_time_seconds': 10, 'tool_calls': 2, 'token_usage': {'input_tokens': 100, 'output_tokens': 20, 'total_tokens': 120}, 'cost_usd': 0.5, 'verification_evidence': ['ok']},
-            {'task_id': 'b', 'category': 'cat', 'status': 'failed', 'score': 0.75, 'passed': False, 'wall_time_seconds': 30, 'tool_calls': 4, 'token_usage': {'input_tokens': 50, 'output_tokens': 10, 'total_tokens': 60}, 'cost_usd': 0.25, 'false_done': True, 'timeout': True},
+            {'task_id': 'a', 'category': 'cat', 'task_quality_tier': 'gold', 'status': 'passed', 'score': 1, 'passed': True, 'wall_time_seconds': 10, 'tool_calls': 2, 'token_usage': {'input_tokens': 100, 'output_tokens': 20, 'total_tokens': 120}, 'cost_usd': 0.5, 'verification_evidence': ['ok']},
+            {'task_id': 'b', 'category': 'cat', 'task_quality_tier': 'bronze', 'status': 'failed', 'score': 0.75, 'passed': False, 'wall_time_seconds': 30, 'tool_calls': 4, 'token_usage': {'input_tokens': 50, 'output_tokens': 10, 'total_tokens': 60}, 'cost_usd': 0.25, 'false_done': True, 'timeout': True},
         ],
     }))
 
@@ -38,3 +38,6 @@ def test_aggregate_exposes_pinchbench_style_and_agent_metrics(tmp_path):
     assert score['tokens_per_successful_task'] == 180
     assert score['input_tokens'] == 150
     assert score['output_tokens'] == 30
+    assert score['quality_tier_scores'] == {'bronze': 0.0, 'gold': 1.0}
+    assert score['raw_quality_tier_scores'] == {'bronze': 0.75, 'gold': 1.0}
+    assert score['quality_tier_counts'] == {'bronze': 1, 'gold': 1}

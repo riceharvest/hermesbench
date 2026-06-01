@@ -1,0 +1,9 @@
+{
+  "dataset_id": "admin-audit-038",
+  "expected": {
+    "disabled_user": "temp-contractor",
+    "kept_user": "ops-bot"
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20038"
+}

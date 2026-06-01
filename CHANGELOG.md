@@ -7,10 +7,10 @@
 - Moved `pytest` out of runtime dependencies and into test/dev extras and the `dev` dependency group so `uv run pytest` remains supported for contributors.
 - Limited wheel packaging to `src/hermesbench/`; the legacy `src/qwen_mtp_probe/` namespace remains source-tree provenance/research material rather than a shipped HermesBench package.
 - Added `REPOSITORY_MAP.md` and clarified provenance, architecture, and legacy namespace docs.
-- Corrected public task counts to 50 manifest entries total, including 35 public-dev tasks.
+- Expanded task inventory to 60 manifest entries total, including 45 public-dev tasks and 15 non-public-pack sample/template tasks.
 - Added fresh-wave, anchor promotion, website deployment, release, and launch-readiness workflows.
 - Added static leaderboard/result demo data and a multi-section website scaffold.
 
 ## 0.1.0
 
-Initial public-ready HermesBench scaffold with 35 public/dev tasks, 50 manifest entries total, CLI runner, scoring, docs, CI, and website scaffold.
+Initial public-ready HermesBench scaffold with 45 public/dev tasks, 60 manifest entries total, CLI runner, scoring, docs, CI, and website scaffold.

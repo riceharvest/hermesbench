@@ -16,11 +16,16 @@ def test_create_fresh_wave_starter_files(tmp_path):
     mod = load_module()
     written = mod.create_wave("fresh-2026-07", 2, tmp_path)
     assert tmp_path.joinpath("tasks/fresh-rolling/fresh-2026-07/manifest.yaml").exists()
-    assert tmp_path.joinpath("tasks/fresh-rolling/fresh-2026-07/fresh-2026-07-001.md").read_text().startswith("---")
-    assert tmp_path.joinpath("fixtures/fresh-2026-07/fresh-2026-07-002/README.md").exists()
+    first = tmp_path.joinpath("tasks/fresh-rolling/fresh-2026-07/fresh-2026-07-001-research-freshness.md")
+    second_fixture = tmp_path.joinpath("fixtures/fresh-2026-07/fresh-2026-07-002-codebase-navigation/case-file.txt")
+    assert first.read_text().startswith("---")
+    assert "TODO" not in first.read_text()
+    assert second_fixture.exists()
+    assert "dataset_id:" in second_fixture.read_text()
     manifest = tmp_path.joinpath("tasks/fresh-rolling/fresh-2026-07/manifest.yaml").read_text()
     assert "minimum_task_count: 2" in manifest
-    assert "fresh-2026-07-001" in manifest
+    assert "fresh-2026-07-001-research-freshness" in manifest
+    assert "fixture:" in manifest
     assert written
 
 

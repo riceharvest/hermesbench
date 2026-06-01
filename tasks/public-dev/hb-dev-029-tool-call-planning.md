@@ -46,8 +46,19 @@ Full credit for this tool-call-planning task requires deterministic JSON evidenc
 - json_field: artifacts/hb-dev-029-tool-call-planning-report.json => record_count=31
 - json_field: artifacts/hb-dev-029-tool-call-planning-report.json => checksum=hb029cafe
 
+- command_passes: python scripts/verify_artifact.py
+
 ## Hidden checks
 - Private holdout may assert fixture-specific facts without exposing hidden variants in public result output.
+
+## Failure mode tested
+This task rejects marker-only completion, stale fixture copying, wrong deterministic fields, and leaked trap/private-looking data by requiring a local verifier in addition to field checks.
+
+## Why hard for agents
+The agent must inspect the fixture and produce a coherent artifact that survives executable validation rather than only echoing the visible task id or verified marker.
+
+## Overfitting risk
+Public constants are visible for development; hidden variants can rotate fixture values, file names, decoy markers, and verifier expectations while preserving the same workflow.
 
 ## Cleanup
 Delete the isolated workdir after grading. Do not preserve secrets or transcripts outside normalized result JSON.

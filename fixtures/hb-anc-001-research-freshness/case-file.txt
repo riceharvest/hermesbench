@@ -1,0 +1,12 @@
+fixture_version: anchor-calibration-2026-06
+fixture_kind: research-brief
+dataset_id: ANC-4700-RES
+policy_code: HB-ANC-622
+owner: Mira
+deadline: 2026-07-11
+records: 76,82,29,76,33,52,43
+expected_total: 391
+record_count: 7
+checksum: 839947ddfe1844dc
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

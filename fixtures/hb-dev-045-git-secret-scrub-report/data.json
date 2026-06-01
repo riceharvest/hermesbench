@@ -1,0 +1,9 @@
+{
+  "dataset_id": "secret-scrub-045",
+  "expected": {
+    "leaked_secret": false,
+    "replaced_commits": 2
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20045"
+}

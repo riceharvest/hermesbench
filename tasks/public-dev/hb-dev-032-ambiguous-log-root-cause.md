@@ -45,8 +45,19 @@ Full credit requires evidence that the ambiguous logs were correlated correctly:
 - json_field: artifacts/hb-dev-032-ambiguous-log-root-cause-report.json => false_lead=db_pool_exhausted
 - json_field: artifacts/hb-dev-032-ambiguous-log-root-cause-report.json => checksum=hb03291d
 
+- command_passes: python scripts/verify_artifact.py
+
 ## Hidden checks
 - Holdout variants may include noisy errors and require the same trace-correlation discipline.
+
+## Failure mode tested
+This task rejects marker-only completion, stale fixture copying, wrong deterministic fields, and leaked trap/private-looking data by requiring a local verifier in addition to field checks.
+
+## Why hard for agents
+The agent must inspect the fixture and produce a coherent artifact that survives executable validation rather than only echoing the visible task id or verified marker.
+
+## Overfitting risk
+Public constants are visible for development; hidden variants can rotate fixture values, file names, decoy markers, and verifier expectations while preserving the same workflow.
 
 ## Cleanup
 Delete the isolated workdir after grading.

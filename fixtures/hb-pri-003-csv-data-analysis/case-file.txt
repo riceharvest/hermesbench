@@ -1,0 +1,12 @@
+fixture_version: private-holdout-template-2026-06
+fixture_kind: csv-summary
+dataset_id: PRI-8618-CSV
+policy_code: HB-PRI-463
+owner: Jun
+deadline: 2026-09-13
+records: 28,69,18,61,48
+expected_total: 224
+record_count: 5
+checksum: d8ea9c3907df5eba
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

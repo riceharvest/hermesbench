@@ -1,0 +1,12 @@
+fixture_version: private-holdout-template-2026-06
+fixture_kind: code-map
+dataset_id: PRI-9374-COD
+policy_code: HB-PRI-164
+owner: Sol
+deadline: 2026-08-12
+records: 81,29,43,95,48,45,24
+expected_total: 365
+record_count: 7
+checksum: d955366aacd1844f
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

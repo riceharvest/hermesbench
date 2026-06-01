@@ -47,8 +47,19 @@ Full credit requires fixing the stale documentation to use the current CLI and f
 - json_field: artifacts/hb-dev-033-stale-docs-cli-migration-report.json => workspace=ws-northstar
 - json_field: artifacts/hb-dev-033-stale-docs-cli-migration-report.json => checksum=hb033doc
 
+- command_passes: python scripts/verify_artifact.py
+
 ## Hidden checks
 - Holdout variants may rotate current command and flag names while retaining a stale quickstart trap.
+
+## Failure mode tested
+This task rejects marker-only completion, stale fixture copying, wrong deterministic fields, and leaked trap/private-looking data by requiring a local verifier in addition to field checks.
+
+## Why hard for agents
+The agent must inspect the fixture and produce a coherent artifact that survives executable validation rather than only echoing the visible task id or verified marker.
+
+## Overfitting risk
+Public constants are visible for development; hidden variants can rotate fixture values, file names, decoy markers, and verifier expectations while preserving the same workflow.
 
 ## Cleanup
 Delete the isolated workdir after grading.

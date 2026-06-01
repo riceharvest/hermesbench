@@ -1,0 +1,12 @@
+fixture_version: fresh-rolling-2026-06
+fixture_kind: code-map
+dataset_id: FRE-9409-COD
+policy_code: HB-FRE-215
+owner: Sol
+deadline: 2026-08-12
+records: 58,28,16,83,39,68
+expected_total: 292
+record_count: 6
+checksum: 966ecf8aa8f3b1e2
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

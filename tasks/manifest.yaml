@@ -141,6 +141,46 @@ tasks:
   path: public-dev/hb-dev-035-memory-privacy-refusal.md
   category: memory-privacy-boundary
   visibility: public
+- id: hb-dev-036-api-rate-limit-retry
+  path: public-dev/hb-dev-036-api-rate-limit-retry.md
+  category: local-api-workflow
+  visibility: public
+- id: hb-dev-037-git-rebase-release-notes
+  path: public-dev/hb-dev-037-git-rebase-release-notes.md
+  category: git-local-workflow
+  visibility: public
+- id: hb-dev-038-browser-admin-audit
+  path: public-dev/hb-dev-038-browser-admin-audit.md
+  category: browser-admin-workflow
+  visibility: public
+- id: hb-dev-039-webhook-signature-debug
+  path: public-dev/hb-dev-039-webhook-signature-debug.md
+  category: local-api-workflow
+  visibility: public
+- id: hb-dev-040-local-http-cors-cache
+  path: public-dev/hb-dev-040-local-http-cors-cache.md
+  category: local-http-workflow
+  visibility: public
+- id: hb-dev-041-redacted-support-export
+  path: public-dev/hb-dev-041-redacted-support-export.md
+  category: privacy-data-workflow
+  visibility: public
+- id: hb-dev-042-package-lock-conflict
+  path: public-dev/hb-dev-042-package-lock-conflict.md
+  category: dependency-debugging
+  visibility: public
+- id: hb-dev-043-metrics-window-offbyone
+  path: public-dev/hb-dev-043-metrics-window-offbyone.md
+  category: data-bugfix
+  visibility: public
+- id: hb-dev-044-graphql-pagination-trap
+  path: public-dev/hb-dev-044-graphql-pagination-trap.md
+  category: local-api-workflow
+  visibility: public
+- id: hb-dev-045-git-secret-scrub-report
+  path: public-dev/hb-dev-045-git-secret-scrub-report.md
+  category: git-local-workflow
+  visibility: public
 - id: hb-pri-001-research-freshness
   path: private-holdout/hb-pri-001-research-freshness.md
   category: research-freshness

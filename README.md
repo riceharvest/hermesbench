@@ -98,7 +98,7 @@ tests/                    parser, runner, API, storage, official-run, and websit
 | `fresh-rolling` | 5 | Fresh-wave workflow starters | Yes |
 | `private-holdout` | 5 | Public templates for private holdout shape; not official hidden tasks | Yes |
 
-The manifest currently contains 50 entries total: 35 public-dev tasks, 5 public anchor tasks, 5 public fresh-rolling starter tasks, and 5 public private-holdout templates. The private-holdout files in this repository document shape only; real official private packs stay outside the public repo.
+The manifest currently contains 60 entries total: 45 public-dev tasks, 5 public anchor tasks, 5 public fresh-rolling starter tasks, and 5 public private-holdout sample/template tasks. The committed private-holdout files are executable samples; real official private packs stay outside the public repo and are loaded separately for maintainer runs.
 
 Public/dev categories include sanity/tool use, file operations, codebase navigation, bugfixes with tests, PR summaries, GitHub issue triage, docs research, provider config troubleshooting, browser automation, CSV/data analysis, log analysis, CVE triage, Dockerfile optimization, CI/CD diagnosis, cron scheduling, session/context recovery, memory/profile boundaries, email/calendar-style fixtures, mock APIs, false-done traps, skills, K8s debugging, spreadsheets, freshness-aware research, artifact audit, cost/latency analysis, tool-call planning, and hidden-check design.
 
@@ -174,11 +174,12 @@ The site includes a landing page, methodology overview, task-suite explanation, 
 ## Adding tasks
 
 1. Copy [`tasks/TASK_TEMPLATE.md`](tasks/TASK_TEMPLATE.md).
-2. Add fixture files under `fixtures/<task-id>/`.
-3. Use deterministic checks whenever possible.
-4. Add hidden-check notes for future private/fresh variants.
-5. Update `tasks/manifest.yaml`.
-6. Run:
+2. Add fixture files under `fixtures/<task-id>/` unless `no_fixture_required: true` is justified.
+3. Document `Failure mode tested`, `Why hard for agents`, and `Overfitting risk` (see [`docs/task-format.md`](docs/task-format.md)).
+4. Use at least four substantive deterministic checks whenever possible, including command and semantic validation rather than marker-only files.
+5. Add hidden-check notes for future private/fresh variants.
+6. Update `tasks/manifest.yaml`.
+7. Run:
 
 ```bash
 uv run hermesbench validate-tasks

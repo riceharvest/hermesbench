@@ -1,0 +1,12 @@
+fixture_version: fresh-rolling-2026-06
+fixture_kind: verification-audit
+dataset_id: FRE-9995-FAL
+policy_code: HB-FRE-306
+owner: Pax
+deadline: 2026-11-15
+records: 12,77,33,20,81
+expected_total: 223
+record_count: 5
+checksum: a11c1d03537b4dca
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

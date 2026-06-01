@@ -1,0 +1,12 @@
+fixture_version: anchor-calibration-2026-06
+fixture_kind: csv-summary
+dataset_id: ANC-8106-CSV
+policy_code: HB-ANC-983
+owner: Jun
+deadline: 2026-09-13
+records: 39,47,78,91,39,31
+expected_total: 325
+record_count: 6
+checksum: 0ee09e1fc85347f0
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

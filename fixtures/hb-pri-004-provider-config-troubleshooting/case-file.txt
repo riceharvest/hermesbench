@@ -1,0 +1,12 @@
+fixture_version: private-holdout-template-2026-06
+fixture_kind: provider-fix
+dataset_id: PRI-2206-PRO
+policy_code: HB-PRI-891
+owner: Iris
+deadline: 2026-10-14
+records: 82,89,27,93,37,37
+expected_total: 365
+record_count: 6
+checksum: 27581a19f4d3736e
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

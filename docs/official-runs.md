@@ -20,7 +20,11 @@ Maintainers should capture provider invoices or run logs sufficient to estimate 
 
 ## Private task handling
 
-Private packs are never published before official scoring windows close. Public `private-holdout` files are templates only.
+Private packs are never published before official scoring windows close. Public `private-holdout` files are executable templates/sample holdouts with real fixtures, but official runs should point at an external pack with rotated values and hidden checks. Put that pack outside the repository and set `HERMESBENCH_PRIVATE_PACK_DIR=/secure/path/to/tasks` before discovery/validation. The external directory uses the same `manifest.yaml` plus `suite/task.md` layout as `tasks/`; fixtures may be placed in a sibling `fixtures/` directory or bundled in the pack. Use `python scripts/private_pack.py --pack /secure/path/to/tasks` to sanity-check the pack without copying secrets into git.
+
+## Fresh rolling regeneration
+
+Fresh public waves are generated with rotated fixtures via `python scripts/create_fresh_wave.py --wave fresh-YYYY-MM --count N --seed <operator-seed>`. Review generated values, commit only redistributable fresh fixtures, and record the wave id in the official manifest.
 
 ## Archive requirements
 

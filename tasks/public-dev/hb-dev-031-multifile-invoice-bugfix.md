@@ -44,8 +44,19 @@ Full credit requires a working multi-file bugfix verified by the provided test a
 - json_field: artifacts/hb-dev-031-multifile-invoice-bugfix-report.json => checksum=hb031b17
 - command_passes: python -m pytest -q tests/test_invoice_totals.py
 
+- command_passes: python scripts/verify_artifact.py
+
 ## Hidden checks
 - Holdout variants may rotate invoice values and verify the implementation rather than the public total.
+
+## Failure mode tested
+This task rejects marker-only completion, stale fixture copying, wrong deterministic fields, and leaked trap/private-looking data by requiring a local verifier in addition to field checks.
+
+## Why hard for agents
+The agent must inspect the fixture and produce a coherent artifact that survives executable validation rather than only echoing the visible task id or verified marker.
+
+## Overfitting risk
+Public constants are visible for development; hidden variants can rotate fixture values, file names, decoy markers, and verifier expectations while preserving the same workflow.
 
 ## Cleanup
 Delete the isolated workdir after grading.

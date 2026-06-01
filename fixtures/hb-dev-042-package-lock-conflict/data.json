@@ -1,0 +1,9 @@
+{
+  "dataset_id": "pkg-lock-042",
+  "expected": {
+    "fixed_package": "left-pad-shim",
+    "test_count": 7
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20042"
+}

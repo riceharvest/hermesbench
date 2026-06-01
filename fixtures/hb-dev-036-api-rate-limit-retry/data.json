@@ -1,0 +1,10 @@
+{
+  "dataset_id": "api-rate-036",
+  "expected": {
+    "retry_after_seconds": 2,
+    "accepted_count": 4,
+    "rejected_count": 1
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20036"
+}

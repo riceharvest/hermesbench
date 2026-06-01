@@ -1,0 +1,12 @@
+fixture_version: fresh-rolling-2026-06
+fixture_kind: csv-summary
+dataset_id: FRE-4620-CSV
+policy_code: HB-FRE-528
+owner: Jun
+deadline: 2026-09-13
+records: 52,87,32,53,65,57,73
+expected_total: 419
+record_count: 7
+checksum: a129721c3e4566cf
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

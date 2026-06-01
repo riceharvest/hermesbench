@@ -1,6 +1,6 @@
 import json, subprocess, sys
 from pathlib import Path
-from hermesbench.tasks import discover_tasks, parse_task_markdown, validate_tasks
+from hermesbench.tasks import discover_tasks, parse_task_markdown, validate_tasks, task_quality_tier
 from hermesbench.runner import run_benchmark
 from hermesbench.scoring import aggregate
 from hermesbench.schemas import validate_result_schema
@@ -27,7 +27,19 @@ def test_public_dev_tasks_are_not_marker_only():
             shallow.append(task.metadata['id'])
     assert not shallow
 
-def test_grader_supports_json_field_literals_and_command_passes(tmp_path):
+def test_quality_lint_flags_shallow_marker_only_tasks(tmp_path):
+    tasks_dir=tmp_path/'tasks'; suite=tasks_dir/'public-dev'; suite.mkdir(parents=True)
+    md='''---\nid: shallow\ntitle: Shallow\ncategory: cat\nwave: 1\nvisibility: public\ncreated_at: 2026-01-01\nfreshness_window: static\nexpected_human_minutes: 1\ndifficulty: easy\nrequired_toolsets: []\ngrading_type: deterministic\ntimeout_seconds: 10\ncontamination_notes: note long enough to be meaningful\nsafety_notes: none\n---\n## Prompt\nDo it.\n## Expected artifacts\n- done.txt\n## Deterministic checks\n- artifact_exists: done.txt\n'''
+    (suite/'shallow.md').write_text(md)
+    (tasks_dir/'manifest.yaml').write_text('suite: public-dev\ntasks:\n- id: shallow\n  path: public-dev/shallow.md\n  category: cat\n  visibility: public\n')
+    structural=validate_tasks(task_root=tasks_dir)
+    quality=validate_tasks(task_root=tasks_dir, quality_only=True)
+    assert structural == []
+    assert any('has 1 deterministic checks' in e for e in quality)
+    assert any('marker-only' in e for e in quality)
+    assert any('no semantic validation' in e for e in quality)
+    assert task_quality_tier(discover_tasks('public-dev', task_root=tasks_dir)[0], tmp_path) == 'needs-review'
+
     from hermesbench.graders.deterministic import run_checks
     (tmp_path/'artifacts').mkdir()
     (tmp_path/'artifacts/report.json').write_text('{"ok": true, "count": 3, "name": "alpha"}')

@@ -1,0 +1,12 @@
+fixture_version: private-holdout-template-2026-06
+fixture_kind: verification-audit
+dataset_id: PRI-9588-FAL
+policy_code: HB-PRI-506
+owner: Pax
+deadline: 2026-11-15
+records: 28,58,29,58,25
+expected_total: 198
+record_count: 5
+checksum: b075a5c49d958213
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

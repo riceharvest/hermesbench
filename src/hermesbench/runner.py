@@ -2,7 +2,7 @@ from __future__ import annotations
 import json, os, platform, shutil, subprocess, tempfile, time, uuid
 from datetime import datetime, timezone
 from pathlib import Path
-from .tasks import discover_tasks
+from .tasks import discover_tasks, task_quality_tier
 from .adapters import get_adapter
 from .graders.deterministic import run_checks
 from .schemas import TaskResult, RunResult
@@ -61,6 +61,7 @@ def run_benchmark(agent='mock', suite='public-dev', task_id=None, output_dir='re
             results.append(TaskResult(
                 task_id=task.metadata['id'], category=task.metadata['category'], status=status,
                 score=effective_score, passed=effective_score>=1.0, wall_time_seconds=round(time.time()-t0,3),
+                task_quality_tier=task_quality_tier(task, ROOT),
                 raw_task_score=raw_score, effective_task_score=effective_score, behavior_penalty=behavior_penalty,
                 passed_raw=raw_score>=1.0, passed_effective=effective_score>=1.0,
                 verification_claimed=verification_claimed, verification_sufficient=verification_sufficient,

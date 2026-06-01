@@ -1,9 +1,12 @@
 from __future__ import annotations
 import os, re, yaml
 from pathlib import Path
-from .schemas import Task, REQUIRED_TASK_FIELDS, GRADING_TYPES
+from .schemas import Task, REQUIRED_TASK_FIELDS, GRADING_TYPES, QUALITY_TIERS
 
 ROOT = Path(__file__).resolve().parents[2]
+QUALITY_TEMPLATE_SECTIONS = ("Failure mode tested", "Why hard for agents", "Overfitting risk")
+COMMAND_CHECK_TYPES = {"command_passes", "command_contains", "command_not_contains"}
+SEMANTIC_CHECK_TYPES = {"json_field", "artifact_matches", "artifact_not_matches", "artifact_not_contains", *COMMAND_CHECK_TYPES}
 
 def parse_task_markdown(path: str | Path) -> Task:
     path=Path(path); text=path.read_text()
@@ -48,6 +51,59 @@ def parse_task_markdown(path: str | Path) -> Task:
             checks.append({'type':'command_not_contains','command':cmd.strip(),'needle':needle.strip()})
     return Task(meta, sections.get('Prompt','').strip(), sections.get('Setup','').strip(), lines('Expected artifacts'), sections.get('Scoring rubric','').strip(), checks, lines('Hidden checks'), sections.get('Cleanup','').strip(), str(path))
 
+def task_quality_findings(task: Task, root: Path = ROOT) -> list[str]:
+    """Return quality lint findings as WARNING/ERROR strings for one task.
+
+    Findings are deliberately conservative so older task packs keep parsing, while
+    `validate-tasks` still surfaces shallow or overfit-prone tasks to maintainers.
+    """
+    tid=task.metadata.get('id','<unknown>')
+    findings=[]
+    checks=task.deterministic_checks or []
+    if len(checks) <= 3:
+        findings.append(f'WARNING {tid}: quality lint: has {len(checks)} deterministic checks; use at least 4 independent checks')
+    artifacts=[str(a).lower() for a in task.expected_artifacts]
+    if artifacts and all(a.endswith(('marker.txt','completion.txt','done.txt','success.txt')) for a in artifacts):
+        findings.append(f'WARNING {tid}: quality lint: expected artifacts look marker-only')
+    if checks and all(c.get('type') == 'artifact_exists' or (c.get('type') == 'artifact_contains' and str(c.get('needle','')).lower() in {'done','ok','success','complete','completed'}) for c in checks):
+        findings.append(f'ERROR {tid}: quality lint: deterministic checks are marker-only and do not validate task substance')
+    if checks and not any(c.get('type') in COMMAND_CHECK_TYPES for c in checks):
+        findings.append(f'WARNING {tid}: quality lint: no command-based validation check')
+    if checks and not any(c.get('type') in SEMANTIC_CHECK_TYPES for c in checks):
+        findings.append(f'ERROR {tid}: quality lint: no semantic validation beyond file existence/markers')
+    fixture_dir=root/'fixtures'/tid
+    fixture_files=[p for p in fixture_dir.rglob('*') if p.is_file()] if fixture_dir.exists() else []
+    fixture_bytes=sum(p.stat().st_size for p in fixture_files) if fixture_files else 0
+    if task.metadata.get('no_fixture_required') is not True and fixture_bytes < 128:
+        findings.append(f'WARNING {tid}: quality lint: tiny or missing fixture set ({fixture_bytes} bytes); set no_fixture_required: true when intentional')
+    sections = getattr(task, 'sections', None)
+    # Task dataclass stays backward-compatible; re-read sections from source for strict template lint.
+    source = Path(task.path)
+    if source.exists():
+        body = source.read_text().split('---',2)[2] if source.read_text().startswith('---\n') else source.read_text()
+        sections = dict(re.findall(r'^## ([^\n]+)\n(.*?)(?=^## |\Z)', body, flags=re.M|re.S))
+    for section in QUALITY_TEMPLATE_SECTIONS:
+        if not (sections or {}).get(section,'').strip():
+            findings.append(f'WARNING {tid}: quality lint: missing template section "{section}"')
+    tier=task.metadata.get('quality_tier')
+    if tier and tier not in QUALITY_TIERS:
+        findings.append(f'ERROR {tid}: quality lint: unknown quality_tier {tier!r}')
+    return findings
+
+def task_quality_tier(task: Task, root: Path = ROOT) -> str:
+    explicit=task.metadata.get('quality_tier')
+    if explicit in QUALITY_TIERS:
+        return explicit
+    findings=task_quality_findings(task, root)
+    if any(f.startswith('ERROR') for f in findings):
+        return 'needs-review'
+    warnings=sum(1 for f in findings if f.startswith('WARNING'))
+    if warnings == 0:
+        return 'gold'
+    if warnings <= 2:
+        return 'silver'
+    return 'bronze'
+
 def _task_base(root: Path = ROOT, task_root: str | Path | None = None) -> Path:
     if task_root:
         return Path(task_root)
@@ -73,7 +129,7 @@ def discover_tasks(suite='public-dev', root: Path = ROOT, task_root: str | Path 
         tasks.append(t)
     return tasks
 
-def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None) -> list[str]:
+def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None, include_quality: bool = False, quality_only: bool = False) -> list[str]:
     errors=[]; ids=set()
     base=_task_base(root, task_root)
     manifest_path=base/'manifest.yaml'
@@ -83,8 +139,9 @@ def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None) -> li
     listed={t['id'] for t in entries}
     manifest_paths={Path(t.get('path','')) for t in entries}
     actual_paths={p.relative_to(base) for p in base.glob('*/*.md') if p.name.lower() != 'readme.md' and p.name != 'TASK_TEMPLATE.md'}
-    for p in sorted(actual_paths-manifest_paths): errors.append(f'{p} missing from manifest')
-    for p in sorted(manifest_paths-actual_paths): errors.append(f'manifest references missing path: {p}')
+    if not quality_only:
+        for p in sorted(actual_paths-manifest_paths): errors.append(f'{p} missing from manifest')
+        for p in sorted(manifest_paths-actual_paths): errors.append(f'manifest references missing path: {p}')
     tasks=[]
     for suite in sorted({p.parts[0] for p in manifest_paths if p.parts}):
         try:
@@ -93,16 +150,19 @@ def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None) -> li
             errors.append(str(exc))
     for t in tasks:
         tid=t.metadata['id']
-        if tid in ids: errors.append(f'duplicate id {tid}')
+        if not quality_only and tid in ids: errors.append(f'duplicate id {tid}')
         ids.add(tid)
-        if tid not in listed: errors.append(f'{tid} missing from manifest')
+        if not quality_only and tid not in listed: errors.append(f'{tid} missing from manifest')
         entry=next((e for e in entries if e.get('id') == tid), {})
-        for field in ('category','visibility'):
-            if entry.get(field) and entry.get(field) != t.metadata.get(field):
-                errors.append(f"{tid} manifest {field} mismatch: {entry.get(field)} != {t.metadata.get(field)}")
-        if not t.prompt: errors.append(f'{tid} missing prompt')
-        if not t.deterministic_checks: errors.append(f'{tid} has no deterministic checks')
-        if t.metadata['visibility'] == 'private' and not t.hidden_checks:
-            errors.append(f'{tid} private task has no hidden checks note')
-    if listed-ids: errors.append(f'manifest references missing tasks: {sorted(listed-ids)}')
+        if not quality_only:
+            for field in ('category','visibility'):
+                if entry.get(field) and entry.get(field) != t.metadata.get(field):
+                    errors.append(f"{tid} manifest {field} mismatch: {entry.get(field)} != {t.metadata.get(field)}")
+            if not t.prompt: errors.append(f'{tid} missing prompt')
+            if not t.deterministic_checks: errors.append(f'{tid} has no deterministic checks')
+            if t.metadata['visibility'] == 'private' and not t.hidden_checks:
+                errors.append(f'{tid} private task has no hidden checks note')
+        if include_quality or quality_only:
+            errors.extend(task_quality_findings(t, base.parent if base.name == 'tasks' else root))
+    if not quality_only and listed-ids: errors.append(f'manifest references missing tasks: {sorted(listed-ids)}')
     return errors

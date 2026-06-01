@@ -1,0 +1,9 @@
+{
+  "dataset_id": "support-redact-041",
+  "expected": {
+    "ticket_count": 4,
+    "redacted_fields": 3
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20041"
+}

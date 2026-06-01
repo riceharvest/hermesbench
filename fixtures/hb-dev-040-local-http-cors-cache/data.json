@@ -1,0 +1,9 @@
+{
+  "dataset_id": "cors-cache-040",
+  "expected": {
+    "cors_origin": "http://localhost:4173",
+    "cache_seconds": 60
+  },
+  "stale_total": 999,
+  "policy": "HB-POL-20040"
+}

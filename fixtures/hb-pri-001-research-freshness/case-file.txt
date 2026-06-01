@@ -1,0 +1,12 @@
+fixture_version: private-holdout-template-2026-06
+fixture_kind: research-brief
+dataset_id: PRI-9611-RES
+policy_code: HB-PRI-710
+owner: Mira
+deadline: 2026-07-11
+records: 27,38,54,17,32,29,41
+expected_total: 238
+record_count: 7
+checksum: 6df374197860ed81
+
+Instructions: compute the record total from the comma-separated records, preserve the owner/deadline/policy fields exactly, and explain one category-specific finding in the report.

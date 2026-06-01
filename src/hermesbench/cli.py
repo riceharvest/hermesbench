@@ -19,9 +19,15 @@ def main(argv=None):
     sub.add_parser('versions')
     a=p.parse_args(argv)
     if a.cmd=='validate-tasks':
-        errs=validate_tasks(task_root=a.task_root);
-        if errs: print('\n'.join(errs)); raise SystemExit(1)
-        print('ok')
+        errs=validate_tasks(task_root=a.task_root)
+        quality=validate_tasks(task_root=a.task_root, quality_only=True)
+        if errs:
+            print('\n'.join(errs)); raise SystemExit(1)
+        if quality:
+            print('\n'.join(quality))
+            print(f'ok (with {len(quality)} quality findings)')
+        else:
+            print('ok')
     elif a.cmd=='run': print(run_benchmark(a.agent,a.suite,a.task,a.output_dir,a.model,a.command,a.benchmark_version,a.provider,a.reasoning_effort,a.task_root))
     elif a.cmd=='score': print(json.dumps(aggregate(a.result), indent=2))
     elif a.cmd=='export':
