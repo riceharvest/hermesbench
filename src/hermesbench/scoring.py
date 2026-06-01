@@ -16,6 +16,7 @@ def aggregate(path: str | Path) -> dict:
     return {
       'schema_version':'hermesbench.score.v1',
       'run_id':data['run_id'], 'agent':data['agent'], 'model':data.get('model'), 'suite':data['suite'],
+      'provider':data.get('metadata',{}).get('provider'), 'reasoning_effort':data.get('metadata',{}).get('reasoning_effort'),
       'overall_score':avg(rs), 'pass_at_1':sum(1 for r in rs if r.get('passed'))/n,
       'category_scores':{k:avg(v) for k,v in sorted(cats.items())},
       'cost_per_successful_task_usd':cost_success,

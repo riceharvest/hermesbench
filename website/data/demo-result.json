@@ -1,52 +1,563 @@
 {
   "schema": "hermesbench.website.demo_result.v1",
-  "run_id": "demo-mock-public-dev",
-  "benchmark_version": "hermesbench-v0.1",
-  "agent": "Hermes mock",
-  "model": "mock",
-  "provider": "local",
+  "run_id": "ba262d5d589a",
+  "benchmark_version": "public-dev-2026-06",
+  "agent": "Hermes Agent",
+  "model": "gpt-5.5",
+  "provider": "openai-codex",
+  "reasoning_effort": "low",
   "suite": "public-dev",
   "official": false,
   "overall_score": 1.0,
   "category_scores": {
-    "sanity": 1.0,
-    "files": 1.0,
-    "code": 1.0
+    "artifact-audit": 1.0,
+    "browser-automation": 1.0,
+    "bugfix-with-tests": 1.0,
+    "calendar-scheduling": 1.0,
+    "cicd-failure-diagnosis": 1.0,
+    "codebase-navigation": 1.0,
+    "context-recovery": 1.0,
+    "cost-latency-analysis": 1.0,
+    "cron-scheduling": 1.0,
+    "csv-data-analysis": 1.0,
+    "dockerfile-optimization": 1.0,
+    "docs-research-synthesis": 1.0,
+    "email-triage": 1.0,
+    "false-done-verification": 1.0,
+    "file-operations": 1.0,
+    "github-issue-triage": 1.0,
+    "github-pr-risk": 1.0,
+    "hidden-check-design": 1.0,
+    "k8s-debugging": 1.0,
+    "log-analysis": 1.0,
+    "memory-boundary": 1.0,
+    "mock-api-workflow": 1.0,
+    "pr-summary-writing": 1.0,
+    "provider-config-troubleshooting": 1.0,
+    "research-freshness": 1.0,
+    "sanity-basic-tool-use": 1.0,
+    "security-cve-triage": 1.0,
+    "skills-workflow": 1.0,
+    "spreadsheet-analysis": 1.0,
+    "tool-call-planning": 1.0
   },
   "summary": {
     "pass_at_1": 1.0,
     "false_done_rate": 0.0,
     "timeout_rate": 0.0,
-    "median_wall_time_seconds": 0.0,
+    "median_wall_time_seconds": 20.005000000000003,
     "tool_call_count": 0,
-    "cost_per_successful_task_usd": 0.0
+    "cost_per_successful_task_usd": null
   },
   "tasks": [
     {
       "task_id": "hb-dev-001-sanity-basic-tool-use",
-      "category": "sanity",
+      "category": "sanity-basic-tool-use",
       "status": "passed",
       "score": 1.0,
       "false_done": false,
       "timeout": false,
-      "cost_usd": 0.0,
+      "cost_usd": null,
       "tool_calls": 0,
+      "wall_time_seconds": 19.126,
       "evidence": [
-        "Mock adapter created required artifact.",
-        "Deterministic checks passed."
+        "artifact_exists artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS"
       ]
     },
     {
       "task_id": "hb-dev-002-file-operations",
-      "category": "files",
+      "category": "file-operations",
       "status": "passed",
       "score": 1.0,
       "false_done": false,
       "timeout": false,
-      "cost_usd": 0.0,
+      "cost_usd": null,
       "tool_calls": 0,
+      "wall_time_seconds": 27.396,
       "evidence": [
-        "File inventory artifact present."
+        "artifact_exists artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-003-codebase-navigation",
+      "category": "codebase-navigation",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 25.676,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-004-bugfix-with-tests",
+      "category": "bugfix-with-tests",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 19.264,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-005-pr-summary-writing",
+      "category": "pr-summary-writing",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 18.959,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-006-github-issue-triage",
+      "category": "github-issue-triage",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 19.384,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-007-docs-research-synthesis",
+      "category": "docs-research-synthesis",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 18.918,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-008-provider-config-troubleshooting",
+      "category": "provider-config-troubleshooting",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 19.086,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-009-browser-automation",
+      "category": "browser-automation",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 18.58,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-010-csv-data-analysis",
+      "category": "csv-data-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 17.279,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-011-log-analysis",
+      "category": "log-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 25.016,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-012-security-cve-triage",
+      "category": "security-cve-triage",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 23.09,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-013-dockerfile-optimization",
+      "category": "dockerfile-optimization",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 22.003,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-014-cicd-failure-diagnosis",
+      "category": "cicd-failure-diagnosis",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 23.132,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-015-cron-scheduling",
+      "category": "cron-scheduling",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 22.457,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-016-context-recovery",
+      "category": "context-recovery",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 25.009,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-017-memory-boundary",
+      "category": "memory-boundary",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 29.886,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-018-email-triage",
+      "category": "email-triage",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 19.294,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-019-calendar-scheduling",
+      "category": "calendar-scheduling",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 24.153,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-020-mock-api-workflow",
+      "category": "mock-api-workflow",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 17.973,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-021-false-done-verification",
+      "category": "false-done-verification",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 29.768,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-022-skills-workflow",
+      "category": "skills-workflow",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 18.854,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-023-github-pr-risk",
+      "category": "github-pr-risk",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 14.362,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-024-k8s-debugging",
+      "category": "k8s-debugging",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 20.626,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-025-spreadsheet-analysis",
+      "category": "spreadsheet-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 21.235,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-026-research-freshness",
+      "category": "research-freshness",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 18.177,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-027-artifact-audit",
+      "category": "artifact-audit",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 15.137,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-028-cost-latency-analysis",
+      "category": "cost-latency-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 21.959,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-029-tool-call-planning",
+      "category": "tool-call-planning",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 15.371,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS"
+      ]
+    },
+    {
+      "task_id": "hb-dev-030-hidden-check-design",
+      "category": "hidden-check-design",
+      "status": "passed",
+      "score": 1.0,
+      "false_done": false,
+      "timeout": false,
+      "cost_usd": null,
+      "tool_calls": 0,
+      "wall_time_seconds": 22.007,
+      "evidence": [
+        "artifact_exists artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS"
       ]
     }
   ]

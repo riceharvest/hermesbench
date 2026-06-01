@@ -51,6 +51,7 @@ uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite publi
 uv run hermesbench validate-tasks
 uv run hermesbench versions
 uv run hermesbench run --agent mock --suite public-dev
+uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low
 uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1
 uv run hermesbench run --agent shell --command './my-agent-runner.sh'
 uv run hermesbench score results/<run>.json
@@ -116,6 +117,7 @@ Sections include prompt, setup, expected artifacts, scoring rubric, deterministi
 
 Runner output uses `hermesbench.result.v1`. Scoring emits `hermesbench.score.v1` with:
 
+- provider, model, and reasoning effort (`none|minimal|low|medium|high|xhigh`) because reasoning depth materially changes cost/latency/quality
 - overall score
 - category scores
 - pass@1

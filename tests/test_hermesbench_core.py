@@ -54,6 +54,16 @@ def test_mock_adapter_run_and_score(tmp_path):
     assert score['overall_score'] == 1.0
     assert score['pass_at_1'] == 1.0
 
+def test_provider_model_reasoning_metadata(tmp_path):
+    result=run_benchmark(agent='mock', suite='public-dev', task_id='hb-dev-001-sanity-basic-tool-use', output_dir=tmp_path, model='openaicodex/gpt-5.5', reasoning_effort='low')
+    data=json.loads(Path(result).read_text())
+    score=aggregate(result)
+    assert data['model'] == 'gpt-5.5'
+    assert data['metadata']['provider'] == 'openai-codex'
+    assert data['metadata']['reasoning_effort'] == 'low'
+    assert score['provider'] == 'openai-codex'
+    assert score['reasoning_effort'] == 'low'
+
 def test_cli_smoke_validate_and_export(monkeypatch):
     import os
     env = os.environ.copy()

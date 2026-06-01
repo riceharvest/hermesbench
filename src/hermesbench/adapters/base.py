@@ -10,5 +10,6 @@ class AgentRun:
     claimed_done: bool = True
 
 class AgentAdapter:
-    def __init__(self, model: str | None = None): self.model=model
+    def __init__(self, model: str | None = None, provider: str | None = None, reasoning_effort: str | None = None):
+        self.model=model; self.provider=provider; self.reasoning_effort=reasoning_effort
     def run_task(self, task, workdir: Path) -> AgentRun: raise NotImplementedError

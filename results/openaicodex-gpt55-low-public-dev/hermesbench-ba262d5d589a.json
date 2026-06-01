@@ -1,0 +1,798 @@
+{
+  "schema_version": "hermesbench.result.v1",
+  "run_id": "ba262d5d589a",
+  "suite": "public-dev",
+  "agent": "hermes",
+  "model": "gpt-5.5",
+  "started_at": "2026-06-01T20:51:41.230172+00:00",
+  "completed_at": "2026-06-01T21:02:14.413525+00:00",
+  "results": [
+    {
+      "task_id": "hb-dev-001-sanity-basic-tool-use",
+      "category": "sanity-basic-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 19.126,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
+        "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-001-sanity-basic-tool-use-report.json \u2192 b/artifacts/hb-dev-001-sanity-basic-tool-use-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-001-sanity-basic-tool-use\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-001\",\n+  \"policy_code\": \"HB-POL-1001\",\n+  \"expected_total\": 20,\n+  \"record_count\": 3,\n+  \"checksum\": \"hb001cafe\",\n+  \"owner\": \"owner-01@example.test\",\n+  \"deadline\": \"2026-06-02\",\n+  \"verified\": true\n+}\nDone and verified.\n\nWrote:\n/tmp/hb-hb-dev-001-sanity-basic-tool-use-r_ypovj8/artifacts/hb-dev-001-sanity-basic-tool-use-report.json\n\nVerification output:\nverified /tmp/hb-hb-dev-001-sanity-basic-tool-use-r_ypovj8/artifacts/hb-dev-001-sanity-basic-tool-use-report.json\n\nsession_id: 20260601_225142_2a5d50\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-002-file-operations",
+      "category": "file-operations",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 27.396,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
+        "json_field artifacts/hb-dev-002-file-operations-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-002-file-operations-report.json \u2192 b/artifacts/hb-dev-002-file-operations-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-002-file-operations\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-002\",\n+  \"policy_code\": \"HB-POL-1002\",\n+  \"expected_total\": 27,\n+  \"record_count\": 4,\n+  \"checksum\": \"hb002cafe\",\n+  \"owner\": \"owner-02@example.test\",\n+  \"deadline\": \"2026-06-03\",\n+  \"verified\": true\n+}\nDone and verified.\n\nCreated:\n`/tmp/hb-hb-dev-002-file-operations-65zkmyi4/artifacts/hb-dev-002-file-operations-report.json`\n\nVerification output:\n`verified /tmp/hb-hb-dev-002-file-operations-65zkmyi4/artifacts/hb-dev-002-file-operations-report.json`\n\nsession_id: 20260601_225201_e102a5\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-003-codebase-navigation",
+      "category": "codebase-navigation",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 25.676,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
+        "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-003-codebase-navigation-report.json \u2192 b/artifacts/hb-dev-003-codebase-navigation-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-003-codebase-navigation\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-003\",\n+  \"policy_code\": \"HB-POL-1003\",\n+  \"expected_total\": 34,\n+  \"record_count\": 5,\n+  \"checksum\": \"hb003cafe\",\n+  \"owner\": \"owner-03@example.test\",\n+  \"deadline\": \"2026-06-04\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-003-codebase-navigation-pmnfabal/artifacts/hb-dev-003-codebase-navigation-report.json\n\nVerification returned: `verified ok`\n\nsession_id: 20260601_225228_a162b3\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-004-bugfix-with-tests",
+      "category": "bugfix-with-tests",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 19.264,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
+        "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-004-bugfix-with-tests-report.json \u2192 b/artifacts/hb-dev-004-bugfix-with-tests-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-004-bugfix-with-tests\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-004\",\n+  \"policy_code\": \"HB-POL-1004\",\n+  \"expected_total\": 41,\n+  \"record_count\": 6,\n+  \"checksum\": \"hb004cafe\",\n+  \"owner\": \"owner-04@example.test\",\n+  \"deadline\": \"2026-06-05\",\n+  \"verified\": true\n+}\nDone and verified.\n\nCreated:\n`/tmp/hb-hb-dev-004-bugfix-with-tests-727fy3af/artifacts/hb-dev-004-bugfix-with-tests-report.json`\n\nVerification output:\n`verified /tmp/hb-hb-dev-004-bugfix-with-tests-727fy3af/artifacts/hb-dev-004-bugfix-with-tests-report.json`\n\nsession_id: 20260601_225254_88563a\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-005-pr-summary-writing",
+      "category": "pr-summary-writing",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 18.959,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
+        "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-005-pr-summary-writing-report.json \u2192 b/artifacts/hb-dev-005-pr-summary-writing-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-005-pr-summary-writing\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-005\",\n+  \"policy_code\": \"HB-POL-1005\",\n+  \"expected_total\": 48,\n+  \"record_count\": 7,\n+  \"checksum\": \"hb005cafe\",\n+  \"owner\": \"owner-05@example.test\",\n+  \"deadline\": \"2026-06-06\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-005-pr-summary-writing-a3ke82d8/artifacts/hb-dev-005-pr-summary-writing-report.json\n\nVerification returned: `verified ok`\n\nsession_id: 20260601_225313_53986d\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-006-github-issue-triage",
+      "category": "github-issue-triage",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 19.384,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-006-github-issue-triage-report.json \u2192 b/artifacts/hb-dev-006-github-issue-triage-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-006-github-issue-triage\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-006\",\n+  \"policy_code\": \"HB-POL-1006\",\n+  \"expected_total\": 55,\n+  \"record_count\": 8,\n+  \"checksum\": \"hb006cafe\",\n+  \"owner\": \"owner-06@example.test\",\n+  \"deadline\": \"2026-06-07\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-006-github-issue-triage-sodiw496/artifacts/hb-dev-006-github-issue-triage-report.json\n\nVerification output:\nverified /tmp/hb-hb-dev-006-github-issue-triage-sodiw496/artifacts/hb-dev-006-github-issue-triage-report.json\n\nsession_id: 20260601_225332_5cd3a1\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-007-docs-research-synthesis",
+      "category": "docs-research-synthesis",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 18.918,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
+        "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-007-docs-research-synthesis-report.json \u2192 b/artifacts/hb-dev-007-docs-research-synthesis-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-007-docs-research-synthesis\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-007\",\n+  \"policy_code\": \"HB-POL-1007\",\n+  \"expected_total\": 62,\n+  \"record_count\": 9,\n+  \"checksum\": \"hb007cafe\",\n+  \"owner\": \"owner-07@example.test\",\n+  \"deadline\": \"2026-06-08\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-007-docs-research-synthesis-yukynaz8/artifacts/hb-dev-007-docs-research-synthesis-report.json\n\nVerification passed with exact expected JSON fields.\n\nsession_id: 20260601_225351_241867\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-008-provider-config-troubleshooting",
+      "category": "provider-config-troubleshooting",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 19.086,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
+        "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-008-provider-config-troubleshooting-report.json \u2192 b/artifacts/hb-dev-008-provider-config-troubleshooting-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-008-provider-config-troubleshooting\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-008\",\n+  \"policy_code\": \"HB-POL-1008\",\n+  \"expected_total\": 69,\n+  \"record_count\": 10,\n+  \"checksum\": \"hb008cafe\",\n+  \"owner\": \"owner-08@example.test\",\n+  \"deadline\": \"2026-06-09\",\n+  \"verified\": true\n+}\nDone and verified.\n\nWrote: /tmp/hb-hb-dev-008-provider-config-troubleshooting-ocxlanx1/artifacts/hb-dev-008-provider-config-troubleshooting-report.json\n\nVerification passed with exact expected JSON fields.\n\nsession_id: 20260601_225410_b238d6\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-009-browser-automation",
+      "category": "browser-automation",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 18.58,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
+        "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-009-browser-automation-report.json \u2192 b/artifacts/hb-dev-009-browser-automation-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-009-browser-automation\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-009\",\n+  \"policy_code\": \"HB-POL-1009\",\n+  \"expected_total\": 76,\n+  \"record_count\": 11,\n+  \"checksum\": \"hb009cafe\",\n+  \"owner\": \"owner-09@example.test\",\n+  \"deadline\": \"2026-06-10\",\n+  \"verified\": true\n+}\nDone. Verified artifact written to:\n\n/tmp/hb-hb-dev-009-browser-automation-gg96sg7h/artifacts/hb-dev-009-browser-automation-report.json\n\nsession_id: 20260601_225429_6d8e56\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-010-csv-data-analysis",
+      "category": "csv-data-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 17.279,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-010-csv-data-analysis-report.json \u2192 b/artifacts/hb-dev-010-csv-data-analysis-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-010-csv-data-analysis\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-010\",\n+  \"policy_code\": \"HB-POL-1010\",\n+  \"expected_total\": 83,\n+  \"record_count\": 12,\n+  \"checksum\": \"hb010cafe\",\n+  \"owner\": \"owner-10@example.test\",\n+  \"deadline\": \"2026-06-11\",\n+  \"verified\": true\n+}\nDone. Created and verified:\n\n/tmp/hb-hb-dev-010-csv-data-analysis-mn574vdt/artifacts/hb-dev-010-csv-data-analysis-report.json\n\nsession_id: 20260601_225448_54c769\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-011-log-analysis",
+      "category": "log-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 25.016,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-011-log-analysis-report.json \u2192 b/artifacts/hb-dev-011-log-analysis-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-011-log-analysis\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-011\",\n+  \"policy_code\": \"HB-POL-1011\",\n+  \"expected_total\": 90,\n+  \"record_count\": 13,\n+  \"checksum\": \"hb011cafe\",\n+  \"owner\": \"owner-11@example.test\",\n+  \"deadline\": \"2026-06-12\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-011-log-analysis-vvhkr92a/artifacts/hb-dev-011-log-analysis-report.json\n\nVerification output: `verified ok`\n\nsession_id: 20260601_225505_da5cf8\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-012-security-cve-triage",
+      "category": "security-cve-triage",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 23.09,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-012-security-cve-triage-report.json \u2192 b/artifacts/hb-dev-012-security-cve-triage-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-012-security-cve-triage\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-012\",\n+  \"policy_code\": \"HB-POL-1012\",\n+  \"expected_total\": 97,\n+  \"record_count\": 14,\n+  \"checksum\": \"hb012cafe\",\n+  \"owner\": \"owner-12@example.test\",\n+  \"deadline\": \"2026-06-13\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-012-security-cve-triage-cl108ezo/artifacts/hb-dev-012-security-cve-triage-report.json\n\nVerification output: `verified ok`\n\nsession_id: 20260601_225530_772d0d\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-013-dockerfile-optimization",
+      "category": "dockerfile-optimization",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 22.003,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
+        "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-013-dockerfile-optimization-report.json \u2192 b/artifacts/hb-dev-013-dockerfile-optimization-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-013-dockerfile-optimization\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-013\",\n+  \"policy_code\": \"HB-POL-1013\",\n+  \"expected_total\": 104,\n+  \"record_count\": 15,\n+  \"checksum\": \"hb013cafe\",\n+  \"owner\": \"owner-13@example.test\",\n+  \"deadline\": \"2026-06-14\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-013-dockerfile-optimization-rm88a7y_/artifacts/hb-dev-013-dockerfile-optimization-report.json\n\nVerification passed against the fixture fields.\n\nsession_id: 20260601_225553_3064e1\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-014-cicd-failure-diagnosis",
+      "category": "cicd-failure-diagnosis",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 23.132,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
+        "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-014-cicd-failure-diagnosis-report.json \u2192 b/artifacts/hb-dev-014-cicd-failure-diagnosis-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-014-cicd-failure-diagnosis\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-014\",\n+  \"policy_code\": \"HB-POL-1014\",\n+  \"expected_total\": 111,\n+  \"record_count\": 16,\n+  \"checksum\": \"hb014cafe\",\n+  \"owner\": \"owner-14@example.test\",\n+  \"deadline\": \"2026-06-15\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-014-cicd-failure-diagnosis-81xxqugk/artifacts/hb-dev-014-cicd-failure-diagnosis-report.json\n\nVerification output: `verified ok`\n\nsession_id: 20260601_225615_8b7570\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-015-cron-scheduling",
+      "category": "cron-scheduling",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 22.457,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-015-cron-scheduling-report.json \u2192 b/artifacts/hb-dev-015-cron-scheduling-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-015-cron-scheduling\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-015\",\n+  \"policy_code\": \"HB-POL-1015\",\n+  \"expected_total\": 118,\n+  \"record_count\": 17,\n+  \"checksum\": \"hb015cafe\",\n+  \"owner\": \"owner-15@example.test\",\n+  \"deadline\": \"2026-06-16\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-015-cron-scheduling-n4o4g4uf/artifacts/hb-dev-015-cron-scheduling-report.json\n\nVerification returned: `verified ok`.\n\nsession_id: 20260601_225638_9bf45e\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-016-context-recovery",
+      "category": "context-recovery",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 25.009,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
+        "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-016-context-recovery-report.json \u2192 b/artifacts/hb-dev-016-context-recovery-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-016-context-recovery\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-016\",\n+  \"policy_code\": \"HB-POL-1016\",\n+  \"expected_total\": 125,\n+  \"record_count\": 18,\n+  \"checksum\": \"hb016cafe\",\n+  \"owner\": \"owner-16@example.test\",\n+  \"deadline\": \"2026-06-17\",\n+  \"verified\": true\n+}\nDone. Created and verified:\n\n/tmp/hb-hb-dev-016-context-recovery-8qlmmg7s/artifacts/hb-dev-016-context-recovery-report.json\n\nVerification output: `verified ok`\n\nsession_id: 20260601_225701_ec2022\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-017-memory-boundary",
+      "category": "memory-boundary",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 29.886,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
+        "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-017-memory-boundary-report.json \u2192 b/artifacts/hb-dev-017-memory-boundary-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-017-memory-boundary\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-017\",\n+  \"policy_code\": \"HB-POL-1017\",\n+  \"expected_total\": 132,\n+  \"record_count\": 19,\n+  \"checksum\": \"hb017cafe\",\n+  \"owner\": \"owner-17@example.test\",\n+  \"deadline\": \"2026-06-18\",\n+  \"verified\": true\n+}\nDone and verified.\n\nWrote: /tmp/hb-hb-dev-017-memory-boundary-b4vu7xml/artifacts/hb-dev-017-memory-boundary-report.json\n\nsession_id: 20260601_225726_c5afb1\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-018-email-triage",
+      "category": "email-triage",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 19.294,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
+        "json_field artifacts/hb-dev-018-email-triage-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-018-email-triage-report.json \u2192 b/artifacts/hb-dev-018-email-triage-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-018-email-triage\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-018\",\n+  \"policy_code\": \"HB-POL-1018\",\n+  \"expected_total\": 139,\n+  \"record_count\": 20,\n+  \"checksum\": \"hb018cafe\",\n+  \"owner\": \"owner-18@example.test\",\n+  \"deadline\": \"2026-06-19\",\n+  \"verified\": true\n+}\nDone and verified.\n\nCreated:\n/tmp/hb-hb-dev-018-email-triage-qht6809m/artifacts/hb-dev-018-email-triage-report.json\n\nVerification output:\nverified /tmp/hb-hb-dev-018-email-triage-qht6809m/artifacts/hb-dev-018-email-triage-report.json\n\nsession_id: 20260601_225756_c56814\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-019-calendar-scheduling",
+      "category": "calendar-scheduling",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 24.153,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
+        "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-019-calendar-scheduling-report.json \u2192 b/artifacts/hb-dev-019-calendar-scheduling-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-019-calendar-scheduling\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-019\",\n+  \"policy_code\": \"HB-POL-1019\",\n+  \"expected_total\": 146,\n+  \"record_count\": 21,\n+  \"checksum\": \"hb019cafe\",\n+  \"owner\": \"owner-19@example.test\",\n+  \"deadline\": \"2026-06-20\",\n+  \"verified\": true\n+}\nDone. Created and verified:\n\n/tmp/hb-hb-dev-019-calendar-scheduling-l2eue5pc/artifacts/hb-dev-019-calendar-scheduling-report.json\n\nVerification output: `verified ok`\n\nsession_id: 20260601_225815_240bb0\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-020-mock-api-workflow",
+      "category": "mock-api-workflow",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 17.973,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-020-mock-api-workflow-report.json \u2192 b/artifacts/hb-dev-020-mock-api-workflow-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-020-mock-api-workflow\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-020\",\n+  \"policy_code\": \"HB-POL-1020\",\n+  \"expected_total\": 153,\n+  \"record_count\": 22,\n+  \"checksum\": \"hb020cafe\",\n+  \"owner\": \"owner-20@example.test\",\n+  \"deadline\": \"2026-06-21\",\n+  \"verified\": true\n+}\nDone. Created and verified:\n\n/tmp/hb-hb-dev-020-mock-api-workflow-wta4cpwu/artifacts/hb-dev-020-mock-api-workflow-report.json\n\nsession_id: 20260601_225839_fcf679\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-021-false-done-verification",
+      "category": "false-done-verification",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 29.768,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
+        "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-021-false-done-verification-report.json \u2192 b/artifacts/hb-dev-021-false-done-verification-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-021-false-done-verification\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-021\",\n+  \"policy_code\": \"HB-POL-1021\",\n+  \"expected_total\": 160,\n+  \"record_count\": 23,\n+  \"checksum\": \"hb021cafe\",\n+  \"owner\": \"owner-21@example.test\",\n+  \"deadline\": \"2026-06-22\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-021-false-done-verification-nwaqid6g/artifacts/hb-dev-021-false-done-verification-report.json\n\nVerification output: `verified ok`\n\nsession_id: 20260601_225857_d22ca4\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-022-skills-workflow",
+      "category": "skills-workflow",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 18.854,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
+        "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-022-skills-workflow-report.json \u2192 b/artifacts/hb-dev-022-skills-workflow-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-022-skills-workflow\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-022\",\n+  \"policy_code\": \"HB-POL-1022\",\n+  \"expected_total\": 167,\n+  \"record_count\": 24,\n+  \"checksum\": \"hb022cafe\",\n+  \"owner\": \"owner-22@example.test\",\n+  \"deadline\": \"2026-06-23\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-022-skills-workflow-iajzke7o/artifacts/hb-dev-022-skills-workflow-report.json\n\nVerification output: `verified /tmp/hb-hb-dev-022-skills-workflow-iajzke7o/artifacts/hb-dev-022-skills-workflow-report.json`\n\nsession_id: 20260601_225927_06206b\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-023-github-pr-risk",
+      "category": "github-pr-risk",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 14.362,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
+        "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-023-github-pr-risk-report.json \u2192 b/artifacts/hb-dev-023-github-pr-risk-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-023-github-pr-risk\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-023\",\n+  \"policy_code\": \"HB-POL-1023\",\n+  \"expected_total\": 174,\n+  \"record_count\": 25,\n+  \"checksum\": \"hb023cafe\",\n+  \"owner\": \"owner-23@example.test\",\n+  \"deadline\": \"2026-06-24\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-023-github-pr-risk-tbp_swr6/artifacts/hb-dev-023-github-pr-risk-report.json\n\nsession_id: 20260601_225946_f121b9\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-024-k8s-debugging",
+      "category": "k8s-debugging",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 20.626,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
+        "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-024-k8s-debugging-report.json \u2192 b/artifacts/hb-dev-024-k8s-debugging-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-024-k8s-debugging\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-024\",\n+  \"policy_code\": \"HB-POL-1024\",\n+  \"expected_total\": 181,\n+  \"record_count\": 26,\n+  \"checksum\": \"hb024cafe\",\n+  \"owner\": \"owner-24@example.test\",\n+  \"deadline\": \"2026-06-25\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-024-k8s-debugging-9shvp8r1/artifacts/hb-dev-024-k8s-debugging-report.json\n\nVerification output: `verified ok`\n\nsession_id: 20260601_230000_35ff69\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-025-spreadsheet-analysis",
+      "category": "spreadsheet-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 21.235,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-025-spreadsheet-analysis-report.json \u2192 b/artifacts/hb-dev-025-spreadsheet-analysis-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-025-spreadsheet-analysis\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-025\",\n+  \"policy_code\": \"HB-POL-1025\",\n+  \"expected_total\": 188,\n+  \"record_count\": 27,\n+  \"checksum\": \"hb025cafe\",\n+  \"owner\": \"owner-25@example.test\",\n+  \"deadline\": \"2026-06-26\",\n+  \"verified\": true\n+}\nDone and verified.\n\nCreated:\n`/tmp/hb-hb-dev-025-spreadsheet-analysis-83apnyft/artifacts/hb-dev-025-spreadsheet-analysis-report.json`\n\nVerification output:\n`verified ok`\n\nsession_id: 20260601_230021_d0d8a0\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-026-research-freshness",
+      "category": "research-freshness",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 18.177,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
+        "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-026-research-freshness-report.json \u2192 b/artifacts/hb-dev-026-research-freshness-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-026-research-freshness\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-026\",\n+  \"policy_code\": \"HB-POL-1026\",\n+  \"expected_total\": 195,\n+  \"record_count\": 28,\n+  \"checksum\": \"hb026cafe\",\n+  \"owner\": \"owner-26@example.test\",\n+  \"deadline\": \"2026-06-27\",\n+  \"verified\": true\n+}\nDone. Wrote and verified:\n\n/tmp/hb-hb-dev-026-research-freshness-xh_3cqmo/artifacts/hb-dev-026-research-freshness-report.json\n\nsession_id: 20260601_230042_77989e\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-027-artifact-audit",
+      "category": "artifact-audit",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 15.137,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
+        "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-027-artifact-audit-report.json \u2192 b/artifacts/hb-dev-027-artifact-audit-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-027-artifact-audit\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-027\",\n+  \"policy_code\": \"HB-POL-1027\",\n+  \"expected_total\": 202,\n+  \"record_count\": 29,\n+  \"checksum\": \"hb027cafe\",\n+  \"owner\": \"owner-27@example.test\",\n+  \"deadline\": \"2026-06-28\",\n+  \"verified\": true\n+}\nDone and verified.\n\nCreated:\n`/tmp/hb-hb-dev-027-artifact-audit-ng9x3fsc/artifacts/hb-dev-027-artifact-audit-report.json`\n\nsession_id: 20260601_230100_b5ab3d\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-028-cost-latency-analysis",
+      "category": "cost-latency-analysis",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 21.959,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
+        "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-028-cost-latency-analysis-report.json \u2192 b/artifacts/hb-dev-028-cost-latency-analysis-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-028-cost-latency-analysis\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-028\",\n+  \"policy_code\": \"HB-POL-1028\",\n+  \"expected_total\": 209,\n+  \"record_count\": 30,\n+  \"checksum\": \"hb028cafe\",\n+  \"owner\": \"owner-28@example.test\",\n+  \"deadline\": \"2026-06-01\",\n+  \"verified\": true\n+}\nDone.\n\nCreated and verified:\n`/tmp/hb-hb-dev-028-cost-latency-analysis-r26m06vs/artifacts/hb-dev-028-cost-latency-analysis-report.json`\n\nVerification output: `verified ok`\n\nsession_id: 20260601_230115_6d8aaa\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-029-tool-call-planning",
+      "category": "tool-call-planning",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 15.371,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
+        "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-029-tool-call-planning-report.json \u2192 b/artifacts/hb-dev-029-tool-call-planning-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-029-tool-call-planning\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-029\",\n+  \"policy_code\": \"HB-POL-1029\",\n+  \"expected_total\": 216,\n+  \"record_count\": 31,\n+  \"checksum\": \"hb029cafe\",\n+  \"owner\": \"owner-29@example.test\",\n+  \"deadline\": \"2026-06-02\",\n+  \"verified\": true\n+}\nDone and verified.\n\nCreated:\n`/tmp/hb-hb-dev-029-tool-call-planning-9wmq6vzg/artifacts/hb-dev-029-tool-call-planning-report.json`\n\nsession_id: 20260601_230137_e657db\n"
+      }
+    },
+    {
+      "task_id": "hb-dev-030-hidden-check-design",
+      "category": "hidden-check-design",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 22.007,
+      "tool_calls": 0,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
+        "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS"
+      ],
+      "logs": {
+        "transcript": "  \u250a review diff\na/artifacts/hb-dev-030-hidden-check-design-report.json \u2192 b/artifacts/hb-dev-030-hidden-check-design-report.json\n@@ -0,0 +1,12 @@\n+{\n+  \"task_id\": \"hb-dev-030-hidden-check-design\",\n+  \"fixture_version\": \"public-dev-v1\",\n+  \"dataset_id\": \"public-dev-dataset-030\",\n+  \"policy_code\": \"HB-POL-1030\",\n+  \"expected_total\": 223,\n+  \"record_count\": 32,\n+  \"checksum\": \"hb030cafe\",\n+  \"owner\": \"owner-30@example.test\",\n+  \"deadline\": \"2026-06-03\",\n+  \"verified\": true\n+}\nDone. Created and verified:\n\n/tmp/hb-hb-dev-030-hidden-check-design-qoejfaom/artifacts/hb-dev-030-hidden-check-design-report.json\n\nsession_id: 20260601_230153_7dfbd6\n"
+      }
+    }
+  ],
+  "metadata": {
+    "task_count": 30,
+    "public_output_redacts_hidden_checks": true,
+    "benchmark_version": "public-dev-2026-06",
+    "provider": "openai-codex",
+    "reasoning_effort": "low"
+  }
+}
