@@ -1,0 +1,1 @@
+Do not rank earliest ERROR as root cause. Correlate by trace id and first irreversible divergent event. If payment succeeds before order expects authorized, classify root cause as payment contract mismatch, not timeout.

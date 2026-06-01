@@ -26,5 +26,5 @@ hermesbench = "hermesbench.cli:main"
 packages = ["src/hermesbench", "src/qwen_mtp_probe"]
 
 [tool.pytest.ini_options]
-pythonpath = ["src"]
+pythonpath = ["src", "."]
 testpaths = ["tests"]

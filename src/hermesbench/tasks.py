@@ -1,5 +1,5 @@
 from __future__ import annotations
-import re, yaml
+import os, re, yaml
 from pathlib import Path
 from .schemas import Task, REQUIRED_TASK_FIELDS, GRADING_TYPES
 
@@ -31,18 +31,28 @@ def parse_task_markdown(path: str | Path) -> Task:
             checks.append({'type':'command_passes','command':item.split(':',1)[1].strip()})
     return Task(meta, sections.get('Prompt','').strip(), sections.get('Setup','').strip(), lines('Expected artifacts'), sections.get('Scoring rubric','').strip(), checks, lines('Hidden checks'), sections.get('Cleanup','').strip(), str(path))
 
-def discover_tasks(suite='public-dev', root: Path = ROOT) -> list[Task]:
-    task_files=[p for p in (root/'tasks'/suite).glob('*.md') if p.name.lower() != 'readme.md' and p.name != 'TASK_TEMPLATE.md']
+def _task_base(root: Path = ROOT, task_root: str | Path | None = None) -> Path:
+    if task_root:
+        return Path(task_root)
+    if os.environ.get('HERMESBENCH_PRIVATE_PACK_DIR'):
+        return Path(os.environ['HERMESBENCH_PRIVATE_PACK_DIR'])
+    return root/'tasks'
+
+def discover_tasks(suite='public-dev', root: Path = ROOT, task_root: str | Path | None = None) -> list[Task]:
+    task_files=[p for p in (_task_base(root, task_root)/suite).glob('*.md') if p.name.lower() != 'readme.md' and p.name != 'TASK_TEMPLATE.md']
     return sorted([parse_task_markdown(p) for p in task_files], key=lambda t:t.metadata['id'])
 
-def validate_tasks(root: Path = ROOT) -> list[str]:
+def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None) -> list[str]:
     errors=[]; ids=set()
-    manifest = yaml.safe_load((root/'tasks/manifest.yaml').read_text())
+    base=_task_base(root, task_root)
+    manifest_path=base/'manifest.yaml'
+    if not manifest_path.exists(): return [f'missing manifest {manifest_path}']
+    manifest = yaml.safe_load(manifest_path.read_text())
     listed={t['id'] for t in manifest['tasks']}
     tasks=[]
-    for suite_dir in (root/'tasks').iterdir():
+    for suite_dir in base.iterdir():
         if suite_dir.is_dir():
-            tasks.extend(discover_tasks(suite_dir.name, root))
+            tasks.extend(discover_tasks(suite_dir.name, root, base))
     for t in tasks:
         tid=t.metadata['id']
         if tid in ids: errors.append(f'duplicate id {tid}')

@@ -3,9 +3,11 @@ function pct(x){return `${Math.round((x||0)*100)}%`;}
 const categories=['file operations','codebase navigation','bugfixes','issue triage','docs research','provider config','browser automation','CSV/data','logs','CVE triage','Docker/CI','cron','context recovery','memory boundary','email/calendar','mock APIs','false-done traps','cost/latency'];
 const taskList=document.querySelector('#task-list');
 if(taskList){categories.forEach(c=>{const div=document.createElement('div'); div.className='task-chip'; div.textContent=c; taskList.appendChild(div);});}
-Promise.all([loadJson('data/demo-leaderboard.json'),loadJson('data/demo-result.json')]).then(([leader,result])=>{
+Promise.all([loadJson('data/leaderboard.json'),loadJson('data/latest-result.json')]).then(([leader,result])=>{
  const body=document.querySelector('#leaderboard-table tbody');
- leader.entries.forEach(e=>{const tr=document.createElement('tr'); const model=[e.provider,e.model].filter(Boolean).join('/')+(e.reasoning_effort?` · reasoning ${e.reasoning_effort}`:''); tr.innerHTML=`<td>${e.rank}</td><td><strong>${e.agent}</strong></td><td>${model}</td><td class="score">${pct(e.overall_score)}</td><td>${pct(e.pass_at_1)}</td><td class="${e.false_done_rate ? 'bad' : ''}">${pct(e.false_done_rate)}</td><td>${e.official?'Official':'Unofficial'}</td>`; body.appendChild(tr);});
+ const render=(rows,label)=>{rows.forEach(e=>{const tr=document.createElement('tr'); const model=[e.provider,e.model].filter(Boolean).join('/')+(e.reasoning_effort?` · reasoning ${e.reasoning_effort}`:''); tr.innerHTML=`<td>${label} #${e.rank}</td><td><strong>${e.agent}</strong></td><td>${model}</td><td class="score">${pct(e.overall_score)}</td><td>${pct(e.pass_at_1)}</td><td class="${e.false_done_rate ? 'bad' : ''}">${pct(e.false_done_rate)}</td><td>${e.official?'Official hidden/private pack':'Unofficial public/dev'}</td>`; body.appendChild(tr);});};
+ render(leader.official||[],'Official'); render(leader.unofficial||[],'Unofficial');
+ if(!(leader.official||[]).length){const tr=document.createElement('tr'); tr.innerHTML='<td colspan="7" class="muted">No official private/fresh-pack runs have been published yet.</td>'; body.prepend(tr);}
  const detail=document.querySelector('#result-detail');
  const cats=Object.entries(result.category_scores||{}).slice(0,12).map(([k,v])=>`<div class="mini"><strong>${k}</strong><br><span class="score">${pct(v)}</span></div>`).join('');
  const tasks=(result.tasks||[]).slice(0,6).map(t=>`<div class="mini"><strong>${t.task_id}</strong><br>${t.status} · score ${pct(t.score)}<br><span class="muted">false_done=${t.false_done}; timeout=${t.timeout}; tool_calls=${t.tool_calls}</span></div>`).join('');

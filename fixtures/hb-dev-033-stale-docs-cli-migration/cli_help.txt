@@ -1,0 +1,2 @@
+Usage: acmectl replicate --workspace <id> --window <duration> --output <path> [--dry-run]
+Example: acmectl replicate --workspace ws-demo --window 6h --output artifacts/sync-report.json --dry-run

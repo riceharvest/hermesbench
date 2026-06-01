@@ -1,0 +1,6 @@
+2026-05-29T09:14:02Z INFO deploy sha=8fd12 route=/checkout
+2026-05-29T09:17:15Z WARN upstream_timeout service=payments trace=tr-a17 user=u-44
+2026-05-29T09:17:16Z ERROR checkout_failed trace=tr-a17 http=504
+2026-05-29T09:18:01Z ERROR db_pool_exhausted service=orders trace=tr-b02
+2026-05-29T09:18:02Z INFO retry_success trace=tr-b02
+2026-05-29T09:21:09Z ERROR checkout_failed trace=tr-c77 http=400 reason=invalid_coupon

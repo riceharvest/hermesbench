@@ -1,0 +1,3 @@
+09:17:13Z INFO reserve_inventory trace=tr-a17 sku=bag-7 ok=true
+09:17:16Z ERROR payment_state_mismatch trace=tr-a17 expected=authorized actual=succeeded
+09:18:02Z INFO recovered trace=tr-b02

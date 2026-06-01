@@ -1,0 +1,6 @@
+invoice_id,customer,subtotal,tax_rate,discount_code
+INV-100,Ada,100.00,0.05,SAVE10
+INV-101,Ada,120.00,0.05,NONE
+INV-102,Ben,200.00,0.08,VIP15
+INV-103,Ben,75.00,0.08,NONE
+INV-104,Cy,90.00,0.05,NONE

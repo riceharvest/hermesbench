@@ -1,0 +1,4 @@
+09:17:14Z INFO request trace=tr-a17 idem=pay_902 amount=4319
+09:17:15Z WARN provider_latency_ms=2800 trace=tr-a17 provider=orbital
+09:17:15Z INFO charge_created trace=tr-a17 charge=ch_778 status=succeeded
+09:17:16Z WARN duplicate_webhook trace=tr-a17 ignored=true

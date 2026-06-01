@@ -8,6 +8,8 @@ class AgentRun:
     tool_calls: int = 0
     cost_usd: float | None = None
     claimed_done: bool = True
+    token_usage: dict[str, int | float] | None = None
+    telemetry_source: str | None = None
 
 class AgentAdapter:
     def __init__(self, model: str | None = None, provider: str | None = None, reasoning_effort: str | None = None):

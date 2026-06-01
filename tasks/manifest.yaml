@@ -121,6 +121,26 @@ tasks:
   path: public-dev/hb-dev-030-hidden-check-design.md
   category: hidden-check-design
   visibility: public
+- id: hb-dev-031-multifile-invoice-bugfix
+  path: public-dev/hb-dev-031-multifile-invoice-bugfix.md
+  category: multi-file-bugfix
+  visibility: public
+- id: hb-dev-032-ambiguous-log-root-cause
+  path: public-dev/hb-dev-032-ambiguous-log-root-cause.md
+  category: ambiguous-logs
+  visibility: public
+- id: hb-dev-033-stale-docs-cli-migration
+  path: public-dev/hb-dev-033-stale-docs-cli-migration.md
+  category: stale-docs
+  visibility: public
+- id: hb-dev-034-browserish-checkout-traps
+  path: public-dev/hb-dev-034-browserish-checkout-traps.md
+  category: browser-ish-workflow
+  visibility: public
+- id: hb-dev-035-memory-privacy-refusal
+  path: public-dev/hb-dev-035-memory-privacy-refusal.md
+  category: memory-privacy-boundary
+  visibility: public
 - id: hb-pri-001-research-freshness
   path: private-holdout/hb-pri-001-research-freshness.md
   category: research-freshness

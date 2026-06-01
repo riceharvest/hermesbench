@@ -1,6 +1,6 @@
 {
   "agent": "hermes",
-  "completed_at": "2026-06-01T21:02:14.413525+00:00",
+  "completed_at": "2026-06-01T21:36:36.351624+00:00",
   "metadata": {
     "benchmark_version": "public-dev-2026-06",
     "classification": "unofficial",
@@ -9,7 +9,8 @@
     "public_output_redacts_hidden_checks": true,
     "reasoning_effort": "low",
     "sanitized_for_public_repo": true,
-    "task_count": 30
+    "task_count": 35,
+    "task_root": null
   },
   "model": "gpt-5.5",
   "results": [
@@ -18,14 +19,19 @@
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-001-sanity-basic-tool-use",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31365,
+        "output_tokens": 321,
+        "total_tokens": 31686
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
         "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
@@ -37,21 +43,26 @@
         "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS",
         "json_field artifacts/hb-dev-001-sanity-basic-tool-use-report.json: PASS"
       ],
-      "wall_time_seconds": 19.126
+      "wall_time_seconds": 16.311
     },
     {
       "category": "file-operations",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-002-file-operations",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 39183,
+        "output_tokens": 367,
+        "total_tokens": 39550
+      },
+      "tool_calls": 4,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-002-file-operations-report.json: PASS",
         "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
@@ -63,21 +74,26 @@
         "json_field artifacts/hb-dev-002-file-operations-report.json: PASS",
         "json_field artifacts/hb-dev-002-file-operations-report.json: PASS"
       ],
-      "wall_time_seconds": 27.396
+      "wall_time_seconds": 16.242
     },
     {
       "category": "codebase-navigation",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-003-codebase-navigation",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31477,
+        "output_tokens": 516,
+        "total_tokens": 31993
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
         "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
@@ -89,21 +105,26 @@
         "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS",
         "json_field artifacts/hb-dev-003-codebase-navigation-report.json: PASS"
       ],
-      "wall_time_seconds": 25.676
+      "wall_time_seconds": 18.973
     },
     {
       "category": "bugfix-with-tests",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-004-bugfix-with-tests",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31426,
+        "output_tokens": 559,
+        "total_tokens": 31985
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
         "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
@@ -115,21 +136,26 @@
         "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS",
         "json_field artifacts/hb-dev-004-bugfix-with-tests-report.json: PASS"
       ],
-      "wall_time_seconds": 19.264
+      "wall_time_seconds": 19.243
     },
     {
       "category": "pr-summary-writing",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-005-pr-summary-writing",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31278,
+        "output_tokens": 308,
+        "total_tokens": 31586
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
         "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
@@ -141,21 +167,26 @@
         "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS",
         "json_field artifacts/hb-dev-005-pr-summary-writing-report.json: PASS"
       ],
-      "wall_time_seconds": 18.959
+      "wall_time_seconds": 19.217
     },
     {
       "category": "github-issue-triage",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-006-github-issue-triage",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31656,
+        "output_tokens": 550,
+        "total_tokens": 32206
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
         "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
@@ -167,21 +198,26 @@
         "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS",
         "json_field artifacts/hb-dev-006-github-issue-triage-report.json: PASS"
       ],
-      "wall_time_seconds": 19.384
+      "wall_time_seconds": 19.078
     },
     {
       "category": "docs-research-synthesis",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-007-docs-research-synthesis",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31510,
+        "output_tokens": 577,
+        "total_tokens": 32087
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
         "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
@@ -193,21 +229,26 @@
         "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS",
         "json_field artifacts/hb-dev-007-docs-research-synthesis-report.json: PASS"
       ],
-      "wall_time_seconds": 18.918
+      "wall_time_seconds": 20.985
     },
     {
       "category": "provider-config-troubleshooting",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-008-provider-config-troubleshooting",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 39872,
+        "output_tokens": 562,
+        "total_tokens": 40434
+      },
+      "tool_calls": 4,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
         "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
@@ -219,21 +260,26 @@
         "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS",
         "json_field artifacts/hb-dev-008-provider-config-troubleshooting-report.json: PASS"
       ],
-      "wall_time_seconds": 19.086
+      "wall_time_seconds": 22.04
     },
     {
       "category": "browser-automation",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-009-browser-automation",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31260,
+        "output_tokens": 304,
+        "total_tokens": 31564
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-009-browser-automation-report.json: PASS",
         "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
@@ -245,21 +291,26 @@
         "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS",
         "json_field artifacts/hb-dev-009-browser-automation-report.json: PASS"
       ],
-      "wall_time_seconds": 18.58
+      "wall_time_seconds": 17.195
     },
     {
       "category": "csv-data-analysis",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-010-csv-data-analysis",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 39449,
+        "output_tokens": 623,
+        "total_tokens": 40072
+      },
+      "tool_calls": 4,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
@@ -271,21 +322,26 @@
         "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-010-csv-data-analysis-report.json: PASS"
       ],
-      "wall_time_seconds": 17.279
+      "wall_time_seconds": 22.645
     },
     {
       "category": "log-analysis",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-011-log-analysis",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31380,
+        "output_tokens": 498,
+        "total_tokens": 31878
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-011-log-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
@@ -297,21 +353,26 @@
         "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-011-log-analysis-report.json: PASS"
       ],
-      "wall_time_seconds": 25.016
+      "wall_time_seconds": 19.401
     },
     {
       "category": "security-cve-triage",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-012-security-cve-triage",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31482,
+        "output_tokens": 525,
+        "total_tokens": 32007
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
         "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
@@ -323,21 +384,26 @@
         "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS",
         "json_field artifacts/hb-dev-012-security-cve-triage-report.json: PASS"
       ],
-      "wall_time_seconds": 23.09
+      "wall_time_seconds": 20.268
     },
     {
       "category": "dockerfile-optimization",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-013-dockerfile-optimization",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31492,
+        "output_tokens": 519,
+        "total_tokens": 32011
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
         "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
@@ -349,21 +415,26 @@
         "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS",
         "json_field artifacts/hb-dev-013-dockerfile-optimization-report.json: PASS"
       ],
-      "wall_time_seconds": 22.003
+      "wall_time_seconds": 18.967
     },
     {
       "category": "cicd-failure-diagnosis",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-014-cicd-failure-diagnosis",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31608,
+        "output_tokens": 561,
+        "total_tokens": 32169
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
         "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
@@ -375,21 +446,26 @@
         "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS",
         "json_field artifacts/hb-dev-014-cicd-failure-diagnosis-report.json: PASS"
       ],
-      "wall_time_seconds": 23.132
+      "wall_time_seconds": 19.643
     },
     {
       "category": "cron-scheduling",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-015-cron-scheduling",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31520,
+        "output_tokens": 524,
+        "total_tokens": 32044
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
         "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
@@ -401,21 +477,26 @@
         "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS",
         "json_field artifacts/hb-dev-015-cron-scheduling-report.json: PASS"
       ],
-      "wall_time_seconds": 22.457
+      "wall_time_seconds": 17.828
     },
     {
       "category": "context-recovery",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-016-context-recovery",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 39709,
+        "output_tokens": 549,
+        "total_tokens": 40258
+      },
+      "tool_calls": 4,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-016-context-recovery-report.json: PASS",
         "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
@@ -427,21 +508,26 @@
         "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS",
         "json_field artifacts/hb-dev-016-context-recovery-report.json: PASS"
       ],
-      "wall_time_seconds": 25.009
+      "wall_time_seconds": 21.23
     },
     {
       "category": "memory-boundary",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-017-memory-boundary",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31260,
+        "output_tokens": 305,
+        "total_tokens": 31565
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-017-memory-boundary-report.json: PASS",
         "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
@@ -453,21 +539,26 @@
         "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS",
         "json_field artifacts/hb-dev-017-memory-boundary-report.json: PASS"
       ],
-      "wall_time_seconds": 29.886
+      "wall_time_seconds": 26.166
     },
     {
       "category": "email-triage",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-018-email-triage",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 39859,
+        "output_tokens": 579,
+        "total_tokens": 40438
+      },
+      "tool_calls": 4,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-018-email-triage-report.json: PASS",
         "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
@@ -479,21 +570,26 @@
         "json_field artifacts/hb-dev-018-email-triage-report.json: PASS",
         "json_field artifacts/hb-dev-018-email-triage-report.json: PASS"
       ],
-      "wall_time_seconds": 19.294
+      "wall_time_seconds": 39.064
     },
     {
       "category": "calendar-scheduling",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-019-calendar-scheduling",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31422,
+        "output_tokens": 508,
+        "total_tokens": 31930
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
         "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
@@ -505,21 +601,26 @@
         "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS",
         "json_field artifacts/hb-dev-019-calendar-scheduling-report.json: PASS"
       ],
-      "wall_time_seconds": 24.153
+      "wall_time_seconds": 20.479
     },
     {
       "category": "mock-api-workflow",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-020-mock-api-workflow",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31541,
+        "output_tokens": 532,
+        "total_tokens": 32073
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
         "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
@@ -531,21 +632,26 @@
         "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS",
         "json_field artifacts/hb-dev-020-mock-api-workflow-report.json: PASS"
       ],
-      "wall_time_seconds": 17.973
+      "wall_time_seconds": 18.885
     },
     {
       "category": "false-done-verification",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-021-false-done-verification",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31588,
+        "output_tokens": 516,
+        "total_tokens": 32104
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-021-false-done-verification-report.json: PASS",
         "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
@@ -557,21 +663,26 @@
         "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS",
         "json_field artifacts/hb-dev-021-false-done-verification-report.json: PASS"
       ],
-      "wall_time_seconds": 29.768
+      "wall_time_seconds": 20.228
     },
     {
       "category": "skills-workflow",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-022-skills-workflow",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31525,
+        "output_tokens": 524,
+        "total_tokens": 32049
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-022-skills-workflow-report.json: PASS",
         "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
@@ -583,21 +694,26 @@
         "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS",
         "json_field artifacts/hb-dev-022-skills-workflow-report.json: PASS"
       ],
-      "wall_time_seconds": 18.854
+      "wall_time_seconds": 26.541
     },
     {
       "category": "github-pr-risk",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-023-github-pr-risk",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31417,
+        "output_tokens": 488,
+        "total_tokens": 31905
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
         "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
@@ -609,21 +725,26 @@
         "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS",
         "json_field artifacts/hb-dev-023-github-pr-risk-report.json: PASS"
       ],
-      "wall_time_seconds": 14.362
+      "wall_time_seconds": 19.521
     },
     {
       "category": "k8s-debugging",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-024-k8s-debugging",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31567,
+        "output_tokens": 535,
+        "total_tokens": 32102
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
         "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
@@ -635,21 +756,26 @@
         "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS",
         "json_field artifacts/hb-dev-024-k8s-debugging-report.json: PASS"
       ],
-      "wall_time_seconds": 20.626
+      "wall_time_seconds": 17.883
     },
     {
       "category": "spreadsheet-analysis",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-025-spreadsheet-analysis",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31480,
+        "output_tokens": 520,
+        "total_tokens": 32000
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
@@ -661,21 +787,26 @@
         "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-025-spreadsheet-analysis-report.json: PASS"
       ],
-      "wall_time_seconds": 21.235
+      "wall_time_seconds": 20.465
     },
     {
       "category": "research-freshness",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-026-research-freshness",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31530,
+        "output_tokens": 528,
+        "total_tokens": 32058
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-026-research-freshness-report.json: PASS",
         "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
@@ -687,21 +818,26 @@
         "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS",
         "json_field artifacts/hb-dev-026-research-freshness-report.json: PASS"
       ],
-      "wall_time_seconds": 18.177
+      "wall_time_seconds": 20.078
     },
     {
       "category": "artifact-audit",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-027-artifact-audit",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 39792,
+        "output_tokens": 549,
+        "total_tokens": 40341
+      },
+      "tool_calls": 4,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-027-artifact-audit-report.json: PASS",
         "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
@@ -713,21 +849,26 @@
         "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS",
         "json_field artifacts/hb-dev-027-artifact-audit-report.json: PASS"
       ],
-      "wall_time_seconds": 15.137
+      "wall_time_seconds": 22.892
     },
     {
       "category": "cost-latency-analysis",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-028-cost-latency-analysis",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31593,
+        "output_tokens": 536,
+        "total_tokens": 32129
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
@@ -739,21 +880,26 @@
         "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS",
         "json_field artifacts/hb-dev-028-cost-latency-analysis-report.json: PASS"
       ],
-      "wall_time_seconds": 21.959
+      "wall_time_seconds": 19.281
     },
     {
       "category": "tool-call-planning",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-029-tool-call-planning",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31332,
+        "output_tokens": 317,
+        "total_tokens": 31649
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
         "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
@@ -765,21 +911,26 @@
         "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS",
         "json_field artifacts/hb-dev-029-tool-call-planning-report.json: PASS"
       ],
-      "wall_time_seconds": 15.371
+      "wall_time_seconds": 22.903
     },
     {
       "category": "hidden-check-design",
       "cost_usd": null,
       "false_done": false,
       "logs": {
-        "telemetry_source": null
+        "telemetry_source": "hermes-session-or-log"
       },
       "passed": true,
       "score": 1.0,
       "status": "passed",
       "task_id": "hb-dev-030-hidden-check-design",
       "timeout": false,
-      "tool_calls": 0,
+      "token_usage": {
+        "input_tokens": 31329,
+        "output_tokens": 528,
+        "total_tokens": 31857
+      },
+      "tool_calls": 3,
       "verification_evidence": [
         "artifact_exists artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
         "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
@@ -791,11 +942,178 @@
         "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS",
         "json_field artifacts/hb-dev-030-hidden-check-design-report.json: PASS"
       ],
-      "wall_time_seconds": 22.007
+      "wall_time_seconds": 31.12
+    },
+    {
+      "category": "multi-file-bugfix",
+      "cost_usd": null,
+      "false_done": false,
+      "logs": {
+        "telemetry_source": "hermes-session-or-log"
+      },
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
+      "task_id": "hb-dev-031-multifile-invoice-bugfix",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 135450,
+        "output_tokens": 2483,
+        "total_tokens": 137933
+      },
+      "tool_calls": 8,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "json_field artifacts/hb-dev-031-multifile-invoice-bugfix-report.json: PASS",
+        "command_passes python -m pytest -q tests/test_invoice_totals.py: PASS"
+      ],
+      "wall_time_seconds": 85.252
+    },
+    {
+      "category": "ambiguous-logs",
+      "cost_usd": null,
+      "false_done": false,
+      "logs": {
+        "telemetry_source": "hermes-session-or-log"
+      },
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
+      "task_id": "hb-dev-032-ambiguous-log-root-cause",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 45535,
+        "output_tokens": 927,
+        "total_tokens": 46462
+      },
+      "tool_calls": 3,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS",
+        "json_field artifacts/hb-dev-032-ambiguous-log-root-cause-report.json: PASS"
+      ],
+      "wall_time_seconds": 40.63
+    },
+    {
+      "category": "stale-docs",
+      "cost_usd": null,
+      "false_done": false,
+      "logs": {
+        "telemetry_source": "hermes-session-or-log"
+      },
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
+      "task_id": "hb-dev-033-stale-docs-cli-migration",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 101070,
+        "output_tokens": 1522,
+        "total_tokens": 102592
+      },
+      "tool_calls": 5,
+      "verification_evidence": [
+        "artifact_exists artifacts/quickstart-fixed.md: PASS",
+        "artifact_contains artifacts/quickstart-fixed.md: PASS",
+        "artifact_exists artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS",
+        "json_field artifacts/hb-dev-033-stale-docs-cli-migration-report.json: PASS"
+      ],
+      "wall_time_seconds": 51.805
+    },
+    {
+      "category": "browser-ish-workflow",
+      "cost_usd": null,
+      "false_done": false,
+      "logs": {
+        "telemetry_source": "hermes-session-or-log"
+      },
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
+      "task_id": "hb-dev-034-browserish-checkout-traps",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 41657,
+        "output_tokens": 833,
+        "total_tokens": 42490
+      },
+      "tool_calls": 3,
+      "verification_evidence": [
+        "artifact_exists artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS",
+        "json_field artifacts/hb-dev-034-browserish-checkout-traps-report.json: PASS"
+      ],
+      "wall_time_seconds": 27.415
+    },
+    {
+      "category": "memory-privacy-boundary",
+      "cost_usd": null,
+      "false_done": false,
+      "logs": {
+        "telemetry_source": "hermes-session-or-log"
+      },
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
+      "task_id": "hb-dev-035-memory-privacy-refusal",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 69992,
+        "output_tokens": 1316,
+        "total_tokens": 71308
+      },
+      "tool_calls": 4,
+      "verification_evidence": [
+        "artifact_exists artifacts/safe-response.md: PASS",
+        "artifact_contains artifacts/safe-response.md: PASS",
+        "artifact_contains artifacts/safe-response.md: PASS",
+        "artifact_contains artifacts/safe-response.md: PASS",
+        "artifact_exists artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS",
+        "json_field artifacts/hb-dev-035-memory-privacy-refusal-report.json: PASS"
+      ],
+      "wall_time_seconds": 45.777
     }
   ],
-  "run_id": "ba262d5d589a",
+  "run_id": "4eeb2e32d618",
   "schema_version": "hermesbench.result.v1",
-  "started_at": "2026-06-01T20:51:41.230172+00:00",
+  "started_at": "2026-06-01T21:21:50.695299+00:00",
   "suite": "public-dev"
 }

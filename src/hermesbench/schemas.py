@@ -26,6 +26,7 @@ class TaskResult:
     passed: bool
     wall_time_seconds: float
     tool_calls: int = 0
+    token_usage: dict[str, int | float] | None = None
     cost_usd: float | None = None
     false_done: bool = False
     timeout: bool = False
