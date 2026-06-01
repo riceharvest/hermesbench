@@ -8,7 +8,10 @@ def aggregate(path: str | Path) -> dict:
     rs=data['results']; n=len(rs) or 1
     cats={}
     for r in rs: cats.setdefault(r['category'], []).append(r)
-    def avg(xs): return sum(x['score'] for x in xs)/len(xs) if xs else 0
+    def raw_score(r): return float(r.get('score') or 0)
+    def effective_score(r): return 0.0 if r.get('false_done') else raw_score(r)
+    def avg(xs): return sum(effective_score(x) for x in xs)/len(xs) if xs else 0
+    def raw_avg(xs): return sum(raw_score(x) for x in xs)/len(xs) if xs else 0
     successes=[r for r in rs if r.get('passed')]
     cost_success=None
     costs=[r.get('cost_usd') for r in successes if r.get('cost_usd') is not None]
@@ -27,8 +30,9 @@ def aggregate(path: str | Path) -> dict:
       'schema_version':'hermesbench.score.v1',
       'run_id':data['run_id'], 'agent':data['agent'], 'model':data.get('model'), 'suite':data['suite'],
       'provider':data.get('metadata',{}).get('provider'), 'reasoning_effort':data.get('metadata',{}).get('reasoning_effort'),
-      'overall_score':avg(rs), 'pass_at_1':sum(1 for r in rs if r.get('passed'))/n,
+      'overall_score':avg(rs), 'raw_overall_score': raw_avg(rs), 'pass_at_1':sum(1 for r in rs if r.get('passed'))/n,
       'category_scores':{k:avg(v) for k,v in sorted(cats.items())},
+      'raw_category_scores':{k:raw_avg(v) for k,v in sorted(cats.items())},
       'cost_per_successful_task_usd':cost_success,
       'cost_usd':sum(r.get('cost_usd') for r in rs if r.get('cost_usd') is not None) if any(r.get('cost_usd') is not None for r in rs) else None,
       'token_usage':token_usage or None,
