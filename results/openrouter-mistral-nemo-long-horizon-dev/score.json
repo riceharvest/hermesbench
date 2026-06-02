@@ -1,0 +1,88 @@
+{
+  "schema_version": "hermesbench.score.v1",
+  "run_id": "a6e380b1af20",
+  "agent": "hermes",
+  "model": "mistralai/mistral-nemo",
+  "suite": "long-horizon-dev",
+  "provider": "openrouter",
+  "reasoning_effort": null,
+  "overall_score": 0.0,
+  "raw_overall_score": 0.0,
+  "pass_at_1": 0.0,
+  "score_percentage": 0.0,
+  "total_score": 0.0,
+  "raw_total_score": 0.0,
+  "max_score": 10,
+  "category_scores": {
+    "long-context-recovery": 0.0,
+    "long-data-analysis": 0.0,
+    "long-debugging": 0.0,
+    "long-false-done": 0.0,
+    "long-local-saas": 0.0,
+    "long-productivity": 0.0,
+    "long-refactor": 0.0,
+    "long-repo-triage": 0.0,
+    "long-research": 0.0,
+    "long-security": 0.0
+  },
+  "raw_category_scores": {
+    "long-context-recovery": 0.0,
+    "long-data-analysis": 0.0,
+    "long-debugging": 0.0,
+    "long-false-done": 0.0,
+    "long-local-saas": 0.0,
+    "long-productivity": 0.0,
+    "long-refactor": 0.0,
+    "long-repo-triage": 0.0,
+    "long-research": 0.0,
+    "long-security": 0.0
+  },
+  "quality_tier_scores": {
+    "gold": 0.0
+  },
+  "raw_quality_tier_scores": {
+    "gold": 0.0
+  },
+  "quality_tier_counts": {
+    "gold": 10
+  },
+  "task_count": 10,
+  "passed_task_count": 0,
+  "failed_task_count": 10,
+  "cost_per_successful_task_usd": null,
+  "cost_per_task_usd": null,
+  "cost_usd": null,
+  "total_cost_usd": null,
+  "score_per_dollar": null,
+  "token_usage": {
+    "input_tokens": 278541,
+    "output_tokens": 2296,
+    "total_tokens": 280837
+  },
+  "input_tokens": 278541,
+  "output_tokens": 2296,
+  "total_tokens": 280837,
+  "tokens_per_task": 28083.7,
+  "tokens_per_successful_task": null,
+  "total_execution_time_seconds": 83.932,
+  "median_wall_time_seconds": 7.212,
+  "mean_wall_time_seconds": 8.3932,
+  "min_wall_time_seconds": 4.971,
+  "max_wall_time_seconds": 18.846,
+  "p95_wall_time_seconds": 18.846,
+  "tool_call_count": 18,
+  "avg_tool_calls_per_task": 1.8,
+  "verification_compliance": 1.0,
+  "false_done_count": 10,
+  "false_done_rate": 1.0,
+  "timeout_count": 0,
+  "timeout_rate": 0.0,
+  "long_horizon_metrics": {
+    "endurance_score": 0.0,
+    "stage_completion_proxy": 0.0,
+    "false_done_resistance": 0.0,
+    "timeout_resistance": 1.0,
+    "median_task_minutes": 0.1202,
+    "p95_task_minutes": 0.3141
+  }
+}
