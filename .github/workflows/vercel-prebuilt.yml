@@ -1,0 +1,48 @@
+name: Vercel Prebuilt Deploy
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: vercel-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    name: Build locally and deploy prebuilt to Vercel
+    runs-on: [self-hosted, linux, x64, vercel]
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@51.5.0
+
+      - name: Pull Vercel environment
+        run: vercel pull --yes --environment=production --token "$VERCEL_TOKEN"
+
+      - name: Build prebuilt artifact locally
+        run: vercel build --prod --token "$VERCEL_TOKEN"
+
+      - name: Deploy prebuilt artifact
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN")
+          echo "deployed_url=$url" >> "$GITHUB_OUTPUT"
+          echo "Deployed: $url"
