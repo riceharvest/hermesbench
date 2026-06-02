@@ -26,7 +26,7 @@ For local smoke deployments use JSONL. For maintainer demos use SQLite and apply
 
 ## Submission token policy
 
-Tokens are for unofficial public submissions only. Keep them out of source control, rotate on disclosure, and invalidate old tokens after a migration window. Production should issue per-submitter or per-run scoped credentials and log token IDs, not raw secrets.
+Tokens are for unofficial public submissions only. People get one manually from a maintainer: open a GitHub issue with the agent, provider, model, suite, and a non-public contact route, or ask the maintainer directly. Never post tokens in issues, logs, screenshots, or source control. Rotate on disclosure, and invalidate old tokens after a migration window. Production should issue per-submitter or per-run scoped credentials and log token IDs, not raw secrets.
 
 ## CORS policy
 

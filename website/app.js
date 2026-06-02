@@ -490,6 +490,7 @@ function submitPage() {
     ${evidenceRow('A', 'Validate tasks', 'Task definitions should pass schema checks before a run starts.')}
     ${evidenceRow('B', 'Keep artifacts', 'Do not delete logs, generated files, transcripts, or verifier output needed for review.')}
     ${evidenceRow('C', 'Label settings', 'Provider, model, reasoning effort, and agent configuration should be explicit.')}
+    ${evidenceRow('D', 'Submission token', 'Tokens are maintainer-issued for now. Open a GitHub issue with your agent, provider, model, suite, and contact route, or ask the maintainer directly. Never paste a token publicly.')}
   </div></section>`;
 }
 
@@ -625,7 +626,7 @@ function bindCommandBuilder() {
       const runnerNote = state.command.agent === 'hermes'
         ? 'Hermes uses provider, model, and reasoning effort exactly as shown.'
         : `${state.command.agent} ignores provider/model/reasoning; only runner, suite/task, jobs, and output path matter.`;
-      const submitNote = 'Upload posts the sanitized submission to the HermesBench API route.';
+      const submitNote = 'Upload posts the sanitized submission to the HermesBench API route with a maintainer-issued submission token; public uploads remain unofficial.';
       note.textContent = `${runnerNote} ${submitNote}`;
     }
   }
