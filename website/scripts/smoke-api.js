@@ -5,12 +5,18 @@ const path = require('node:path');
 const { Readable } = require('node:stream');
 
 process.env.HERMESBENCH_STORE_PATH = path.join(os.tmpdir(), `hermesbench-api-${process.pid}.jsonl`);
+process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH = path.join(os.tmpdir(), `hermesbench-rate-${process.pid}.json`);
 delete process.env.BLOB_READ_WRITE_TOKEN;
+delete process.env.HERMESBENCH_SUBMISSION_TOKEN;
+delete process.env.HERMESBENCH_RATE_LIMIT_MAX;
+delete process.env.HERMESBENCH_RATE_LIMIT_WINDOW_SECONDS;
+delete process.env.VERCEL_ENV;
 
-function mockReq(method, body) {
+function mockReq(method, body, headers = {}) {
   const req = Readable.from(body ? [JSON.stringify(body)] : []);
   req.method = method;
-  req.headers = { 'content-type': 'application/json' };
+  req.headers = { 'content-type': 'application/json', ...headers };
+  req.socket = { remoteAddress: '127.0.0.1' };
   return req;
 }
 
@@ -25,9 +31,9 @@ function mockRes() {
   };
 }
 
-async function call(handler, method, body) {
+async function call(handler, method, body, headers = {}) {
   const res = mockRes();
-  await handler(mockReq(method, body), res);
+  await handler(mockReq(method, body, headers), res);
   return res;
 }
 
@@ -60,7 +66,18 @@ async function call(handler, method, body) {
     },
   };
 
-  const uploadRes = await call(results, 'POST', payload);
+  process.env.VERCEL_ENV = 'production';
+  const failClosedRes = await call(results, 'POST', payload);
+  assert.equal(failClosedRes.statusCode, 503);
+  assert.match(failClosedRes.json.error, /submission token is not configured/);
+  delete process.env.VERCEL_ENV;
+
+  process.env.HERMESBENCH_SUBMISSION_TOKEN = 'secret-token';
+  const invalidTokenRes = await call(results, 'POST', payload, { 'x-hermesbench-submission-token': 'wrong-token' });
+  assert.equal(invalidTokenRes.statusCode, 401);
+  assert.match(invalidTokenRes.json.error, /submission token/);
+
+  const uploadRes = await call(results, 'POST', payload, { 'x-hermesbench-submission-token': 'secret-token' });
   assert.equal(uploadRes.statusCode, 202);
   assert.equal(uploadRes.json.accepted, true);
   assert.equal(uploadRes.json.run_id, 'api-smoke-run');
@@ -73,6 +90,23 @@ async function call(handler, method, body) {
   assert.equal(leaderboardRes.statusCode, 200);
   assert.equal(leaderboardRes.json.entries[0].run_id, 'api-smoke-run');
   assert.equal(leaderboardRes.json.entries[0].overall_score, 1);
+
+  await fs.rm(process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH, { force: true });
+  process.env.HERMESBENCH_RATE_LIMIT_MAX = '1';
+  process.env.HERMESBENCH_RATE_LIMIT_WINDOW_SECONDS = '60';
+  const firstLimited = await call(results, 'POST', { ...payload, result: { ...payload.result, run_id: 'rate-one' } }, {
+    'x-forwarded-for': '203.0.113.9',
+    'x-hermesbench-submission-token': 'secret-token',
+  });
+  assert.equal(firstLimited.statusCode, 202);
+  const secondLimited = await call(results, 'POST', { ...payload, result: { ...payload.result, run_id: 'rate-two' } }, {
+    'x-forwarded-for': '203.0.113.9',
+    'x-hermesbench-submission-token': 'secret-token',
+  });
+  assert.equal(secondLimited.statusCode, 429);
+  assert.match(secondLimited.json.error, /rate limit/);
+  assert(Number.parseInt(secondLimited.headers['retry-after'], 10) > 0);
+  assert(Number.parseInt(secondLimited.headers['retry-after'], 10) <= 60);
 
   console.log('api smoke ok');
 })();

@@ -1,4 +1,5 @@
 import json
+import urllib.request
 from pathlib import Path
 
 from hermesbench.http_api import create_app
@@ -59,3 +60,31 @@ def test_http_health(tmp_path):
     response = app.request('GET', '/health')
     assert response.status == 200
     assert response.json == {'ok': True}
+
+
+def test_post_submission_sends_submission_token_header(monkeypatch):
+    from hermesbench.submissions import post_submission
+
+    captured = {}
+
+    class Response:
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def read(self):
+            return b'{"accepted":true}'
+
+    def fake_urlopen(req, timeout):
+        captured['headers'] = {key.lower(): value for key, value in req.header_items()}
+        captured['timeout'] = timeout
+        return Response()
+
+    monkeypatch.setattr(urllib.request, 'urlopen', fake_urlopen)
+    body = {'schema_version': 'hermesbench.submission.v1', 'result': {'run_id': 'r1'}}
+
+    assert post_submission(body, 'https://example.test/v1/results', submission_token='secret-token') == '{"accepted":true}'
+    assert captured['headers']['x-hermesbench-submission-token'] == 'secret-token'
+    assert captured['timeout'] == 30

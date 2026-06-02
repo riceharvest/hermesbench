@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, urllib.request
+import json, os, urllib.request
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -57,8 +57,12 @@ def write_submission_file(payload: dict[str, Any], output_dir: str | Path = "sub
     return path
 
 
-def post_submission(payload: dict[str, Any], endpoint: str) -> str:
+def post_submission(payload: dict[str, Any], endpoint: str, submission_token: str | None = None) -> str:
     body = json.dumps(payload).encode("utf-8")
-    req = urllib.request.Request(endpoint, data=body, headers={"content-type": "application/json"}, method="POST")
+    headers = {"content-type": "application/json"}
+    token = submission_token or os.environ.get("HERMESBENCH_SUBMISSION_TOKEN")
+    if token:
+        headers["x-hermesbench-submission-token"] = token
+    req = urllib.request.Request(endpoint, data=body, headers=headers, method="POST")
     with urllib.request.urlopen(req, timeout=30) as resp:  # nosec - caller supplied local/API endpoint
         return resp.read().decode("utf-8")

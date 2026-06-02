@@ -1,10 +1,21 @@
+const crypto = require('node:crypto');
 const fs = require('node:fs/promises');
 const path = require('node:path');
 
 const API_SCHEMA_VERSION = 'hermesbench.api.v0-dev';
 const SUBMISSION_PREFIX = 'submissions/';
+const RATE_LIMIT_PREFIX = 'ratelimits/';
 const LOCAL_STORE_PATH = process.env.HERMESBENCH_STORE_PATH || path.join(process.cwd(), '.tmp', 'submissions.jsonl');
+const LOCAL_RATE_LIMIT_STORE_PATH = process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH || path.join(process.cwd(), '.tmp', 'rate-limits.json');
 const SENSITIVE_LOG_KEYS = new Set(['logs', 'messages', 'transcript', 'stdout', 'stderr']);
+
+class ApiError extends Error {
+  constructor(status, message, headers = {}) {
+    super(message);
+    this.status = status;
+    this.headers = headers;
+  }
+}
 
 let blobClient = null;
 try {
@@ -34,7 +45,7 @@ function corsHeaders() {
   return {
     'access-control-allow-origin': allowed[0] || 'https://hermesbench.site',
     'access-control-allow-methods': 'GET,POST,OPTIONS',
-    'access-control-allow-headers': 'content-type',
+    'access-control-allow-headers': 'content-type,x-hermesbench-submission-token,authorization',
   };
 }
 
@@ -64,12 +75,31 @@ function validateResultShape(result) {
   if (!Array.isArray(result.results)) throw new Error('missing result field: results');
 }
 
-function validateSubmission(payload) {
+function tokenFromRequest(req, payload, result) {
+  const headerToken = req?.headers?.['x-hermesbench-submission-token'];
+  const auth = req?.headers?.authorization || req?.headers?.Authorization;
+  if (typeof headerToken === 'string' && headerToken) return headerToken;
+  if (typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')) return auth.slice(7).trim();
+  return payload?.submission_token || result?.submission_token;
+}
+
+function timingSafeEqual(a, b) {
+  const left = Buffer.from(String(a || ''), 'utf8');
+  const right = Buffer.from(String(b || ''), 'utf8');
+  return left.length === right.length && crypto.timingSafeEqual(left, right);
+}
+
+function validateSubmission(payload, req = null) {
   const result = resultFromPayload(payload);
   validateResultShape(result);
   const expectedToken = process.env.HERMESBENCH_SUBMISSION_TOKEN;
-  const token = payload.submission_token || result.submission_token;
-  if (expectedToken && token !== expectedToken) throw new Error('missing or invalid submission_token');
+  if (!expectedToken && process.env.VERCEL_ENV === 'production') {
+    throw new ApiError(503, 'submission token is not configured');
+  }
+  const token = tokenFromRequest(req, payload, result);
+  if (expectedToken && !timingSafeEqual(token, expectedToken)) {
+    throw new ApiError(401, 'missing or invalid submission token');
+  }
   if (payload.classification === 'official' || result.metadata?.official === true) {
     throw new Error('official flag is maintainer-reserved');
   }
@@ -113,6 +143,93 @@ function blobEnabled() {
 function submissionPath(result) {
   const safeRun = String(result.run_id).replace(/[^a-zA-Z0-9_.-]+/g, '-').slice(0, 96) || 'unknown';
   return `${SUBMISSION_PREFIX}${safeRun}.json`;
+}
+
+function requestIp(req) {
+  const forwarded = req?.headers?.['x-forwarded-for'];
+  const firstForwarded = Array.isArray(forwarded) ? forwarded[0] : forwarded;
+  const ip = String(firstForwarded || req?.headers?.['x-real-ip'] || req?.socket?.remoteAddress || 'unknown')
+    .split(',')[0]
+    .trim();
+  return ip || 'unknown';
+}
+
+function rateLimitConfig() {
+  const max = Number.parseInt(process.env.HERMESBENCH_RATE_LIMIT_MAX || '12', 10);
+  const windowSeconds = Number.parseInt(process.env.HERMESBENCH_RATE_LIMIT_WINDOW_SECONDS || '600', 10);
+  return {
+    max: Number.isFinite(max) ? max : 12,
+    windowSeconds: Number.isFinite(windowSeconds) ? windowSeconds : 600,
+  };
+}
+
+function rateLimitKey(req, windowStart) {
+  const hash = crypto.createHash('sha256').update(requestIp(req)).digest('hex').slice(0, 32);
+  return `${hash}:${windowStart}`;
+}
+
+async function readLocalRateBuckets() {
+  try {
+    return JSON.parse(await fs.readFile(LOCAL_RATE_LIMIT_STORE_PATH, 'utf8'));
+  } catch (error) {
+    if (error.code === 'ENOENT') return {};
+    throw error;
+  }
+}
+
+async function writeLocalRateBuckets(buckets) {
+  await fs.mkdir(path.dirname(LOCAL_RATE_LIMIT_STORE_PATH), { recursive: true });
+  await fs.writeFile(LOCAL_RATE_LIMIT_STORE_PATH, JSON.stringify(buckets));
+}
+
+async function readBlobRateBucket(pathname) {
+  if (!blobEnabled() || !blobClient?.get) return null;
+  const found = await blobClient.get(pathname, { access: 'public' });
+  if (!found?.stream) return null;
+  return JSON.parse(await new Response(found.stream).text());
+}
+
+async function writeBlobRateBucket(pathname, bucket) {
+  await blobClient.put(pathname, JSON.stringify(bucket), {
+    access: 'public',
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: 'application/json',
+  });
+}
+
+async function enforceRateLimit(req) {
+  const { max, windowSeconds } = rateLimitConfig();
+  if (max <= 0 || windowSeconds <= 0) return;
+  const now = Date.now();
+  const windowMs = windowSeconds * 1000;
+  const windowStart = Math.floor(now / windowMs) * windowMs;
+  const resetAt = Math.ceil((windowStart + windowMs) / 1000);
+  const key = rateLimitKey(req, windowStart);
+  const retryAfter = Math.max(1, resetAt - Math.ceil(now / 1000));
+
+  if (blobEnabled() && blobClient?.get) {
+    const pathname = `${RATE_LIMIT_PREFIX}${key}.json`;
+    const bucket = (await readBlobRateBucket(pathname)) || { count: 0, reset_at: resetAt };
+    bucket.count += 1;
+    bucket.reset_at = resetAt;
+    if (bucket.count > max) {
+      throw new ApiError(429, 'rate limit exceeded', { 'retry-after': String(retryAfter) });
+    }
+    await writeBlobRateBucket(pathname, bucket);
+    return;
+  }
+
+  const buckets = await readLocalRateBuckets();
+  const freshBuckets = Object.fromEntries(Object.entries(buckets).filter(([, bucket]) => Number(bucket.reset_at || 0) > Math.ceil(now / 1000)));
+  const bucket = freshBuckets[key] || { count: 0, reset_at: resetAt };
+  bucket.count += 1;
+  bucket.reset_at = resetAt;
+  if (bucket.count > max) {
+    throw new ApiError(429, 'rate limit exceeded', { 'retry-after': String(retryAfter) });
+  }
+  freshBuckets[key] = bucket;
+  await writeLocalRateBuckets(freshBuckets);
 }
 
 async function persistSubmission(result) {
@@ -160,6 +277,7 @@ module.exports = {
   sendJson,
   validateSubmission,
   sanitizeResult,
+  enforceRateLimit,
   persistSubmission,
   readSubmissions,
   scorePayload,

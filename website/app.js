@@ -440,7 +440,7 @@ function commandLines(command = state.command) {
   run.push('--output-dir', shellArg(command.outputDir));
 
   const resultGlob = `${shellArg(command.outputDir)}/hermesbench-*.json`;
-  const upload = ['uv run hermesbench upload', resultGlob, '--endpoint', shellArg(command.endpoint.trim() || defaultApiEndpoint)];
+  const upload = ["HERMESBENCH_SUBMISSION_TOKEN='<maintainer-issued-token>'", 'uv run hermesbench upload', resultGlob, '--endpoint', shellArg(command.endpoint.trim() || defaultApiEndpoint)];
 
   return [
     'uv run hermesbench validate-tasks',
@@ -473,7 +473,7 @@ function commandBuilder() {
         <label class="control wide"><span>Output directory</span><input id="cmd-output" value="${escapeHtml(c.outputDir)}"></label>
         <label class="control wide"><span>API route</span><input id="cmd-endpoint" placeholder="https://hermesbench.site/v1/results" value="${escapeHtml(c.endpoint || defaultApiEndpoint)}"></label>
       </div>
-      <p class="builder-note" id="cmd-note">The generated command scores the raw result, then posts the sanitized submission to the HermesBench API route. Public uploads are unofficial by default.</p>
+      <p class="builder-note" id="cmd-note">The generated command scores the raw result, then posts the sanitized submission to the HermesBench API route. Public uploads require a maintainer-issued submission token and remain unofficial by default.</p>
     </div>
     <aside class="command-preview">
       <div class="code-panel"><pre><code id="built-command">${escapeHtml(commandText(c))}</code></pre></div>

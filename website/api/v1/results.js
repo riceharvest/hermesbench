@@ -3,6 +3,7 @@ const {
   sendJson,
   validateSubmission,
   sanitizeResult,
+  enforceRateLimit,
   persistSubmission,
 } = require('../_submissions');
 
@@ -12,10 +13,11 @@ module.exports = async function handler(req, res) {
 
   try {
     const payload = await readBody(req);
-    const result = sanitizeResult(validateSubmission(payload));
+    const result = sanitizeResult(validateSubmission(payload, req));
+    await enforceRateLimit(req);
     const persisted = await persistSubmission(result);
     return sendJson(res, 202, { run_id: result.run_id, accepted: true, persisted });
   } catch (error) {
-    return sendJson(res, 400, { error: error.message || 'invalid submission' });
+    return sendJson(res, error.status || 400, { error: error.message || 'invalid submission' }, error.headers || {});
   }
 };

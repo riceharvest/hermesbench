@@ -6,7 +6,7 @@ HermesBench must not claim official leaderboard integrity until every required g
 - [ ] At least 20 private holdout tasks exist outside public repo.
 - [ ] At least 10 fresh tasks exist for current wave.
 - [ ] At least 10 anchor tasks are frozen and versioned.
-- [ ] API accepts uploads and stores submissions without tokens.
+- [ ] API accepts token-gated, rate-limited uploads and stores sanitized submissions without persisting tokens.
 - [ ] Website has leaderboard and result detail pages.
 - [ ] Official run policy is published.
 - [ ] Result archive command works.

@@ -13,7 +13,7 @@ def main(argv=None):
     s=sub.add_parser('score'); s.add_argument('result')
     vt=sub.add_parser('validate-tasks'); vt.add_argument('--task-root')
     e=sub.add_parser('export'); e.add_argument('--format', choices=['jsonl'], default='jsonl'); e.add_argument('--suite', default='public-dev'); e.add_argument('--task-root')
-    u=sub.add_parser('upload'); u.add_argument('result'); u.add_argument('--endpoint'); u.add_argument('--output-dir', default='submissions'); u.add_argument('--keep-logs', action='store_true'); u.add_argument('--print-issue', action='store_true')
+    u=sub.add_parser('upload'); u.add_argument('result'); u.add_argument('--endpoint'); u.add_argument('--submission-token'); u.add_argument('--output-dir', default='submissions'); u.add_argument('--keep-logs', action='store_true'); u.add_argument('--print-issue', action='store_true')
     srv=sub.add_parser('serve-api'); srv.add_argument('--host', default='127.0.0.1'); srv.add_argument('--port', type=int, default=8787); srv.add_argument('--store-path', default='submissions/submissions.jsonl'); srv.add_argument('--submission-token')
     arch=sub.add_parser('archive-official'); arch.add_argument('--result', required=True); arch.add_argument('--manifest', required=True); arch.add_argument('--output', required=True)
     sub.add_parser('versions')
@@ -35,7 +35,7 @@ def main(argv=None):
     elif a.cmd=='upload':
         from .submissions import make_submission_payload, post_submission, write_submission_file
         payload=make_submission_payload(a.result, strip_logs=not a.keep_logs)
-        if a.endpoint: print(post_submission(payload, a.endpoint))
+        if a.endpoint: print(post_submission(payload, a.endpoint, submission_token=a.submission_token))
         elif a.print_issue: print(json.dumps(payload['github_issue'], indent=2))
         else:
             path=write_submission_file(payload, a.output_dir)
