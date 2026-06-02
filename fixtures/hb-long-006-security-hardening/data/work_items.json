@@ -1,0 +1,37 @@
+[
+  {
+    "stage": 1,
+    "name": "stage-1",
+    "requires_verification": true
+  },
+  {
+    "stage": 2,
+    "name": "stage-2",
+    "requires_verification": true
+  },
+  {
+    "stage": 3,
+    "name": "stage-3",
+    "requires_verification": true
+  },
+  {
+    "stage": 4,
+    "name": "stage-4",
+    "requires_verification": true
+  },
+  {
+    "stage": 5,
+    "name": "stage-5",
+    "requires_verification": true
+  },
+  {
+    "stage": 6,
+    "name": "stage-6",
+    "requires_verification": true
+  },
+  {
+    "stage": 7,
+    "name": "stage-7",
+    "requires_verification": true
+  }
+]

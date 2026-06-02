@@ -281,3 +281,43 @@ tasks:
   path: anchor/hb-anc-005-false-done-verification.md
   category: false-done-verification
   visibility: public
+- id: hb-long-001-repo-triage-implementation
+  path: long-horizon-dev/hb-long-001-repo-triage-implementation.md
+  category: long-repo-triage
+  visibility: public
+- id: hb-long-002-multiservice-debug
+  path: long-horizon-dev/hb-long-002-multiservice-debug.md
+  category: long-debugging
+  visibility: public
+- id: hb-long-003-research-synthesis-dossier
+  path: long-horizon-dev/hb-long-003-research-synthesis-dossier.md
+  category: long-research
+  visibility: public
+- id: hb-long-004-data-pipeline-reconciliation
+  path: long-horizon-dev/hb-long-004-data-pipeline-reconciliation.md
+  category: long-data-analysis
+  visibility: public
+- id: hb-long-005-context-recovery-release
+  path: long-horizon-dev/hb-long-005-context-recovery-release.md
+  category: long-context-recovery
+  visibility: public
+- id: hb-long-006-security-hardening
+  path: long-horizon-dev/hb-long-006-security-hardening.md
+  category: long-security
+  visibility: public
+- id: hb-long-007-local-saas-workflow
+  path: long-horizon-dev/hb-long-007-local-saas-workflow.md
+  category: long-local-saas
+  visibility: public
+- id: hb-long-008-cost-aware-refactor
+  path: long-horizon-dev/hb-long-008-cost-aware-refactor.md
+  category: long-refactor
+  visibility: public
+- id: hb-long-009-staged-false-done-trap
+  path: long-horizon-dev/hb-long-009-staged-false-done-trap.md
+  category: long-false-done
+  visibility: public
+- id: hb-long-010-long-email-calendar-ops
+  path: long-horizon-dev/hb-long-010-long-email-calendar-ops.md
+  category: long-productivity
+  visibility: public

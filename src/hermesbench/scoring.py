@@ -49,6 +49,17 @@ def aggregate(path: str | Path) -> dict:
     raw_total_score=raw_total(rs)
     max_score=len(rs)
     score_percentage=total_score/max_score if max_score else 0
+    false_done_rate=sum(1 for r in rs if r.get('false_done'))/n
+    timeout_rate=sum(1 for r in rs if r.get('timeout'))/n
+    endurance_score=max(0.0, score_percentage * (1.0 - false_done_rate) * (1.0 - timeout_rate))
+    long_horizon_metrics={
+      'endurance_score': endurance_score,
+      'stage_completion_proxy': raw_total_score/max_score if max_score else 0,
+      'false_done_resistance': 1.0 - false_done_rate,
+      'timeout_resistance': 1.0 - timeout_rate,
+      'median_task_minutes': (statistics.median(wall_times)/60) if wall_times else 0,
+      'p95_task_minutes': ((_percentile(wall_times, 95) or 0)/60),
+    } if str(data.get('suite','')).startswith('long-horizon') else None
     return {
       'schema_version':'hermesbench.score.v1',
       'run_id':data['run_id'], 'agent':data['agent'], 'model':data.get('model'), 'suite':data['suite'],
@@ -80,7 +91,8 @@ def aggregate(path: str | Path) -> dict:
       'avg_tool_calls_per_task': tool_call_count/len(rs) if rs else 0,
       'verification_compliance':sum(1 for r in rs if r.get('verification_evidence'))/n,
       'false_done_count': sum(1 for r in rs if r.get('false_done')),
-      'false_done_rate':sum(1 for r in rs if r.get('false_done'))/n,
+      'false_done_rate':false_done_rate,
       'timeout_count': sum(1 for r in rs if r.get('timeout')),
-      'timeout_rate':sum(1 for r in rs if r.get('timeout'))/n,
+      'timeout_rate':timeout_rate,
+      'long_horizon_metrics': long_horizon_metrics,
     }

@@ -1,0 +1,7 @@
+Long Email Calendar Operations
+
+This long-horizon task is intentionally staged. Read all fixture files, maintain a checkpoint, produce intermediate artifacts, run local verification, and do not claim done until every stage passes.
+
+Required final artifact: artifacts/hb-long-010-long-email-calendar-ops-report.json
+Required checkpoint: artifacts/hb-long-010-long-email-calendar-ops-checkpoint.md
+Required implementation log: artifacts/hb-long-010-long-email-calendar-ops-worklog.md

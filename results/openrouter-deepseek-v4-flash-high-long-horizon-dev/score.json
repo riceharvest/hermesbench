@@ -1,0 +1,88 @@
+{
+  "schema_version": "hermesbench.score.v1",
+  "run_id": "fa19a42c3e07",
+  "agent": "hermes",
+  "model": "deepseek/deepseek-v4-flash",
+  "suite": "long-horizon-dev",
+  "provider": "openrouter",
+  "reasoning_effort": "high",
+  "overall_score": 0.2,
+  "raw_overall_score": 0.21176470588235294,
+  "pass_at_1": 0.2,
+  "score_percentage": 0.2,
+  "total_score": 2.0,
+  "raw_total_score": 2.1176470588235294,
+  "max_score": 10,
+  "category_scores": {
+    "long-context-recovery": 1.0,
+    "long-data-analysis": 0.0,
+    "long-debugging": 0.0,
+    "long-false-done": 0.0,
+    "long-local-saas": 0.0,
+    "long-productivity": 0.0,
+    "long-refactor": 0.0,
+    "long-repo-triage": 1.0,
+    "long-research": 0.0,
+    "long-security": 0.0
+  },
+  "raw_category_scores": {
+    "long-context-recovery": 1.0,
+    "long-data-analysis": 0.0,
+    "long-debugging": 0.0,
+    "long-false-done": 0.0,
+    "long-local-saas": 0.0,
+    "long-productivity": 0.0,
+    "long-refactor": 0.0,
+    "long-repo-triage": 1.0,
+    "long-research": 0.11764705882352941,
+    "long-security": 0.0
+  },
+  "quality_tier_scores": {
+    "gold": 0.2
+  },
+  "raw_quality_tier_scores": {
+    "gold": 0.21176470588235294
+  },
+  "quality_tier_counts": {
+    "gold": 10
+  },
+  "task_count": 10,
+  "passed_task_count": 2,
+  "failed_task_count": 8,
+  "cost_per_successful_task_usd": null,
+  "cost_per_task_usd": null,
+  "cost_usd": null,
+  "total_cost_usd": null,
+  "score_per_dollar": null,
+  "token_usage": {
+    "input_tokens": 674966,
+    "output_tokens": 31822,
+    "total_tokens": 706788
+  },
+  "input_tokens": 674966,
+  "output_tokens": 31822,
+  "total_tokens": 706788,
+  "tokens_per_task": 70678.8,
+  "tokens_per_successful_task": 353394.0,
+  "total_execution_time_seconds": 686.763,
+  "median_wall_time_seconds": 52.275999999999996,
+  "mean_wall_time_seconds": 68.6763,
+  "min_wall_time_seconds": 3.097,
+  "max_wall_time_seconds": 169.047,
+  "p95_wall_time_seconds": 169.047,
+  "tool_call_count": 33,
+  "avg_tool_calls_per_task": 3.3,
+  "verification_compliance": 1.0,
+  "false_done_count": 8,
+  "false_done_rate": 0.8,
+  "timeout_count": 0,
+  "timeout_rate": 0.0,
+  "long_horizon_metrics": {
+    "endurance_score": 0.039999999999999994,
+    "stage_completion_proxy": 0.21176470588235294,
+    "false_done_resistance": 0.19999999999999996,
+    "timeout_resistance": 1.0,
+    "median_task_minutes": 0.8712666666666666,
+    "p95_task_minutes": 2.81745
+  }
+}

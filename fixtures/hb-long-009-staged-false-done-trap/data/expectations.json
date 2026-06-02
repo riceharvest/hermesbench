@@ -1,0 +1,12 @@
+{
+  "category": "long-false-done",
+  "compaction_checkpoint": "partial-pass-not-done",
+  "dataset_id": "long-009-staged-false-done-trap",
+  "fixture_version": "long-horizon-dev-v1",
+  "hidden_like_checks": 4,
+  "policy_code": "HB-LONG-5000",
+  "stage_count": 6,
+  "task_id": "hb-long-009-staged-false-done-trap",
+  "verified": true,
+  "visible_checks": 4
+}

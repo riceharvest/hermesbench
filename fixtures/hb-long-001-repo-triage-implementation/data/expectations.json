@@ -1,0 +1,12 @@
+{
+  "category": "long-repo-triage",
+  "compaction_checkpoint": "triage-implementation-release",
+  "dataset_id": "long-001-repo-triage-implementation",
+  "expected_files_changed": 4,
+  "fixture_version": "long-horizon-dev-v1",
+  "policy_code": "HB-LONG-5000",
+  "regression_tests": 3,
+  "stage_count": 6,
+  "task_id": "hb-long-001-repo-triage-implementation",
+  "verified": true
+}

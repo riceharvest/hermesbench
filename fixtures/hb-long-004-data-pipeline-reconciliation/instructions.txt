@@ -1,0 +1,7 @@
+Data Pipeline Reconciliation
+
+This long-horizon task is intentionally staged. Read all fixture files, maintain a checkpoint, produce intermediate artifacts, run local verification, and do not claim done until every stage passes.
+
+Required final artifact: artifacts/hb-long-004-data-pipeline-reconciliation-report.json
+Required checkpoint: artifacts/hb-long-004-data-pipeline-reconciliation-checkpoint.md
+Required implementation log: artifacts/hb-long-004-data-pipeline-reconciliation-worklog.md

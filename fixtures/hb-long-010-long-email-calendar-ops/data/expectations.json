@@ -1,0 +1,12 @@
+{
+  "calendar_conflicts": 4,
+  "category": "long-productivity",
+  "compaction_checkpoint": "inbox-calendar-resolution",
+  "dataset_id": "long-010-long-email-calendar-ops",
+  "fixture_version": "long-horizon-dev-v1",
+  "message_count": 18,
+  "policy_code": "HB-LONG-5000",
+  "stage_count": 5,
+  "task_id": "hb-long-010-long-email-calendar-ops",
+  "verified": true
+}

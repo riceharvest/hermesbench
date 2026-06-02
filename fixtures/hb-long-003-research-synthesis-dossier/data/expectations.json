@@ -1,0 +1,12 @@
+{
+  "category": "long-research",
+  "compaction_checkpoint": "source-audit-final",
+  "contradiction_count": 3,
+  "dataset_id": "long-003-research-synthesis-dossier",
+  "fixture_version": "long-horizon-dev-v1",
+  "policy_code": "HB-LONG-5000",
+  "source_count": 9,
+  "stage_count": 5,
+  "task_id": "hb-long-003-research-synthesis-dossier",
+  "verified": true
+}

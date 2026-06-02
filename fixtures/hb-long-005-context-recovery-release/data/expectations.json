@@ -1,0 +1,12 @@
+{
+  "category": "long-context-recovery",
+  "compaction_checkpoint": "handoff-diff-release",
+  "dataset_id": "long-005-context-recovery-release",
+  "decision_count": 8,
+  "fixture_version": "long-horizon-dev-v1",
+  "handoff_files": 6,
+  "policy_code": "HB-LONG-5000",
+  "stage_count": 5,
+  "task_id": "hb-long-005-context-recovery-release",
+  "verified": true
+}

@@ -1,0 +1,7 @@
+Local SaaS Workflow End To End
+
+This long-horizon task is intentionally staged. Read all fixture files, maintain a checkpoint, produce intermediate artifacts, run local verification, and do not claim done until every stage passes.
+
+Required final artifact: artifacts/hb-long-007-local-saas-workflow-report.json
+Required checkpoint: artifacts/hb-long-007-local-saas-workflow-checkpoint.md
+Required implementation log: artifacts/hb-long-007-local-saas-workflow-worklog.md

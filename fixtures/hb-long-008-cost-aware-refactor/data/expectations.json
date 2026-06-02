@@ -1,0 +1,12 @@
+{
+  "baseline_calls": 180,
+  "category": "long-refactor",
+  "compaction_checkpoint": "cost-refactor-proof",
+  "dataset_id": "long-008-cost-aware-refactor",
+  "fixture_version": "long-horizon-dev-v1",
+  "policy_code": "HB-LONG-5000",
+  "stage_count": 6,
+  "target_calls": 72,
+  "task_id": "hb-long-008-cost-aware-refactor",
+  "verified": true
+}

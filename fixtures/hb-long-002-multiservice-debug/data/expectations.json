@@ -1,0 +1,12 @@
+{
+  "category": "long-debugging",
+  "compaction_checkpoint": "api-worker-ui-smoke",
+  "dataset_id": "long-002-multiservice-debug",
+  "expected_files_changed": 5,
+  "fixture_version": "long-horizon-dev-v1",
+  "policy_code": "HB-LONG-5000",
+  "regression_tests": 4,
+  "stage_count": 7,
+  "task_id": "hb-long-002-multiservice-debug",
+  "verified": true
+}

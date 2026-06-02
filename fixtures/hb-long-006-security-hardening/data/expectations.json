@@ -1,0 +1,12 @@
+{
+  "category": "long-security",
+  "compaction_checkpoint": "security-hardening-audit",
+  "dataset_id": "long-006-security-hardening",
+  "fixture_version": "long-horizon-dev-v1",
+  "policy_code": "HB-LONG-5000",
+  "regression_tests": 5,
+  "stage_count": 7,
+  "task_id": "hb-long-006-security-hardening",
+  "verified": true,
+  "vulnerability_count": 5
+}

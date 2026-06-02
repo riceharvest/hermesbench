@@ -1,0 +1,12 @@
+{
+  "anomaly_count": 11,
+  "category": "long-data-analysis",
+  "compaction_checkpoint": "etl-reconcile-report",
+  "dataset_id": "long-004-data-pipeline-reconciliation",
+  "fixture_version": "long-horizon-dev-v1",
+  "input_records": 240,
+  "policy_code": "HB-LONG-5000",
+  "stage_count": 6,
+  "task_id": "hb-long-004-data-pipeline-reconciliation",
+  "verified": true
+}
