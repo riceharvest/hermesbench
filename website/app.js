@@ -71,7 +71,16 @@ function renderSummaryCards(leader){
 function renderRuns(leader){
   const body=document.querySelector('#leaderboard-table tbody');
   if(!body) return;
-  const rows=filterSortRows([...(leader.official||[]),...(leader.unofficial||[]),...(leader.entries||[])]);
+  const sourceRows=(leader.official||[]).length || (leader.unofficial||[]).length
+    ? [...(leader.official||[]),...(leader.unofficial||[])]
+    : [...(leader.entries||[])];
+  const seen=new Set();
+  const rows=filterSortRows(sourceRows.filter(e=>{
+    const key=e.run_id || `${e.provider}/${e.model}/${e.suite}/${e.reasoning_effort}`;
+    if(seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  }));
   body.innerHTML='';
   if(!(leader.official||[]).length){
     const tr=document.createElement('tr');
