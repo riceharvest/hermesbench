@@ -4,8 +4,10 @@ const path = require('node:path');
 
 const API_SCHEMA_VERSION = 'hermesbench.api.v0-dev';
 const SUBMISSION_PREFIX = 'submissions/';
+const COMMUNITY_SUBMISSION_PREFIX = 'community-submissions/';
 const RATE_LIMIT_PREFIX = 'ratelimits/';
 const LOCAL_STORE_PATH = process.env.HERMESBENCH_STORE_PATH || path.join(process.cwd(), '.tmp', 'submissions.jsonl');
+const LOCAL_COMMUNITY_STORE_PATH = process.env.HERMESBENCH_COMMUNITY_STORE_PATH || path.join(process.cwd(), '.tmp', 'community-submissions.jsonl');
 const LOCAL_RATE_LIMIT_STORE_PATH = process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH || path.join(process.cwd(), '.tmp', 'rate-limits.json');
 const SENSITIVE_LOG_KEYS = new Set(['logs', 'messages', 'transcript', 'stdout', 'stderr']);
 
@@ -89,6 +91,12 @@ function timingSafeEqual(a, b) {
   return left.length === right.length && crypto.timingSafeEqual(left, right);
 }
 
+function rejectReservedOfficial(payload, result) {
+  if (payload.classification === 'official' || result.metadata?.official === true) {
+    throw new Error('official flag is maintainer-reserved');
+  }
+}
+
 function validateSubmission(payload, req = null) {
   const result = resultFromPayload(payload);
   validateResultShape(result);
@@ -100,9 +108,14 @@ function validateSubmission(payload, req = null) {
   if (expectedToken && !timingSafeEqual(token, expectedToken)) {
     throw new ApiError(401, 'missing or invalid submission token');
   }
-  if (payload.classification === 'official' || result.metadata?.official === true) {
-    throw new Error('official flag is maintainer-reserved');
-  }
+  rejectReservedOfficial(payload, result);
+  return result;
+}
+
+function validateCommunitySubmission(payload) {
+  const result = resultFromPayload(payload);
+  validateResultShape(result);
+  rejectReservedOfficial(payload, result);
   return result;
 }
 
@@ -140,9 +153,9 @@ function blobEnabled() {
   return Boolean(process.env.BLOB_READ_WRITE_TOKEN && blobClient?.put && blobClient?.list);
 }
 
-function submissionPath(result) {
+function submissionPath(result, prefix = SUBMISSION_PREFIX) {
   const safeRun = String(result.run_id).replace(/[^a-zA-Z0-9_.-]+/g, '-').slice(0, 96) || 'unknown';
-  return `${SUBMISSION_PREFIX}${safeRun}.json`;
+  return `${prefix}${safeRun}.json`;
 }
 
 function requestIp(req) {
@@ -232,9 +245,9 @@ async function enforceRateLimit(req) {
   await writeLocalRateBuckets(freshBuckets);
 }
 
-async function persistSubmission(result) {
+async function persistToStore(result, { prefix, localPath, storeName }) {
   if (blobEnabled()) {
-    const pathname = submissionPath(result);
+    const pathname = submissionPath(result, prefix);
     await blobClient.put(pathname, JSON.stringify(result, null, 2), {
       access: 'public',
       addRandomSuffix: false,
@@ -243,14 +256,14 @@ async function persistSubmission(result) {
     });
     return { store: 'vercel-blob', path: pathname };
   }
-  await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
-  await fs.appendFile(LOCAL_STORE_PATH, `${JSON.stringify(result)}\n`);
-  return { store: 'local-jsonl', path: LOCAL_STORE_PATH };
+  await fs.mkdir(path.dirname(localPath), { recursive: true });
+  await fs.appendFile(localPath, `${JSON.stringify(result)}\n`);
+  return { store: storeName, path: localPath };
 }
 
-async function readSubmissions() {
+async function readStore({ prefix, localPath }) {
   if (blobEnabled()) {
-    const listed = await blobClient.list({ prefix: SUBMISSION_PREFIX, limit: 1000 });
+    const listed = await blobClient.list({ prefix, limit: 1000 });
     const rows = [];
     for (const blob of listed.blobs || []) {
       try {
@@ -263,7 +276,7 @@ async function readSubmissions() {
     return rows;
   }
   try {
-    const text = await fs.readFile(LOCAL_STORE_PATH, 'utf8');
+    const text = await fs.readFile(localPath, 'utf8');
     return text.split('\n').filter(Boolean).map((line) => JSON.parse(line));
   } catch (error) {
     if (error.code === 'ENOENT') return [];
@@ -271,15 +284,48 @@ async function readSubmissions() {
   }
 }
 
+async function persistSubmission(result) {
+  return persistToStore(result, {
+    prefix: SUBMISSION_PREFIX,
+    localPath: LOCAL_STORE_PATH,
+    storeName: 'local-jsonl',
+  });
+}
+
+async function persistCommunitySubmission(result) {
+  const communityResult = JSON.parse(JSON.stringify(result));
+  communityResult.metadata = {
+    ...(communityResult.metadata || {}),
+    official: false,
+    classification: 'community',
+  };
+  return persistToStore(communityResult, {
+    prefix: COMMUNITY_SUBMISSION_PREFIX,
+    localPath: LOCAL_COMMUNITY_STORE_PATH,
+    storeName: 'community-jsonl',
+  });
+}
+
+async function readSubmissions() {
+  return readStore({ prefix: SUBMISSION_PREFIX, localPath: LOCAL_STORE_PATH });
+}
+
+async function readCommunitySubmissions() {
+  return readStore({ prefix: COMMUNITY_SUBMISSION_PREFIX, localPath: LOCAL_COMMUNITY_STORE_PATH });
+}
+
 module.exports = {
   API_SCHEMA_VERSION,
   readBody,
   sendJson,
   validateSubmission,
+  validateCommunitySubmission,
   sanitizeResult,
   enforceRateLimit,
   persistSubmission,
+  persistCommunitySubmission,
   readSubmissions,
+  readCommunitySubmissions,
   scorePayload,
   blobEnabled,
 };

@@ -35,11 +35,13 @@ const fmt = {
   },
 };
 const DATA_BASE = 'data';
-const defaultApiEndpoint = 'https://hermesbench.site/v1/results';
+const defaultApiEndpoint = 'https://hermesbench.site/v1/community-results';
+const officialApiEndpoint = 'https://hermesbench.site/v1/results';
 
 const routes = [
   ['/', 'Overview'],
   ['/leaderboard', 'Leaderboard'],
+  ['/community', 'Community'],
   ['/tasks', 'Tasks'],
   ['/methodology', 'Scoring'],
   ['/submit', 'Run it'],
@@ -65,6 +67,7 @@ const taskStats = {
 
 const state = {
   leaderboard: null,
+  communityLeaderboard: null,
   latest: null,
   runCache: new Map(),
   filter: '',
@@ -182,9 +185,9 @@ function tokenCountOf(row) {
   return row.average_total_tokens ?? row.total_tokens ?? row.token_usage?.total_tokens;
 }
 
-function currentRows() {
+function currentRows(leaderboard = state.leaderboard) {
   const query = state.filter.trim().toLowerCase();
-  const rows = dedupe(sourceRows()).filter((row) => {
+  const rows = dedupe(sourceRows(leaderboard)).filter((row) => {
     const haystack = [
       row.run_id,
       row.best_submission_id,
@@ -292,8 +295,8 @@ function evidenceRow(number, title, body) {
   return `<article class="evidence-row"><code>${number}</code><div><h3>${escapeHtml(title)}</h3><p>${escapeHtml(body)}</p></div></article>`;
 }
 
-function controls() {
-  const suites = [...new Set(sourceRows().map((row) => row.suite).filter(Boolean))].sort();
+function controls(leaderboard = state.leaderboard) {
+  const suites = [...new Set(sourceRows(leaderboard).map((row) => row.suite).filter(Boolean))].sort();
   return `<section class="toolbar" aria-label="Leaderboard controls">
     <label class="control"><span>Find</span><input id="filter" type="search" autocomplete="off" placeholder="deepseek, gpt, high" value="${escapeHtml(state.filter)}"></label>
     <label class="control"><span>Suite</span><select id="suite"><option value="">All task sets</option>${suites.map((suite) => `<option value="${escapeHtml(suite)}" ${state.suite === suite ? 'selected' : ''}>${escapeHtml(suite)}</option>`).join('')}</select></label>
@@ -347,10 +350,31 @@ function runCard(row, index) {
 function leaderboardPage() {
   const rows = currentRows();
   return `${pageHead('leaderboard', 'Who finished the most real work?', 'Sort by score, reliability, speed, token efficiency, or value. Public samples are useful evidence, not final official rankings.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)}
-  ${controls()}
+  ${controls(state.leaderboard)}
   ${rows.length ? `${podium(rows)}<section class="run-list" id="leaderboard-results" aria-live="polite">${rows.map(runCard).join('')}</section>` : emptyState('No matching runs', 'Try a broader model name or clear the task-set filter.', '<button class="btn secondary" type="button" data-reset>Clear filters</button>')}
   ${fold('How should I read this?', '<p>Start with tasks passed and false-done count. Speed and token use matter after the run proves it actually completed the task.</p>')}
   ${fold('Why not call these official rankings?', '<p>The public sample runs are visible and therefore gameable. Official rankings should mix private holdouts and fresh task waves.</p>')}`;
+}
+
+function communityRunCard(row, index) {
+  const runId = runIdOf(row);
+  return `<article class="run-card">
+    <div class="rank-number">${String(index + 1).padStart(2, '0')}</div>
+    <div class="run-title"><h2>${escapeHtml(modelTitle(row))}</h2><p>community / ${escapeHtml(providerLine(row))} / <span class="mono">${escapeHtml(runId || 'n/a')}</span></p></div>
+    <div class="mini-metrics">
+      ${miniMetric('score', fmt.pct(scoreOf(row)))}
+      ${miniMetric('passed', `${fmt.num(passedOf(row))}/${fmt.num(taskCountOf(row))}`)}
+      ${miniMetric('suite', escapeHtml(row.suite || 'n/a'))}
+    </div>
+  </article>`;
+}
+
+function communityPage() {
+  const rows = currentRows(state.communityLeaderboard || { entries: [] });
+  return `${pageHead('community runs', 'Unverified community submissions.', 'Anyone can upload public-suite runs here without a token. These rows are useful for inspection, but they never enter the main leaderboard.', `<aside class="panel">${metricRow('community runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows(state.communityLeaderboard || { entries: [] }).map((r) => r.suite)).size))}${metricRow('best community score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)}
+  ${controls(state.communityLeaderboard || { entries: [] })}
+  ${rows.length ? `<section class="run-list" id="leaderboard-results" aria-live="polite">${rows.map(communityRunCard).join('')}</section>` : emptyState('No community submissions yet', 'Run a public suite and upload it from the Run it page. It will appear here, not on the main leaderboard.', '<a class="btn secondary" href="#/submit">Run it</a>')}
+  ${fold('Why separate this?', '<p>Tokenless uploads are good for participation and bad for official rankings. Community rows are self-reported public-suite evidence; official leaderboard entries stay maintainer-promoted.</p>', true)}`;
 }
 
 function tasksPage() {
@@ -440,7 +464,7 @@ function commandLines(command = state.command) {
   run.push('--output-dir', shellArg(command.outputDir));
 
   const resultGlob = `${shellArg(command.outputDir)}/hermesbench-*.json`;
-  const upload = ["HERMESBENCH_SUBMISSION_TOKEN='<maintainer-issued-token>'", 'uv run hermesbench upload', resultGlob, '--endpoint', shellArg(command.endpoint.trim() || defaultApiEndpoint)];
+  const upload = ['uv run hermesbench upload', resultGlob, '--endpoint', shellArg(command.endpoint.trim() || defaultApiEndpoint)];
 
   return [
     'uv run hermesbench validate-tasks',
@@ -471,9 +495,9 @@ function commandBuilder() {
         <label class="control"><span>Jobs</span><select id="cmd-jobs">${optionList(['auto', '1', '2', '4', '8'], c.jobs)}</select></label>
         <label class="control"><span>Specific task optional</span><input id="cmd-task" placeholder="hb-dev-001-sanity-basic-tool-use" value="${escapeHtml(c.task)}"></label>
         <label class="control wide"><span>Output directory</span><input id="cmd-output" value="${escapeHtml(c.outputDir)}"></label>
-        <label class="control wide"><span>API route</span><input id="cmd-endpoint" placeholder="https://hermesbench.site/v1/results" value="${escapeHtml(c.endpoint || defaultApiEndpoint)}"></label>
+        <label class="control wide"><span>Community API route</span><input id="cmd-endpoint" placeholder="https://hermesbench.site/v1/community-results" value="${escapeHtml(c.endpoint || defaultApiEndpoint)}"></label>
       </div>
-      <p class="builder-note" id="cmd-note">The generated command scores the raw result, then posts the sanitized submission to the HermesBench API route. Public uploads require a maintainer-issued submission token and remain unofficial by default.</p>
+      <p class="builder-note" id="cmd-note">The generated command scores the raw result, then posts the sanitized submission to the tokenless community lane. It will not appear on the main leaderboard.</p>
     </div>
     <aside class="command-preview">
       <div class="code-panel"><pre><code id="built-command">${escapeHtml(commandText(c))}</code></pre></div>
@@ -484,13 +508,13 @@ function commandBuilder() {
 }
 
 function submitPage() {
-  return `${pageHead('run locally', 'Build and submit an agent run.', 'Pick provider, model, reasoning effort, task set, and output path. The builder gives the exact run, score, and submission commands.')}
+  return `${pageHead('run locally', 'Build and submit an agent run.', 'Pick provider, model, reasoning effort, task set, and output path. The builder gives the exact run, score, and community submission commands.')}
   ${commandBuilder()}
-  <section class="split-section"><div class="section-title"><h2>Before submitting, prove the run.</h2><p>A useful submission includes exact model, provider, reasoning effort, tool access, suite, costs where available, and task-level evidence files.</p></div><div class="evidence-list">
+  <section class="split-section"><div class="section-title"><h2>Before submitting, prove the run.</h2><p>A useful community submission includes exact model, provider, reasoning effort, tool access, suite, costs where available, and task-level evidence files.</p></div><div class="evidence-list">
     ${evidenceRow('A', 'Validate tasks', 'Task definitions should pass schema checks before a run starts.')}
     ${evidenceRow('B', 'Keep artifacts', 'Do not delete logs, generated files, transcripts, or verifier output needed for review.')}
-    ${evidenceRow('C', 'Label settings', 'Provider, model, reasoning effort, and agent configuration should be explicit.')}
-    ${evidenceRow('D', 'Submission token', 'Tokens are maintainer-issued for now. Open a GitHub issue with your agent, provider, model, suite, and contact route, or ask the maintainer directly. Never paste a token publicly.')}
+    ${evidenceRow('C', 'Community lane', 'Uploads are tokenless and self-serve. They appear on Community, not on the main leaderboard.')}
+    ${evidenceRow('D', 'Official promotion', `Official leaderboard rows are maintainer-promoted from reviewed archives or reruns. Maintainers use the protected endpoint ${officialApiEndpoint}.`)}
   </div></section>`;
 }
 
@@ -626,7 +650,7 @@ function bindCommandBuilder() {
       const runnerNote = state.command.agent === 'hermes'
         ? 'Hermes uses provider, model, and reasoning effort exactly as shown.'
         : `${state.command.agent} ignores provider/model/reasoning; only runner, suite/task, jobs, and output path matter.`;
-      const submitNote = 'Upload posts the sanitized submission to the HermesBench API route with a maintainer-issued submission token; public uploads remain unofficial.';
+      const submitNote = 'Upload posts to the tokenless community lane; it will not appear on the main leaderboard.';
       note.textContent = `${runnerNote} ${submitNote}`;
     }
   }
@@ -692,6 +716,7 @@ function routePath() {
 async function routeContent(path) {
   if (path === '/') return homePage();
   if (path === '/leaderboard') return leaderboardPage();
+  if (path === '/community') return communityPage();
   if (path === '/tasks') return tasksPage();
   if (path === '/methodology') return methodologyPage();
   if (path === '/submit') return submitPage();
@@ -726,11 +751,13 @@ async function init() {
   document.getElementById('desktop-nav').innerHTML = navHtml();
   document.getElementById('mobile-nav').innerHTML = navHtml();
   try {
-    const [leaderboard, latest] = await Promise.all([
+    const [leaderboard, communityLeaderboard, latest] = await Promise.all([
       loadJson('data/leaderboard.json'),
+      loadJson('/v1/community-leaderboard').catch(() => ({ entries: [] })),
       loadJson('data/latest-result.json').catch(() => null),
     ]);
     state.leaderboard = leaderboard;
+    state.communityLeaderboard = communityLeaderboard;
     state.latest = latest;
   } catch (error) {
     document.getElementById('app').innerHTML = `<section class="error-screen"><span class="crumb">load error</span><h1>Benchmark data did not load.</h1><p class="lede">${escapeHtml(error.message)}</p></section>`;

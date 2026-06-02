@@ -5,6 +5,7 @@ const path = require('node:path');
 const { Readable } = require('node:stream');
 
 process.env.HERMESBENCH_STORE_PATH = path.join(os.tmpdir(), `hermesbench-api-${process.pid}.jsonl`);
+process.env.HERMESBENCH_COMMUNITY_STORE_PATH = path.join(os.tmpdir(), `hermesbench-community-${process.pid}.jsonl`);
 process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH = path.join(os.tmpdir(), `hermesbench-rate-${process.pid}.json`);
 delete process.env.BLOB_READ_WRITE_TOKEN;
 delete process.env.HERMESBENCH_SUBMISSION_TOKEN;
@@ -41,7 +42,9 @@ async function call(handler, method, body, headers = {}) {
   await fs.rm(process.env.HERMESBENCH_STORE_PATH, { force: true });
   const health = require('../api/health');
   const results = require('../api/v1/results');
+  const communityResults = require('../api/v1/community-results');
   const leaderboard = require('../api/v1/leaderboard');
+  const communityLeaderboard = require('../api/v1/community-leaderboard');
 
   const healthRes = await call(health, 'GET');
   assert.equal(healthRes.statusCode, 200);
@@ -90,6 +93,22 @@ async function call(handler, method, body, headers = {}) {
   assert.equal(leaderboardRes.statusCode, 200);
   assert.equal(leaderboardRes.json.entries[0].run_id, 'api-smoke-run');
   assert.equal(leaderboardRes.json.entries[0].overall_score, 1);
+
+  const communityPayload = { ...payload, result: { ...payload.result, run_id: 'community-smoke-run' } };
+  delete communityPayload.result.submission_token;
+  const communityUploadRes = await call(communityResults, 'POST', communityPayload, { 'x-forwarded-for': '198.51.100.8' });
+  assert.equal(communityUploadRes.statusCode, 202);
+  assert.equal(communityUploadRes.json.accepted, true);
+  assert.equal(communityUploadRes.json.classification, 'community');
+  assert.equal(communityUploadRes.json.persisted.store, 'community-jsonl');
+
+  const mainAfterCommunity = await call(leaderboard, 'GET');
+  assert(!mainAfterCommunity.json.entries.some((entry) => entry.run_id === 'community-smoke-run'));
+
+  const communityBoardRes = await call(communityLeaderboard, 'GET');
+  assert.equal(communityBoardRes.statusCode, 200);
+  assert.equal(communityBoardRes.json.entries[0].run_id, 'community-smoke-run');
+  assert.equal(communityBoardRes.json.entries[0].official, false);
 
   await fs.rm(process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH, { force: true });
   process.env.HERMESBENCH_RATE_LIMIT_MAX = '1';

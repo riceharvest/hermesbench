@@ -63,7 +63,7 @@ uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1 --jobs 
 uv run hermesbench run --agent shell --command './my-agent-runner.sh' --jobs 4
 uv run hermesbench score results/<run>.json
 uv run hermesbench export --format jsonl
-HERMESBENCH_SUBMISSION_TOKEN='<maintainer-issued-token>' uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/results
+uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/community-results
 uv run hermesbench serve-api --host 127.0.0.1 --port 8787
 uv run hermesbench archive-official --result results/run.json --manifest official_runs/run.yaml --output official_runs/archive/run
 ```
@@ -149,13 +149,13 @@ uv run hermesbench score /tmp/hermesbench-results/*.json
 
 ## Submissions and API
 
-The current API scaffold supports local/testable submissions:
+The current API scaffold supports two submission lanes:
 
-- `POST /v1/results`
-- `GET /v1/leaderboard`
+- `POST /v1/community-results` and `GET /v1/community-leaderboard` for tokenless self-serve community runs.
+- `POST /v1/results` and `GET /v1/leaderboard` for protected maintainer/promoted runs.
 - `GET /health`
 
-Public uploads are unofficial by default. `metadata.official=true` is maintainer-reserved and rejected by public upload validation. Submission tokens are stripped before persistence. See [`docs/api.md`](docs/api.md) and [`docs/deployment-api.md`](docs/deployment-api.md).
+Community uploads are unofficial and never enter the main leaderboard. `metadata.official=true` is maintainer-reserved and rejected by public upload validation. Submission tokens are stripped before persistence. See [`docs/api.md`](docs/api.md) and [`docs/deployment-api.md`](docs/deployment-api.md).
 
 ## Website
 
