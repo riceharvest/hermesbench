@@ -471,7 +471,7 @@
         "command_passes python scripts/verify_artifact.py: FAIL (rc=1)"
       ],
       "logs": {
-        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/6fc6583112d4970e236f30f6f3e64e5e7ef817280b7c50f6e0a4395f46d308c8', 'code': 403}}\n\nsession_id: 20260602_103756_c65210\n",
+        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/[REDACTED]', 'code': 403}}\n\nsession_id: 20260602_103756_c65210\n",
         "telemetry_source": "hermes-session-or-log",
         "sandbox": {
           "workdir": "/tmp/hb-hb-long-006-security-hardening-0x__11wu",
@@ -555,7 +555,7 @@
         "command_passes python scripts/verify_artifact.py: FAIL (rc=1)"
       ],
       "logs": {
-        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/6fc6583112d4970e236f30f6f3e64e5e7ef817280b7c50f6e0a4395f46d308c8', 'code': 403}}\n\nsession_id: 20260602_103853_55d7c5\n",
+        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/[REDACTED]', 'code': 403}}\n\nsession_id: 20260602_103853_55d7c5\n",
         "telemetry_source": "hermes-session-or-log",
         "sandbox": {
           "workdir": "/tmp/hb-hb-long-007-local-saas-workflow-aczat_49",
@@ -635,7 +635,7 @@
         "command_passes python scripts/verify_artifact.py: FAIL (rc=1)"
       ],
       "logs": {
-        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/6fc6583112d4970e236f30f6f3e64e5e7ef817280b7c50f6e0a4395f46d308c8', 'code': 403}}\n\nsession_id: 20260602_103854_207866\n",
+        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/[REDACTED]', 'code': 403}}\n\nsession_id: 20260602_103854_207866\n",
         "telemetry_source": "hermes-session-or-log",
         "sandbox": {
           "workdir": "/tmp/hb-hb-long-008-cost-aware-refactor-o9x8e8bn",
@@ -715,7 +715,7 @@
         "command_passes python scripts/verify_artifact.py: FAIL (rc=1)"
       ],
       "logs": {
-        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/6fc6583112d4970e236f30f6f3e64e5e7ef817280b7c50f6e0a4395f46d308c8', 'code': 403}}\n\nsession_id: 20260602_103857_eedf17\n",
+        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/[REDACTED]', 'code': 403}}\n\nsession_id: 20260602_103857_eedf17\n",
         "telemetry_source": "hermes-session-or-log",
         "sandbox": {
           "workdir": "/tmp/hb-hb-long-009-staged-false-done-trap-rpue35s6",
@@ -795,7 +795,7 @@
         "command_passes python scripts/verify_artifact.py: FAIL (rc=1)"
       ],
       "logs": {
-        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/6fc6583112d4970e236f30f6f3e64e5e7ef817280b7c50f6e0a4395f46d308c8', 'code': 403}}\n\nsession_id: 20260602_103900_485785\n",
+        "transcript": "Error: Error code: 403 - {'error': {'message': 'Key limit exceeded (daily limit). Manage it using https://openrouter.ai/workspaces/default/keys/[REDACTED]', 'code': 403}}\n\nsession_id: 20260602_103900_485785\n",
         "telemetry_source": "hermes-session-or-log",
         "sandbox": {
           "workdir": "/tmp/hb-hb-long-010-long-email-calendar-ops-cjmz6s2e",
