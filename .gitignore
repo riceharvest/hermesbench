@@ -11,5 +11,10 @@ checkpoints/
 wandb/
 .env
 .env.*
+node_modules/
+website/node_modules/
+website/.tmp/
 website/dist/
 submissions/
+.vercel
+.vercel/

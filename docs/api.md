@@ -1,31 +1,34 @@
 # API and submissions
 
-HermesBench includes a minimal local API scaffold in `src/hermesbench/api.py` and a `wsgiref` wrapper in `src/hermesbench/http_api.py`.
+HermesBench includes a minimal local API scaffold in `src/hermesbench/api.py`, a `wsgiref` wrapper in `src/hermesbench/http_api.py`, and Vercel serverless routes under `website/api/` for the live site.
 
-> **Production-readiness status:** this is a development/local ingestion scaffold, not an internet-facing production service. `wsgiref.simple_server` is single-process and dev-only. Put any deployment behind a real WSGI/ASGI server or platform gateway, durable storage, TLS, auth, and rate limiting.
+> **Production-readiness status:** the live Vercel route accepts unofficial submissions and stores sanitized results in Vercel Blob. `wsgiref.simple_server` remains local/dev-only. Add scoped submitter tokens and edge rate limits before treating public uploads as trusted rankings.
 
 ## Endpoints
 
-- `POST /v1/results` — validates and stores an unofficial result payload.
-- `GET /v1/leaderboard` — returns scored submissions from the local JSONL store.
+- `POST /v1/results` — validates and stores an unofficial CLI submission payload.
+- `GET /v1/leaderboard` — returns scored submissions from the configured store.
 - `GET /health` — health check.
 
-HTTP responses include scaffold headers such as `X-Hermesbench-Api-Schema: hermesbench.api.v0-dev` and `X-Hermesbench-Dev-Only: true` when served through the local wrapper.
+HTTP responses include scaffold headers such as `X-Hermesbench-Api-Schema: hermesbench.api.v0-dev`.
 
 ## Upload payload
 
-The body is a `hermesbench.result.v1` object plus optional submission metadata:
+The CLI posts a `hermesbench.submission.v1` wrapper. The API also accepts a legacy raw `hermesbench.result.v1` object for local compatibility.
 
 ```json
 {
-  "schema_version": "hermesbench.result.v1",
-  "run_id": "abc123",
-  "suite": "public-dev",
-  "agent": "hermes",
-  "model": "openai-codex/gpt-5.5",
-  "submission_token": "anti-spam-token-placeholder",
-  "submitter": {"name": "runner name"},
-  "results": []
+  "schema_version": "hermesbench.submission.v1",
+  "classification": "unofficial",
+  "result": {
+    "schema_version": "hermesbench.result.v1",
+    "run_id": "abc123",
+    "suite": "public-dev",
+    "agent": "hermes",
+    "model": "openai-codex/gpt-5.5",
+    "submission_token": "anti-spam-token-placeholder",
+    "results": []
+  }
 }
 ```
 
@@ -34,6 +37,7 @@ The body is a `hermesbench.result.v1` object plus optional submission metadata:
 ## Current guardrails and placeholders
 
 - **Schema:** result payloads are validated with `validate_result_schema`; website leaderboard exports are separately shape-validated during `website` build/CI.
+- **Live storage:** Vercel uses `BLOB_READ_WRITE_TOKEN` and stores one sanitized JSON blob per `run_id` under `submissions/`.
 - **Auth:** `submission_token` is an anti-spam placeholder for unofficial uploads only. Production should use scoped submitter tokens, signed manifests, or OIDC.
 - **Rate limits:** no in-process limiter is implemented. Enforce limits at the reverse proxy/platform edge, especially for `POST /v1/results`.
 - **Review workflow:** all public uploads are unofficial. Maintainers promote results only after private/fresh-pack reruns, manifest review, score hash/archive checks, and evidence retention.

@@ -2,21 +2,22 @@
 
 ## Status
 
-The checked-in HTTP server uses Python `wsgiref` for local development and CI smoke tests. Do **not** expose it directly to the public internet. A production deployment must provide a real application server or serverless wrapper, TLS, durable storage, observability, authentication, and edge rate limits.
+The checked-in Python HTTP server uses `wsgiref` for local development and CI smoke tests. Do **not** expose it directly to the public internet. The live `https://hermesbench.site` API is served by Vercel functions in `website/api/` and persists sanitized unofficial submissions to Vercel Blob.
 
 ## Required environment
 
 - `HERMESBENCH_SUBMISSION_TOKEN`: shared unofficial-upload token; rotate regularly. Replace with scoped tokens/OIDC before production.
 - `HERMESBENCH_STORE_PATH`: JSONL or SQLite path mounted on durable storage.
 - `HERMESBENCH_CORS_ORIGINS`: allowed website origins when browser uploads are enabled.
+- `BLOB_READ_WRITE_TOKEN`: Vercel Blob token for the live serverless storage path.
 
 ## Storage setup
 
-For smoke deployments use JSONL. For maintainer demos use SQLite and apply `migrations/0001_submissions.sql` if using the SQL path. Never persist `submission_token`; the API strips it before storage.
+For local smoke deployments use JSONL. For maintainer demos use SQLite and apply `migrations/0001_submissions.sql` if using the SQL path. The live Vercel route stores one sanitized JSON blob per run under `submissions/<run_id>.json`. Never persist `submission_token`; both the Python and Vercel APIs strip it before storage.
 
 ## Schema/versioning
 
-- Result uploads must pass the `hermesbench.result.v1` validator.
+- CLI uploads use `hermesbench.submission.v1` with a nested `hermesbench.result.v1`; legacy raw result uploads remain accepted locally.
 - The local HTTP scaffold advertises `X-Hermesbench-Api-Schema: hermesbench.api.v0-dev` to make the dev-only contract explicit.
 - Add migration notes before changing leaderboard fields consumed by `website/data/*.json`.
 

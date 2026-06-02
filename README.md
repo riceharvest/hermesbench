@@ -63,7 +63,7 @@ uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1 --jobs 
 uv run hermesbench run --agent shell --command './my-agent-runner.sh' --jobs 4
 uv run hermesbench score results/<run>.json
 uv run hermesbench export --format jsonl
-uv run hermesbench upload results/<run>.json
+uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/results
 uv run hermesbench serve-api --host 127.0.0.1 --port 8787
 uv run hermesbench archive-official --result results/run.json --manifest official_runs/run.yaml --output official_runs/archive/run
 ```
