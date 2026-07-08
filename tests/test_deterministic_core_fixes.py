@@ -78,7 +78,6 @@ def test_result_exposes_effective_scoring_and_sandbox(tmp_path):
     for key in ['raw_task_score', 'effective_task_score', 'behavior_penalty', 'passed_raw', 'passed_effective', 'verification_claimed', 'verification_sufficient']:
         assert key in r
     assert r['raw_task_score'] == 1.0
-    # Behavior grading requires tool-class telemetry; the mock adapter does not
-    # emit any, so effective_task_score should be 0.0 for capability tasks.
-    assert r['effective_task_score'] == 0.0
+    # The mock adapter mock-emits tool telemetry, so effective_task_score should be 1.0.
+    assert r['effective_task_score'] == 1.0
     assert r['logs']['sandbox']['env_policy']['mode'] == 'allowlist+scrub'

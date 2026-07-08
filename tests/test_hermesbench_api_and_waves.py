@@ -10,7 +10,7 @@ NATURAL_TASK = 'htu-dev-001-file-and-terminal-self-serve'
 
 
 def test_natural_tools_dev_suite_exists_and_validates():
-    assert len(discover_tasks('natural-tools-dev')) == 5
+    assert len(discover_tasks('natural-tools-dev')) == 15
     assert not validate_tasks()
 
 
