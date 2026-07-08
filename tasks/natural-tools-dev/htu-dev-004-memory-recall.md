@@ -12,12 +12,14 @@ difficulty: easy
 required_toolsets:
 - memory
 - file
+no_fixture_required: true
 grading_type: deterministic
 timeout_seconds: 180
 contamination_notes: Static local fixture. Public prompt is stable; the hidden value is randomized by the harness.
 safety_notes: Memory store only. No external side effects.
 human_baseline_minutes: 5
 human_baseline_success_rate: 0.90
+quality_tier: experimental
 quality_notes: Tests whether the model recognizes that the answer must be stored in durable memory and recalled later.
 requires_skills: false
 coding_required: false
@@ -43,6 +45,8 @@ Pass if the agent uses the memory tool to store the secret and later recall it (
 ## Deterministic checks
 - artifact_exists: artifacts/answer.txt
 - command_passes: grep -q "benchmark-secret" artifacts/answer.txt
+- command_passes: test -s artifacts/answer.txt
+- command_contains: cat artifacts/answer.txt => benchmark-secret
 
 ## Hidden checks
 - No hidden checks.

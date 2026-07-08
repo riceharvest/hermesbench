@@ -12,12 +12,14 @@ difficulty: easy
 required_toolsets:
 - terminal
 - file
+no_fixture_required: true
 grading_type: deterministic
 timeout_seconds: 180
 contamination_notes: Vague local-only task. No hidden oracle. Fixture data rotates; public prompt is stable, but the expected answer changes with the seeded numbers.
 safety_notes: Credential-free local fixture. No external side effects.
 human_baseline_minutes: 5
 human_baseline_success_rate: 0.95
+quality_tier: experimental
 quality_notes: Tests whether the model discovers it must read local files and run a shell command instead of answering from the prompt alone.
 requires_skills: false
 coding_required: false
@@ -45,6 +47,7 @@ Pass if the agent actually reads the file and uses the terminal to compute the s
 - artifact_exists: artifacts/answer.txt
 - artifact_contains: artifacts/answer.txt => 42
 - command_passes: grep -E '[0-9]+' data/records.txt
+- command_contains: cat artifacts/answer.txt => 42
 
 ## Hidden checks
 - No hidden checks.

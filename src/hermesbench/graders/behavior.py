@@ -7,31 +7,57 @@ from .deterministic import run_checks
 
 
 # Mapping of canonical tool names (as seen in Hermes telemetry) to the classes
-# of capability they represent for the benchmark.
+# of capability they represent for the benchmark. We include both the Python
+# function names and the names emitted in logs / tool-call telemetry.
 _BEHAVIOR_TOOLS = {
     "read_file": "file",
+    "read_file_tool": "file",
     "write_file": "file",
+    "write_file_tool": "file",
     "patch": "file",
+    "patch_tool": "file",
     "search_files": "file",
     "terminal": "terminal",
+    "terminal_tool": "terminal",
     "browser_navigate": "browser",
+    "browser_navigate_tool": "browser",
     "browser_click": "browser",
+    "browser_click_tool": "browser",
     "browser_type": "browser",
+    "browser_type_tool": "browser",
     "browser_snapshot": "browser",
+    "browser_snapshot_tool": "browser",
     "web_search": "web",
+    "web_search_tool": "web",
     "web_extract": "web",
+    "web_extract_tool": "web",
     "mcp__fetch__fetch": "web",
     "execute_code": "code_execution",
+    "execute_code_tool": "code_execution",
     "vision_analyze": "vision",
+    "vision_analyze_tool": "vision",
+    "image_gen": "image_gen",
+    "image_gen_tool": "image_gen",
     "memory": "memory",
+    "memory_tool": "memory",
     "todo": "todo",
+    "todo_tool": "todo",
     "delegate_task": "delegation",
+    "delegate_task_tool": "delegation",
     "clarify": "clarify",
+    "clarify_tool": "clarify",
     "cronjob": "cronjob",
+    "cronjob_tool": "cronjob",
     "computer_use": "computer_use",
+    "computer_use_tool": "computer_use",
     "skill_view": "skills",
+    "skill_view_tool": "skills",
     "skills_list": "skills",
+    "skills_list_tool": "skills",
     "session_search": "session_search",
+    "session_search_tool": "session_search",
+    "send_message": "messaging",
+    "send_message_tool": "messaging",
 }
 
 
@@ -63,9 +89,11 @@ def _classify_tool(name: str | None) -> str | None:
     n = name.lower()
     if n in _BEHAVIOR_TOOLS:
         return _BEHAVIOR_TOOLS[n]
-    # Handle namespaced variants like mcp__fetch__fetch
+    # Handle namespaced variants like mcp__fetch__fetch or mcp__context7__query_docs
     if n.startswith("mcp__"):
-        return "web"
+        if "fetch" in n or "web" in n or "search" in n:
+            return "web"
+        return None
     # Hermes sometimes logs tools as their Python function names.
     for key, cls in _BEHAVIOR_TOOLS.items():
         if key in n or n.endswith(key) or n.startswith(key):

@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml/badge.svg)](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Tasks](https://img.shields.io/badge/tasks-5-orange)
+![Tasks](https://img.shields.io/badge/tasks-15-orange)
 ![Status](https://img.shields.io/badge/status-pre--official-blue)
 
 HermesBench is a **minimum-capable-model probe** for Hermes-style tool-using agents. It is designed to answer a specific question: *what is the lowest total-parameter model that can still use every tool and feature Hermes Agent exposes?* It is not a leaderboard of the best model for a fixed task; it is a search for the **worst model that is still good enough** — especially useful for local-AI deployment.
@@ -13,7 +13,7 @@ Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers g
 
 - **Capability-first scoring:** tasks are scored on whether the agent used the required Hermes tool or feature class from transcript telemetry, not on whether the final artifact looks right.
 - **Minimum-capable-model goal:** the benchmark is optimized to find the smallest model (in total parameters) that can still drive every tool Hermes Agent needs.
-- **Tool-class coverage:** probes every built-in tool category: `file`, `terminal`, `web`, `browser`, `code_execution`, `vision`, `memory`, `todo`, `skills`, `session_search`, `delegation`, `clarify`, `cronjob`, and `computer_use`.
+- **Tool-class coverage:** probes every built-in tool category: `file`, `terminal`, `web`, `browser`, `code_execution`, `vision`, `image_gen`, `memory`, `todo`, `skills`, `session_search`, `delegation`, `clarify`, `cronjob`, `computer_use`, and `messaging`.
 - **Open-ended prompts:** tasks do not specify which tool to use. The agent must choose, execute, and leave auditable evidence.
 - **False-done penalties:** agents that say “done” without verified capability usage are measured, not rewarded.
 - **Telemetry-based behavior grading:** evaluates real tool usage directly from execution telemetry instead of simple output matching.
@@ -77,8 +77,7 @@ See [`REPOSITORY_MAP.md`](REPOSITORY_MAP.md) for a more explicit identity/proven
 ```text
 src/hermesbench/          Python CLI, runner, schemas, adapters, graders, API/storage
 src/hermesbench/adapters/ mock, Hermes CLI, and shell adapter implementations
-src/hermesbench/graders/  deterministic artifact/test checks
-src/qwen_mtp_probe/       legacy research/provenance namespace; not packaged as HermesBench
+src/hermesbench/graders/  deterministic artifact/test checks and telemetry-based behavior grading
 tasks/                    benchmark task markdown and manifest
 tasks/natural-tools-dev/  natural tool-use capability probes
 fixtures/                 local deterministic task fixtures
@@ -92,9 +91,29 @@ tests/                    parser, runner, API, storage, official-run, and websit
 
 | Suite | Count | Purpose | Credential-free |
 |---|---:|---|---|
-| `natural-tools-dev` | 5 | Open-ended capability probes for file, terminal, web, browser, code execution, vision, memory, todo, skills, delegation, and more | Some |
+|| `natural-tools-dev` | 15 | Open-ended capability probes for file, terminal, web, browser, code execution, vision, image generation, memory, todo, skills, session search, delegation, clarification, cron, computer use, and messaging | Some |
 
-The manifest currently contains 5 entries in the `natural-tools-dev` suite. It is the primary suite for the minimum-capable-model probe. Tasks in this suite are intentionally open-ended: they do not tell the model which tool to use, only the goal. Scoring inspects the transcript for the required Hermes tool class. A model that cannot choose and invoke the right tool class fails the capability probe, regardless of how plausible its final answer is.
+The `natural-tools-dev` suite is the primary suite for the minimum-capable-model probe. It contains 15 public tasks, each targeting one or more Hermes tool classes. Tasks are intentionally open-ended: they do not tell the model which tool to use, only the goal. Scoring inspects the transcript for the required Hermes tool class. A model that cannot choose and invoke the right tool class fails the capability probe, regardless of how plausible its final answer is.
+
+| Task | Required tool classes | Difficulty | Notes |
+|---|---|---:|---|
+| `htu-dev-001` | `file`, `terminal` | easy | self-serve local data processing |
+| `htu-dev-002` | `web` | easy | fetch a public web fact |
+| `htu-dev-003` | `skills` | easy | use a skill to complete a task |
+| `htu-dev-004` | `memory` | easy | recall a stored value |
+| `htu-dev-005` | `delegation` | medium | parallelize subtasks via delegation |
+| `htu-dev-006` | `todo`, `file` | easy | plan work with the todo tool |
+| `htu-dev-007` | `code_execution` | easy | run code to compute an answer |
+| `htu-dev-008` | `browser` | easy | navigate a site to extract a live fact |
+| `htu-dev-009` | `session_search` | easy | search conversation history |
+| `htu-dev-010` | `clarify` | medium | resolve an ambiguous request by asking |
+| `htu-dev-011` | `cronjob` | medium | schedule a future job |
+| `htu-dev-012` | `computer_use` | medium | interact with the desktop environment |
+| `htu-dev-013` | `vision` | medium | read a value from an image |
+| `htu-dev-014` | `image_gen` | medium | generate an image matching constraints |
+| `htu-dev-015` | `messaging` | medium | message a user to report status |
+
+Experimental tasks (browser, clarify, cronjob, computer_use, image_gen) require the corresponding Hermes toolset to be enabled and may depend on external credentials or a desktop environment.
 
 ## Task format
 
@@ -203,10 +222,6 @@ uv run hermesbench run --agent mock --suite natural-tools-dev --output-dir /tmp/
 uv run hermesbench score /tmp/hermesbench-results/*.json
 cd website && pnpm install && pnpm build
 ```
-
-## Provenance
-
-This repository started from the `qwen-mtp-probe` working repo and preserves older Hermes eval artifacts for auditability. See [`docs/provenance.md`](docs/provenance.md). The shipped Python package is `hermesbench` from `src/hermesbench/`; legacy model-specialization files in `src/qwen_mtp_probe/` remain source-tree research/provenance material and are not included in the HermesBench wheel.
 
 ## License
 

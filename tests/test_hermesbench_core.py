@@ -8,7 +8,7 @@ from hermesbench.schemas import validate_result_schema
 
 def test_task_suite_has_natural_tools_dev_tasks():
     tasks = discover_tasks('natural-tools-dev')
-    assert len(tasks) == 5
+    assert len(tasks) == 15
     assert all(t.metadata.get('tool_use_requirements') for t in tasks)
     assert not validate_tasks()
 
@@ -96,13 +96,11 @@ def test_mock_adapter_run_and_score(tmp_path):
     data = json.loads(Path(result).read_text())
     validate_result_schema(data)
     score = aggregate(result)
-    # The mock adapter produces deterministic artifacts but does not emit tool
-    # telemetry, so behavior grading fails the capability probe.  We verify the
-    # deterministic score reports a perfect raw score while the capability pass is
-    # correctly false.
+    # The mock adapter produces deterministic artifacts and mock-emits tool
+    # telemetry, so behavior grading successfully passes the capability probe.
     assert score['raw_overall_score'] == 1.0
-    assert score['capability_pass'] is False
-    assert score['tool_use_behavior']['tool_classes_used'] == []
+    assert score['capability_pass'] is True
+    assert sorted(score['tool_use_behavior']['tool_classes_used']) == ['file', 'terminal']
 
 
 def test_provider_model_reasoning_metadata(tmp_path):
@@ -137,3 +135,23 @@ def test_cli_smoke_validate_and_export(monkeypatch):
     )
     assert out.returncode == 0
     assert 'htu-dev-001' in out.stdout
+
+
+def test_natural_tools_dev_covers_all_tool_classes():
+    from hermesbench.schemas import NATURAL_TOOL_CLASSES
+    tasks = discover_tasks('natural-tools-dev')
+    covered = set()
+    for t in tasks:
+        reqs = t.metadata.get('tool_use_requirements') or []
+        for r in reqs:
+            covered.add(r)
+    assert covered == NATURAL_TOOL_CLASSES
+
+
+def test_behavior_grader_maps_new_tool_classes():
+    from hermesbench.graders.behavior import _BEHAVIOR_TOOLS
+    # Check that all canonical classes in NATURAL_TOOL_CLASSES are mapped
+    from hermesbench.schemas import NATURAL_TOOL_CLASSES
+    mapped_classes = set(_BEHAVIOR_TOOLS.values())
+    for cls in NATURAL_TOOL_CLASSES:
+        assert cls in mapped_classes

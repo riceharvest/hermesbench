@@ -5,7 +5,7 @@ from typing import Any
 REQUIRED_TASK_FIELDS = {"id","title","category","wave","visibility","created_at","freshness_window","expected_human_minutes","difficulty","required_toolsets","grading_type","timeout_seconds","contamination_notes","safety_notes"}
 GRADING_TYPES = {"deterministic","artifact","test","judge","hybrid"}
 QUALITY_TIERS = {"gold", "silver", "bronze", "experimental", "needs-review"}
-NATURAL_TOOL_CLASSES = {"file", "terminal", "web", "browser", "code_execution", "vision", "memory", "todo", "skills", "session_search", "delegation", "clarify", "cronjob", "computer_use"}
+NATURAL_TOOL_CLASSES = {"file", "terminal", "web", "browser", "code_execution", "vision", "image_gen", "memory", "todo", "skills", "session_search", "delegation", "clarify", "cronjob", "computer_use", "messaging"}
 
 @dataclass
 class Task:

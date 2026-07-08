@@ -63,4 +63,19 @@ class MockAdapter(AgentAdapter):
             elif c['type']=='artifact_matches':
                 p=workdir/c['path']; p.parent.mkdir(parents=True, exist_ok=True)
                 p.write_text((p.read_text() if p.exists() else '') + '\n' + c.get('pattern','mock').strip('^$') + '\n')
-        return AgentRun(status='completed', transcript='mock adapter created requested artifacts and verification evidence', tool_calls=2)
+        # Emit fake telemetry for the required tool classes so the behavior grader sees them.
+        tool_class_to_name = {
+            'file': 'read_file', 'terminal': 'terminal', 'web': 'web_search',
+            'browser': 'browser_navigate', 'code_execution': 'execute_code',
+            'vision': 'vision_analyze', 'image_gen': 'image_gen', 'memory': 'memory',
+            'todo': 'todo', 'skills': 'skill_view', 'session_search': 'session_search',
+            'delegation': 'delegate_task', 'clarify': 'clarify', 'cronjob': 'cronjob',
+            'computer_use': 'computer_use', 'messaging': 'send_message',
+        }
+        required = task.metadata.get('tool_use_requirements', []) or []
+        telemetry_lines = []
+        for cls in required:
+            name = tool_class_to_name.get(cls, cls)
+            telemetry_lines.append(f'agent.tool_executor: tool {name} completed (task={task.metadata["id"]})')
+        transcript = 'mock adapter created requested artifacts and verification evidence\n' + '\n'.join(telemetry_lines)
+        return AgentRun(status='completed', transcript=transcript, tool_calls=len(required))

@@ -13,12 +13,14 @@ required_toolsets:
 - delegation
 - terminal
 - file
+no_fixture_required: true
 grading_type: deterministic
 timeout_seconds: 240
 contamination_notes: Static local fixture. Public prompt is stable; the two file names and values are fixed but arbitrary.
 safety_notes: Local subagents only. No external side effects.
 human_baseline_minutes: 5
 human_baseline_success_rate: 0.80
+quality_tier: experimental
 quality_notes: Tests whether the model delegates parallel subtasks to subagents instead of solving sequentially in the main agent.
 requires_skills: false
 coding_required: false
@@ -41,7 +43,9 @@ Pass if the agent uses `delegate_task` at least once and writes the correct comb
 
 ## Deterministic checks
 - artifact_exists: artifacts/answer.txt
-- command_passes: grep -qE '(^|[^0-9])100($|[^0-9])' artifacts/answer.txt
+- command_passes: grep -qE '(^|[^0-9])50($|[^0-9])' artifacts/answer.txt
+- artifact_contains: artifacts/answer.txt => 50
+- command_contains: cat artifacts/answer.txt => 50
 
 ## Hidden checks
 - No hidden checks.

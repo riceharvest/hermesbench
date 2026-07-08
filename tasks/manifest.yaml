@@ -6,7 +6,7 @@ description: 'HermesBench task manifest — minimum-capable-model probe'
 # pivot; see REPOSITORY_MAP.md or git history for prior ProjectOps task files.
 suites:
   natural-tools-dev:
-    version: 0.1.0
+    version: 0.2.0
     description: 'Natural Tool-Use Suite: tasks that require the model to autonomously discover and use Hermes tools/features'
     tasks:
     - id: htu-dev-001-file-and-terminal-self-serve
@@ -27,5 +27,45 @@ suites:
       visibility: public
     - id: htu-dev-005-delegate-parallel-subtasks
       path: natural-tools-dev/htu-dev-005-delegate-parallel-subtasks.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-006-todo-plan
+      path: natural-tools-dev/htu-dev-006-todo-plan.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-007-code-execution
+      path: natural-tools-dev/htu-dev-007-code-execution.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-008-browser-required
+      path: natural-tools-dev/htu-dev-008-browser-required.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-009-session-search
+      path: natural-tools-dev/htu-dev-009-session-search.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-010-clarify-ambiguous
+      path: natural-tools-dev/htu-dev-010-clarify-ambiguous.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-011-cronjob-schedule
+      path: natural-tools-dev/htu-dev-011-cronjob-schedule.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-012-computer-use
+      path: natural-tools-dev/htu-dev-012-computer-use.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-013-vision-image
+      path: natural-tools-dev/htu-dev-013-vision-image.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-014-image-gen
+      path: natural-tools-dev/htu-dev-014-image-gen.md
+      category: natural-tool-use
+      visibility: public
+    - id: htu-dev-015-messaging
+      path: natural-tools-dev/htu-dev-015-messaging.md
       category: natural-tool-use
       visibility: public

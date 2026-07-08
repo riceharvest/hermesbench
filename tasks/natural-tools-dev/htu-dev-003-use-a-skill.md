@@ -12,12 +12,14 @@ difficulty: easy
 required_toolsets:
 - skills
 - file
+no_fixture_required: true
 grading_type: deterministic
 timeout_seconds: 180
 contamination_notes: Static local fixture plus a well-known public skill. Public prompt is stable; the skill itself may evolve, but the answer is contained in the fixture.
 safety_notes: Local fixture and public skill lookup only. No side effects.
 human_baseline_minutes: 5
 human_baseline_success_rate: 0.85
+quality_tier: experimental
 quality_notes: Tests whether the model decides to load a relevant skill to interpret a local artifact.
 requires_skills: true
 coding_required: false
@@ -43,6 +45,8 @@ Pass if the agent loads a skill (e.g., `base64` or a relevant utility skill) and
 ## Deterministic checks
 - artifact_exists: artifacts/answer.txt
 - command_passes: test -s artifacts/answer.txt
+- artifact_contains: artifacts/answer.txt => decoded-by-skill
+- command_contains: cat artifacts/answer.txt => decoded-by-skill
 
 ## Hidden checks
 - No hidden checks.

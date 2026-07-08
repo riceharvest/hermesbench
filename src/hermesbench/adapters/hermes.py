@@ -31,6 +31,7 @@ _TOOLSET_MAP = {
     "file": "file",
     "code_execution": "code_execution",
     "vision": "vision",
+    "image_gen": "image_gen",
     "skills": "skills",
     "memory": "memory",
     "session_search": "session_search",
@@ -40,6 +41,30 @@ _TOOLSET_MAP = {
     "computer_use": "computer_use",
     "todo": "todo",
     "x_search": "x_search",
+    "messaging": "messaging",
+    "search": "web",
+}
+
+# Map a capability class (as used in tool_use_requirements) to the Hermes
+# toolset(s) that must be enabled for the model to use that capability.
+_CAPABILITY_TOOLSETS = {
+    "web": ["web"],
+    "browser": ["browser", "web"],
+    "terminal": ["terminal"],
+    "file": ["file"],
+    "code_execution": ["code_execution"],
+    "vision": ["vision"],
+    "image_gen": ["image_gen"],
+    "skills": ["skills"],
+    "memory": ["memory"],
+    "session_search": ["session_search"],
+    "clarify": ["clarify"],
+    "delegation": ["delegation"],
+    "cronjob": ["cronjob"],
+    "computer_use": ["computer_use"],
+    "todo": ["todo"],
+    "x_search": ["x_search"],
+    "messaging": ["messaging"],
 }
 
 
@@ -192,16 +217,18 @@ def _resolve_toolsets(task) -> list[str]:
     """Return the toolsets to grant Hermes for this task.
 
     Tasks declare the toolsets they expect the model to choose from. If the task
-    explicitly asks for `all`, the adapter enables every built-in toolset that is
-    not inherently unsafe or external-credential dependent. By default we still
-    keep the benchmark local-only, so we do not auto-enable external-only tools.
+    explicitly asks for `all`, the adapter enables every built-in toolset. By
+    default we still keep the benchmark local-only, so we do not auto-enable
+    external-only tools unless the task explicitly asks for them.
     """
     requested = [str(t).lower().strip() for t in task.metadata.get("required_toolsets", []) or []]
     if "all" in requested:
-        return sorted(_TOOLSET_MAP.keys())
+        return sorted(set(_TOOLSET_MAP.values()))
     out = []
     for t in requested:
-        if t in _TOOLSET_MAP:
+        if t in _CAPABILITY_TOOLSETS:
+            out.extend(_CAPABILITY_TOOLSETS[t])
+        elif t in _TOOLSET_MAP:
             out.append(_TOOLSET_MAP[t])
     if not out:
         # Backward-compatible default for projectops tasks.
