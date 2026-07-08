@@ -48,13 +48,13 @@ const routes = [
 ];
 
 const taskStats = {
-  total: 5,
-  publicDev: 5,
+  total: 15,
+  publicDev: 15,
   packs: [
-    ['Natural Tools Dev', 'natural-tools-dev', '5', 'Open-ended capability probes for file, terminal, web, browser, code execution, vision, memory, todo, skills, delegation, and more.'],
+    ['Natural Tools Dev', 'natural-tools-dev', '15', 'Open-ended capability probes for file, terminal, web, browser, code execution, vision, image_gen, memory, todo, skills, session_search, delegation, clarify, cronjob, computer_use, and messaging.'],
   ],
   categories: [
-    'natural-tool-use', 'file', 'terminal', 'web', 'browser', 'code_execution', 'vision', 'memory', 'todo', 'skills', 'delegation', 'clarify', 'cronjob', 'computer_use'
+    'natural-tool-use', 'file', 'terminal', 'web', 'browser', 'code_execution', 'vision', 'image_gen', 'memory', 'todo', 'skills', 'session_search', 'delegation', 'clarify', 'cronjob', 'computer_use', 'messaging'
   ],
 };
 

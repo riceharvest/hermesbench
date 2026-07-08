@@ -1,0 +1,1087 @@
+{
+  "schema_version": "hermesbench.result.v1",
+  "run_id": "9bf5160d198e",
+  "suite": "natural-tools-dev",
+  "agent": "mock",
+  "model": null,
+  "started_at": "2026-07-08T17:26:35.267238+00:00",
+  "completed_at": "2026-07-08T17:26:35.335311+00:00",
+  "results": [
+    {
+      "task_id": "htu-dev-001-file-and-terminal-self-serve",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.028,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 2,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_passes grep -E '[0-9]+' data/records.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['file', 'terminal']",
+        "behavior: observed tool classes = ['file', 'terminal']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 2",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool read_file completed (task=htu-dev-001-file-and-terminal-self-serve)\nagent.tool_executor: tool terminal completed (task=htu-dev-001-file-and-terminal-self-serve)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-001-file-and-terminal-self-serve-sclwp734",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "file",
+        "terminal"
+      ],
+      "required_tool_classes": [
+        "file",
+        "terminal"
+      ]
+    },
+    {
+      "task_id": "htu-dev-002-web-search-required",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.015,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "command_not_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['web']",
+        "behavior: observed tool classes = ['web']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool web_search completed (task=htu-dev-002-web-search-required)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-002-web-search-required-2boitzdu",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "web"
+      ],
+      "required_tool_classes": [
+        "web"
+      ]
+    },
+    {
+      "task_id": "htu-dev-003-use-a-skill",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.026,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['skills']",
+        "behavior: observed tool classes = ['skills']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool skill_view completed (task=htu-dev-003-use-a-skill)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-003-use-a-skill-daczyhgb",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "skills"
+      ],
+      "required_tool_classes": [
+        "skills"
+      ]
+    },
+    {
+      "task_id": "htu-dev-004-memory-recall",
+      "category": "natural-tool-use",
+      "status": "failed",
+      "score": 0.5,
+      "passed": false,
+      "wall_time_seconds": 0.023,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 0.5,
+      "effective_task_score": 0.5,
+      "behavior_penalty": 0.5,
+      "passed_raw": false,
+      "passed_effective": false,
+      "verification_claimed": true,
+      "verification_sufficient": false,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": true,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes grep -q \"benchmark-secret\" artifacts/answer.txt: FAIL (rc=1)",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: FAIL (rc=0)",
+        "behavior: required tool classes = ['memory']",
+        "behavior: observed tool classes = ['memory']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool memory completed (task=htu-dev-004-memory-recall)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-004-memory-recall-4vy9ev1q",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "memory"
+      ],
+      "required_tool_classes": [
+        "memory"
+      ]
+    },
+    {
+      "task_id": "htu-dev-005-delegate-parallel-subtasks",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.031,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes grep -qE '(^|[^0-9])50($|[^0-9])' artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['delegation']",
+        "behavior: observed tool classes = ['delegation']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool delegate_task completed (task=htu-dev-005-delegate-parallel-subtasks)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-005-delegate-parallel-subtasks-n78ldsdc",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "delegation"
+      ],
+      "required_tool_classes": [
+        "delegation"
+      ]
+    },
+    {
+      "task_id": "htu-dev-006-todo-plan",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.027,
+      "task_quality_tier": "gold",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['todo']",
+        "behavior: observed tool classes = ['todo']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool todo completed (task=htu-dev-006-todo-plan)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-006-todo-plan-qss_31d2",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "todo"
+      ],
+      "required_tool_classes": [
+        "todo"
+      ]
+    },
+    {
+      "task_id": "htu-dev-007-code-execution",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.027,
+      "task_quality_tier": "gold",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['code_execution']",
+        "behavior: observed tool classes = ['code_execution']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool execute_code completed (task=htu-dev-007-code-execution)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-007-code-execution-2kdooy9m",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "code_execution"
+      ],
+      "required_tool_classes": [
+        "code_execution"
+      ]
+    },
+    {
+      "task_id": "htu-dev-008-browser-required",
+      "category": "natural-tool-use",
+      "status": "failed",
+      "score": 0.5,
+      "passed": false,
+      "wall_time_seconds": 0.014,
+      "task_quality_tier": "gold",
+      "raw_task_score": 0.5,
+      "effective_task_score": 0.5,
+      "behavior_penalty": 0.5,
+      "passed_raw": false,
+      "passed_effective": false,
+      "verification_claimed": true,
+      "verification_sufficient": false,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": true,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "command_passes grep -qE 'v?[0-9]+\\.[0-9]+' artifacts/answer.txt: FAIL (rc=1)",
+        "artifact_matches artifacts/answer.txt: FAIL",
+        "behavior: required tool classes = ['browser']",
+        "behavior: observed tool classes = ['browser']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool browser_navigate completed (task=htu-dev-008-browser-required)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-008-browser-required-1i7yi3z7",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "browser"
+      ],
+      "required_tool_classes": [
+        "browser"
+      ]
+    },
+    {
+      "task_id": "htu-dev-009-session-search",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.029,
+      "task_quality_tier": "gold",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['session_search']",
+        "behavior: observed tool classes = ['session_search']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool session_search completed (task=htu-dev-009-session-search)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-009-session-search-4s0jzrhz",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "session_search"
+      ],
+      "required_tool_classes": [
+        "session_search"
+      ]
+    },
+    {
+      "task_id": "htu-dev-010-clarify-ambiguous",
+      "category": "natural-tool-use",
+      "status": "failed",
+      "score": 0.25,
+      "passed": false,
+      "wall_time_seconds": 0.062,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 0.75,
+      "effective_task_score": 0.25,
+      "behavior_penalty": 0.75,
+      "passed_raw": false,
+      "passed_effective": false,
+      "verification_claimed": true,
+      "verification_sufficient": false,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": true,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "command_passes python3 -c \"import json; json.load(open('artifacts/answer.txt'))\": FAIL (rc=1)",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['clarify']",
+        "behavior: observed tool classes = ['clarify']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool clarify completed (task=htu-dev-010-clarify-ambiguous)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-010-clarify-ambiguous-gtv7z1mm",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "clarify"
+      ],
+      "required_tool_classes": [
+        "clarify"
+      ]
+    },
+    {
+      "task_id": "htu-dev-011-cronjob-schedule",
+      "category": "natural-tool-use",
+      "status": "failed",
+      "score": 0.25,
+      "passed": false,
+      "wall_time_seconds": 0.012,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 0.75,
+      "effective_task_score": 0.25,
+      "behavior_penalty": 0.75,
+      "passed_raw": false,
+      "passed_effective": false,
+      "verification_claimed": true,
+      "verification_sufficient": false,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": true,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_passes grep -qE 'cron done|cron unavailable' artifacts/answer.txt: FAIL (rc=1)",
+        "behavior: required tool classes = ['cronjob']",
+        "behavior: observed tool classes = ['cronjob']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool cronjob completed (task=htu-dev-011-cronjob-schedule)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-011-cronjob-schedule-pdp6muxq",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "cronjob"
+      ],
+      "required_tool_classes": [
+        "cronjob"
+      ]
+    },
+    {
+      "task_id": "htu-dev-012-computer-use",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.013,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_passes grep -qE 'computer_use|screenshot' artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['computer_use']",
+        "behavior: observed tool classes = ['computer_use']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool computer_use completed (task=htu-dev-012-computer-use)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-012-computer-use-8zjiq7n4",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "computer_use"
+      ],
+      "required_tool_classes": [
+        "computer_use"
+      ]
+    },
+    {
+      "task_id": "htu-dev-013-vision-image",
+      "category": "natural-tool-use",
+      "status": "passed",
+      "score": 1.0,
+      "passed": true,
+      "wall_time_seconds": 0.027,
+      "task_quality_tier": "gold",
+      "raw_task_score": 1.0,
+      "effective_task_score": 1.0,
+      "behavior_penalty": 0.0,
+      "passed_raw": true,
+      "passed_effective": true,
+      "verification_claimed": true,
+      "verification_sufficient": true,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": false,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['vision']",
+        "behavior: observed tool classes = ['vision']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool vision_analyze completed (task=htu-dev-013-vision-image)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-013-vision-image-fhgfwpw8",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "vision"
+      ],
+      "required_tool_classes": [
+        "vision"
+      ]
+    },
+    {
+      "task_id": "htu-dev-014-image-gen",
+      "category": "natural-tool-use",
+      "status": "failed",
+      "score": 0.25,
+      "passed": false,
+      "wall_time_seconds": 0.016,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 0.75,
+      "effective_task_score": 0.25,
+      "behavior_penalty": 0.75,
+      "passed_raw": false,
+      "passed_effective": false,
+      "verification_claimed": true,
+      "verification_sufficient": false,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": true,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/image.png || grep -q 'image_gen unavailable' artifacts/answer.txt: FAIL (rc=1)",
+        "behavior: required tool classes = ['image_gen']",
+        "behavior: observed tool classes = ['image_gen']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool image_gen completed (task=htu-dev-014-image-gen)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-014-image-gen-rh4f6c3i",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "image_gen"
+      ],
+      "required_tool_classes": [
+        "image_gen"
+      ]
+    },
+    {
+      "task_id": "htu-dev-015-messaging",
+      "category": "natural-tool-use",
+      "status": "failed",
+      "score": 0.25,
+      "passed": false,
+      "wall_time_seconds": 0.012,
+      "task_quality_tier": "experimental",
+      "raw_task_score": 0.75,
+      "effective_task_score": 0.25,
+      "behavior_penalty": 0.75,
+      "passed_raw": false,
+      "passed_effective": false,
+      "verification_claimed": true,
+      "verification_sufficient": false,
+      "tool_calls": 1,
+      "token_usage": null,
+      "cost_usd": null,
+      "false_done": true,
+      "timeout": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/sent.txt || grep -q 'messaging unavailable' artifacts/answer.txt: FAIL (rc=1)",
+        "behavior: required tool classes = ['messaging']",
+        "behavior: observed tool classes = ['messaging']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 1",
+        "behavior: used any tool = True"
+      ],
+      "logs": {
+        "transcript": "mock adapter created requested artifacts and verification evidence\nagent.tool_executor: tool send_message completed (task=htu-dev-015-messaging)",
+        "telemetry_source": null,
+        "sandbox": {
+          "workdir": "/tmp/hb-htu-dev-015-messaging-fop77vrf",
+          "tempdir_prefix": "hb-",
+          "env_policy": {
+            "mode": "allowlist+scrub",
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "scrubbed_variable_names": [
+              "ANTIGRAVITY_CSRF_TOKEN",
+              "OPENROUTER_API_KEY",
+              "XAUTHORITY"
+            ]
+          },
+          "process": {
+            "pid": 3474537,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          }
+        }
+      },
+      "tool_classes_used": [
+        "messaging"
+      ],
+      "required_tool_classes": [
+        "messaging"
+      ]
+    }
+  ],
+  "metadata": {
+    "task_count": 15,
+    "public_output_redacts_hidden_checks": true,
+    "benchmark_version": "natural-tools-dev-v0.1",
+    "provider": null,
+    "reasoning_effort": null,
+    "task_root": null,
+    "jobs": 15
+  }
+}
