@@ -109,7 +109,7 @@ def _run_one_task(task, agent, model, command, provider, reasoning_effort) -> Ta
             tool_classes_used=list(tool_classes_used), required_tool_classes=list(required_tool_classes)
         )
 
-def run_benchmark(agent='mock', suite='natural-tools-dev', task_id=None, output_dir='results', model=None, command=None, benchmark_version=None, provider=None, reasoning_effort=None, task_root=None, jobs: int | str | None = None) -> Path:
+def run_benchmark(agent='mock', suite='natural-tools-dev', task_id=None, output_dir='results', model=None, command=None, benchmark_version=None, provider=None, reasoning_effort=None, task_root=None, jobs: int | str | None = None, quantization=None, backend=None) -> Path:
     provider, model = _split_provider_model(provider, model)
     version_info=resolve_version(benchmark_version)
     if benchmark_version and version_info['suite'] != suite: raise ValueError('benchmark version does not match selected suite')
@@ -125,7 +125,7 @@ def run_benchmark(agent='mock', suite='natural-tools-dev', task_id=None, output_
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
             results=list(pool.map(lambda task: _run_one_task(task, agent, model, command, provider, reasoning_effort), tasks))
     completed=datetime.now(timezone.utc).isoformat()
-    run=RunResult('hermesbench.result.v1', uuid.uuid4().hex[:12], suite, agent, model, started, completed, results, {'task_count':len(results), 'public_output_redacts_hidden_checks': True, 'benchmark_version': version_info['version'], 'provider': provider, 'reasoning_effort': reasoning_effort, 'task_root': str(task_root) if task_root else None, 'jobs': max_workers})
+    run=RunResult('hermesbench.result.v1', uuid.uuid4().hex[:12], suite, agent, model, started, completed, results, {'task_count':len(results), 'public_output_redacts_hidden_checks': True, 'benchmark_version': version_info['version'], 'provider': provider, 'reasoning_effort': reasoning_effort, 'task_root': str(task_root) if task_root else None, 'jobs': max_workers, 'quantization': quantization, 'backend': backend})
     path=out/f"hermesbench-{run.run_id}.json"
     path.write_text(json.dumps(run.to_jsonable(), indent=2))
     return path
