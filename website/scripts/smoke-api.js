@@ -56,7 +56,7 @@ async function call(handler, method, body, headers = {}) {
     result: {
       schema_version: 'hermesbench.result.v1',
       run_id: 'api-smoke-run',
-      suite: 'public-dev',
+      suite: 'natural-tools-dev',
       agent: 'mock',
       model: 'mock-model',
       started_at: '2026-06-02T00:00:00Z',

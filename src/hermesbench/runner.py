@@ -6,8 +6,10 @@ from pathlib import Path
 from .tasks import discover_tasks, task_quality_tier
 from .adapters import get_adapter
 from .graders.deterministic import run_checks
+from .graders.behavior import grade_behavior, score_tool_use
 from .schemas import TaskResult, RunResult
 from .versions import resolve_version
+
 
 ROOT=Path(__file__).resolve().parents[2]
 
@@ -24,9 +26,17 @@ def _sandbox_metadata(workdir: Path) -> dict:
         'process': {'pid': os.getpid(), 'platform': platform.platform(), 'python': platform.python_version()},
     }
 
-def _copy_fixtures(task, workdir: Path):
+def _copy_fixtures(task, workdir: Path) -> Path | None:
     src=ROOT/'fixtures'/task.metadata['id']
-    if src.exists(): shutil.copytree(src, workdir, dirs_exist_ok=True)
+    if not src.exists():
+        return None
+    public=src/'public'
+    hidden=src/'hidden'
+    if public.exists():
+        shutil.copytree(public, workdir, dirs_exist_ok=True)
+        return hidden if hidden.exists() else None
+    shutil.copytree(src, workdir, dirs_exist_ok=True)
+    return None
 
 def _split_provider_model(provider: str | None, model: str | None) -> tuple[str | None, str | None]:
     if provider or not model or '/' not in model:
@@ -34,6 +44,12 @@ def _split_provider_model(provider: str | None, model: str | None) -> tuple[str 
     prefix, rest = model.split('/', 1)
     aliases={'openaicodex':'openai-codex','openai-codex':'openai-codex'}
     return aliases.get(prefix, prefix), rest
+
+def _used_tool_classes(transcript: str) -> set[str]:
+    """Return the set of natural-tool classes observed in the transcript."""
+    _, details = score_tool_use(Path.cwd(), transcript, [])
+    return set(details.get("observed_tool_classes", []))
+
 
 def _resolve_jobs(jobs: int | str | None, task_count: int) -> int:
     if task_count <= 1:
@@ -50,18 +66,36 @@ def _resolve_jobs(jobs: int | str | None, task_count: int) -> int:
 def _run_one_task(task, agent, model, command, provider, reasoning_effort) -> TaskResult:
     adapter=get_adapter(agent, model=model, command=command, provider=provider, reasoning_effort=reasoning_effort)
     t0=time.time(); false_done=False; timeout=False
+    ar=None
     with tempfile.TemporaryDirectory(prefix=f"hb-{task.metadata['id']}-") as td:
-        wd=Path(td); _copy_fixtures(task, wd)
-        try: ar=adapter.run_task(task, wd)
+        wd=Path(td); hidden_dir=_copy_fixtures(task, wd)
+        try: ar=adapter.run_task(task, wd, hidden_dir=hidden_dir)
         except subprocess.TimeoutExpired:
             ar=None; timeout=True
-        raw_score,evidence=run_checks(wd, task.deterministic_checks)
+
+        # Behavior-based grading for natural tool use. If a task declares
+        # `tool_use_requirements`, the agent must actually invoke those tool
+        # classes in its transcript. This is independent of artifact/output
+        # correctness.
+        behavior_score, behavior_evidence = grade_behavior(task, wd, ar.transcript if ar else "")
+        raw_score, evidence = run_checks(wd, task.deterministic_checks, hidden_dir=hidden_dir)
         verification_claimed=bool(ar and ar.claimed_done)
         verification_sufficient=raw_score >= 1.0
         if verification_claimed and not verification_sufficient: false_done=True
         behavior_penalty=raw_score if false_done else 0.0
-        effective_score=max(0.0, raw_score-behavior_penalty)
+
+        # For behavior-graded tasks, the effective score is the behavior score
+        # (did it use the right tools?) combined with a hard floor: the agent
+        # cannot pass if it falsely claimed completion.
+        if task.metadata.get("tool_use_requirements"):
+            effective_score = behavior_score * (1.0 - behavior_penalty)
+        else:
+            effective_score=max(0.0, raw_score-behavior_penalty)
+
         status='passed' if effective_score>=1.0 else ('timeout' if timeout else 'failed')
+        # Capture the tool classes the agent actually used and what the task required.
+        tool_classes_used = _used_tool_classes(ar.transcript if ar else "")
+        required_tool_classes = task.metadata.get("tool_use_requirements", [])
         return TaskResult(
             task_id=task.metadata['id'], category=task.metadata['category'], status=status,
             score=effective_score, passed=effective_score>=1.0, wall_time_seconds=round(time.time()-t0,3),
@@ -70,10 +104,12 @@ def _run_one_task(task, agent, model, command, provider, reasoning_effort) -> Ta
             passed_raw=raw_score>=1.0, passed_effective=effective_score>=1.0,
             verification_claimed=verification_claimed, verification_sufficient=verification_sufficient,
             tool_calls=ar.tool_calls if ar else 0, token_usage=ar.token_usage if ar else None, cost_usd=ar.cost_usd if ar else None,
-            false_done=false_done, timeout=timeout, verification_evidence=evidence,
-            logs={'transcript': ar.transcript[:4000] if ar else '', 'telemetry_source': ar.telemetry_source if ar else None, 'sandbox': _sandbox_metadata(wd)})
+            false_done=false_done, timeout=timeout, verification_evidence=evidence + behavior_evidence,
+            logs={'transcript': ar.transcript[:4000] if ar else '', 'telemetry_source': ar.telemetry_source if ar else None, 'sandbox': _sandbox_metadata(wd)},
+            tool_classes_used=list(tool_classes_used), required_tool_classes=list(required_tool_classes)
+        )
 
-def run_benchmark(agent='mock', suite='public-dev', task_id=None, output_dir='results', model=None, command=None, benchmark_version=None, provider=None, reasoning_effort=None, task_root=None, jobs: int | str | None = None) -> Path:
+def run_benchmark(agent='mock', suite='natural-tools-dev', task_id=None, output_dir='results', model=None, command=None, benchmark_version=None, provider=None, reasoning_effort=None, task_root=None, jobs: int | str | None = None) -> Path:
     provider, model = _split_provider_model(provider, model)
     version_info=resolve_version(benchmark_version)
     if benchmark_version and version_info['suite'] != suite: raise ValueError('benchmark version does not match selected suite')

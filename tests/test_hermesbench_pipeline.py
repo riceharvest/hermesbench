@@ -9,7 +9,7 @@ from hermesbench.tasks import discover_tasks
 
 def _result(path: Path, run_id="r1", official=False):
     path.parent.mkdir(parents=True, exist_ok=True)
-    data={"schema_version":"hermesbench.result.v1","run_id":run_id,"suite":"public-dev","agent":"agent","model":"model","started_at":"s","completed_at":"c","metadata":{"official":official},"results":[{"task_id":"t1","category":"cat","status":"passed","score":1.0,"passed":True,"wall_time_seconds":1,"logs":{"transcript":"secret"}}]}
+    data={"schema_version":"hermesbench.result.v1","run_id":run_id,"suite":"natural-tools-dev","agent":"agent","model":"model","started_at":"s","completed_at":"c","metadata":{"official":official},"results":[{"task_id":"t1","category":"natural-tool-use","status":"passed","score":1.0,"passed":True,"wall_time_seconds":1,"logs":{"transcript":"secret"}}]}
     path.write_text(json.dumps(data))
     return path
 

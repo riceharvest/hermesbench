@@ -2,7 +2,7 @@
 
 HermesBench includes a minimal local API scaffold in `src/hermesbench/api.py`, a `wsgiref` wrapper in `src/hermesbench/http_api.py`, and Vercel serverless routes under `website/api/` for the live site.
 
-> **Production-readiness status:** the live site has two write lanes: tokenless community uploads for self-serve public-suite comparisons, and a protected maintainer lane for promoted/official-style submissions. `wsgiref.simple_server` remains local/dev-only.
+> **Production-readiness status:** the live site has two write lanes: tokenless community uploads for self-serve model comparisons, and a protected maintainer lane for promoted/official-style submissions. `wsgiref.simple_server` remains local/dev-only.
 
 ## Endpoints
 
@@ -25,7 +25,7 @@ The CLI posts a `hermesbench.submission.v1` wrapper. The API also accepts a lega
   "result": {
     "schema_version": "hermesbench.result.v1",
     "run_id": "abc123",
-    "suite": "public-dev",
+    "suite": "natural-tools-dev",
     "agent": "hermes",
     "model": "openai-codex/gpt-5.5",
     "results": []

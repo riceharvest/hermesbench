@@ -44,7 +44,7 @@ def test_aggregate_preserves_old_files_and_sums_new_token_usage(tmp_path):
     result.write_text(json.dumps({
         "schema_version":"hermesbench.result.v1",
         "run_id":"abc",
-        "suite":"public-dev",
+        "suite":"natural-tools-dev",
         "agent":"hermes",
         "model":"m",
         "started_at":"s",

@@ -9,17 +9,13 @@ HermesBench is the public benchmark identity of this repository. The repository 
 
 ## Benchmark assets
 
-- `tasks/manifest.yaml` — manifest with 50 entries total.
-- `tasks/public-dev/` — 35 credential-free public development/regression tasks.
-- `tasks/anchor/` — 5 stable public anchor templates/tasks for longitudinal comparisons.
-- `tasks/fresh-rolling/` — 5 public fresh-wave starter tasks.
-- `tasks/private-holdout/` — 5 public templates documenting private-holdout shape only; real private packs are not shipped publicly.
+- `tasks/manifest.yaml` — manifest defining the active suite and tasks.
+- `tasks/natural-tools-dev/` — 5 open-ended capability probes for file, terminal, web, browser, code execution, vision, memory, todo, skills, delegation, and more.
 - `fixtures/` — deterministic local fixtures copied into isolated task workdirs.
-- `benchmark_versions/` — benchmark version registry.
 
 ## Docs and site
 
-- `docs/` — methodology, governance, architecture, provenance, API, deployment, and release docs.
+- `docs/` — methodology, governance, architecture, provenance, API, and deployment docs.
 - `website/` — static landing/leaderboard scaffold and demo data.
 - `CHANGELOG.md` — human-facing release/change notes.
 

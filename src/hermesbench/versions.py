@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 BENCHMARK_VERSIONS = {
-    'public-dev-2026-06': {
-        'suite': 'public-dev',
-        'task_count': 30,
+    'natural-tools-dev-v0.1': {
+        'suite': 'natural-tools-dev',
+        'task_count': 5,
         'status': 'development',
-        'notes': 'Fixture-backed public development suite for local runner validation.',
+        'notes': 'Minimum-capable-model probe for Hermes Agent tool coverage.',
     }
 }
-DEFAULT_BENCHMARK_VERSION = 'public-dev-2026-06'
+DEFAULT_BENCHMARK_VERSION = 'natural-tools-dev-v0.1'
 
 def list_versions() -> dict:
     return BENCHMARK_VERSIONS.copy()

@@ -1,9 +1,5 @@
 from __future__ import annotations
-
-import json
-import re
-import subprocess
-import time
+import json, re, subprocess, time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -25,6 +21,25 @@ _COST_KEYS = ("cost_usd", "costUSD", "cost")
 _TOKEN_KEYS = {
     "prompt_tokens", "completion_tokens", "total_tokens", "input_tokens", "output_tokens",
     "cache_read_input_tokens", "cache_creation_input_tokens", "reasoning_tokens",
+}
+
+
+_TOOLSET_MAP = {
+    "web": "web",
+    "browser": "browser",
+    "terminal": "terminal",
+    "file": "file",
+    "code_execution": "code_execution",
+    "vision": "vision",
+    "skills": "skills",
+    "memory": "memory",
+    "session_search": "session_search",
+    "clarify": "clarify",
+    "delegation": "delegation",
+    "cronjob": "cronjob",
+    "computer_use": "computer_use",
+    "todo": "todo",
+    "x_search": "x_search",
 }
 
 
@@ -173,17 +188,48 @@ def _recent_hermes_text(started_at: float, limit_files: int = 8, max_bytes: int 
     return "\n".join(chunks), "hermes-session-or-log" if chunks else None
 
 
+def _resolve_toolsets(task) -> list[str]:
+    """Return the toolsets to grant Hermes for this task.
+
+    Tasks declare the toolsets they expect the model to choose from. If the task
+    explicitly asks for `all`, the adapter enables every built-in toolset that is
+    not inherently unsafe or external-credential dependent. By default we still
+    keep the benchmark local-only, so we do not auto-enable external-only tools.
+    """
+    requested = [str(t).lower().strip() for t in task.metadata.get("required_toolsets", []) or []]
+    if "all" in requested:
+        return sorted(_TOOLSET_MAP.keys())
+    out = []
+    for t in requested:
+        if t in _TOOLSET_MAP:
+            out.append(_TOOLSET_MAP[t])
+    if not out:
+        # Backward-compatible default for projectops tasks.
+        return ["terminal", "file"]
+    return sorted(set(out))
+
+
 class HermesCLIAdapter(AgentAdapter):
-    def run_task(self, task, workdir: Path) -> AgentRun:
-        prompt=f"HermesBench task {task.metadata['id']}\n\n{task.prompt}\n\nWorkdir: {workdir}. Produce expected artifacts: {', '.join(task.expected_artifacts)}. Verify before final."
-        cmd=['hermes','chat','-q',prompt,'-Q','--toolsets','terminal,file,web,browser']
-        if getattr(self, 'provider', None): cmd += ['--provider', self.provider]
-        if self.model: cmd += ['--model', self.model]
+    def run_task(self, task, workdir: Path, hidden_dir: Path | None = None) -> AgentRun:
+        toolsets = _resolve_toolsets(task)
+        # Open-ended instruction: the model must decide which tools to use and how.
+        # We do not list expected artifacts or specific commands in the prompt.
+        prompt = (
+            f"HermesBench task {task.metadata['id']}\n\n"
+            f"{task.prompt}\n\n"
+            f"Workdir: {workdir}. Use the tools available to you to complete this task. "
+            "You are expected to choose the right tools and features naturally, not to rely on the final answer text alone."
+        )
+        cmd = ["hermes", "chat", "-q", prompt, "-Q", "--toolsets", ",".join(toolsets)]
+        if getattr(self, "provider", None):
+            cmd += ["--provider", self.provider]
+        if self.model:
+            cmd += ["--model", self.model]
         # Hermes exposes reasoning effort through config, not a chat CLI flag.
         # The benchmark still records it in result metadata; callers should set
         # `hermes config set agent.reasoning_effort <level>` before long runs.
         started_at = time.time()
-        p=subprocess.run(cmd, cwd=workdir, text=True, capture_output=True, timeout=int(task.metadata['timeout_seconds']))
+        p = subprocess.run(cmd, cwd=workdir, text=True, capture_output=True, timeout=int(task.metadata["timeout_seconds"]))
         transcript = p.stdout + p.stderr
         telemetry = extract_hermes_telemetry(transcript, "stdout/stderr")
         if not (telemetry.tool_calls or telemetry.token_usage or telemetry.cost_usd is not None):
@@ -191,4 +237,12 @@ class HermesCLIAdapter(AgentAdapter):
             recent_text, recent_source = _recent_hermes_text(started_at, session_id=m.group(1) if m else None)
             if recent_text:
                 telemetry = extract_hermes_telemetry(recent_text, recent_source)
-        return AgentRun('completed' if p.returncode==0 else 'failed', transcript, telemetry.tool_calls, telemetry.cost_usd, True, telemetry.token_usage, telemetry.source)
+        return AgentRun(
+            "completed" if p.returncode == 0 else "failed",
+            transcript,
+            telemetry.tool_calls,
+            telemetry.cost_usd,
+            True,
+            telemetry.token_usage,
+            telemetry.source,
+        )

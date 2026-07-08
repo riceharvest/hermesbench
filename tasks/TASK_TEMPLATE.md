@@ -1,45 +1,48 @@
 ---
-id: hb-dev-000-example
-title: Example task
-category: sanity-basic-tool-use
-wave: public-dev-YYYY-MM
+id: htu-dev-000-example
+title: Natural Tool-Use - Example
+category: natural-tool-use
+wave: natural-tools-v0-2026-07
 visibility: public
-created_at: YYYY-MM-DD
-freshness_window: stable-anchor
-expected_human_minutes: 10
+created_at: 2026-07-08
+freshness_window: static
+expected_human_minutes: 5
 difficulty: easy
-required_toolsets: [terminal, file]
+required_toolsets:
+- terminal
+- file
 grading_type: deterministic
-timeout_seconds: 300
-contamination_notes: Explain public/private risk.
-safety_notes: Explain local-only scope.
-quality_tier: experimental
+tool_use_requirements:
+- file
+- terminal
+timeout_seconds: 180
+contamination_notes: Vague local-only task; no hidden oracle.
+safety_notes: Credential-free local fixture.
 ---
 
 ## Prompt
+Provide a brief prompt that forces the agent to autonomously decide to use the required tools (e.g. read_file, terminal, etc.) to achieve a specific goal. Do not instruct the model on which tool to use.
 
 ## Setup
-
-## Failure mode tested
-Describe the specific agent failure this task detects (for example: shallow file creation, failure to inspect fixtures, false-done claims, brittle parsing, or missing verification).
-
-## Why hard for agents
-Explain why a competent human finds it straightforward while agents may struggle, including tool use, context, ambiguity, or multi-step dependencies.
-
-## Overfitting risk
-State which visible markers could be gamed and how deterministic/hidden checks reduce prompt- or fixture-specific shortcuts.
+Explain any local files or environment variables needed for this task.
 
 ## Expected artifacts
-- artifacts/example.txt
+List files the agent should produce if any.
 
 ## Scoring rubric
+The grader checks whether the agent invoked the required tool classes (as specified in `tool_use_requirements`) during the trajectory telemetry.
 
 ## Deterministic checks
-- artifact_exists: artifacts/example.txt
-- artifact_contains: artifacts/example.txt => substantive expected value
-- command_passes: test -s artifacts/example.txt
-- command_not_contains: cat artifacts/example.txt => TODO_PLACEHOLDER
+- artifact_exists: artifacts/answer.txt
 
-## Hidden checks
+## Failure mode tested
+Describe the specific tool-use capability being tested.
+
+## Why hard for agents
+Describe why a model might struggle (e.g. failing to choose the correct tool class or saying "done" prematurely).
+
+## Overfitting risk
+Describe overfitting risks.
 
 ## Cleanup
+Instructions to clean up.

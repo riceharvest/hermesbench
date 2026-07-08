@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, re, subprocess
+import json, os, re, subprocess
 from pathlib import Path
 from typing import Any
 
@@ -57,14 +57,17 @@ def _compare(actual: Any, expr: str) -> bool:
     return (got != expected) if op == '!=' else (got == expected)
 
 
-def _run_command(command: str, workdir: Path, timeout: float) -> subprocess.CompletedProcess[str] | None:
+def _run_command(command: str, workdir: Path, timeout: float, hidden_dir: Path | None = None) -> subprocess.CompletedProcess[str] | None:
     try:
-        return subprocess.run(command, cwd=workdir, shell=True, timeout=timeout, capture_output=True, text=True)
+        env=os.environ.copy()
+        if hidden_dir is not None:
+            env['HERMESBENCH_HIDDEN_DIR']=str(hidden_dir)
+        return subprocess.run(command, cwd=workdir, shell=True, timeout=timeout, capture_output=True, text=True, env=env)
     except Exception:
         return None
 
 
-def run_checks(workdir: Path, checks: list[dict]) -> tuple[float, list[str]]:
+def run_checks(workdir: Path, checks: list[dict], hidden_dir: Path | None = None) -> tuple[float, list[str]]:
     evidence=[]; passed=0
     for c in checks:
         timeout=float(c.get('timeout_seconds', c.get('timeout', 10)))
@@ -88,7 +91,7 @@ def run_checks(workdir: Path, checks: list[dict]) -> tuple[float, list[str]]:
                 actual=f'<error: {exc.__class__.__name__}>'
             detail='' if ok else f' (actual={actual})'
         elif typ in {'command_passes','command_contains','command_not_contains'}:
-            cp=_run_command(c['command'], workdir, timeout)
+            cp=_run_command(c['command'], workdir, timeout, hidden_dir=hidden_dir)
             out='' if cp is None else (cp.stdout or '') + (cp.stderr or '')
             if typ=='command_passes': ok=cp is not None and cp.returncode == 0
             elif typ=='command_contains': ok=cp is not None and c.get('needle','') in out

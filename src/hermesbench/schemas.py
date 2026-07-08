@@ -5,6 +5,7 @@ from typing import Any
 REQUIRED_TASK_FIELDS = {"id","title","category","wave","visibility","created_at","freshness_window","expected_human_minutes","difficulty","required_toolsets","grading_type","timeout_seconds","contamination_notes","safety_notes"}
 GRADING_TYPES = {"deterministic","artifact","test","judge","hybrid"}
 QUALITY_TIERS = {"gold", "silver", "bronze", "experimental", "needs-review"}
+NATURAL_TOOL_CLASSES = {"file", "terminal", "web", "browser", "code_execution", "vision", "memory", "todo", "skills", "session_search", "delegation", "clarify", "cronjob", "computer_use"}
 
 @dataclass
 class Task:
@@ -41,6 +42,8 @@ class TaskResult:
     timeout: bool = False
     verification_evidence: list[str] | None = None
     logs: dict[str, Any] | None = None
+    tool_classes_used: list[str] | None = None
+    required_tool_classes: list[str] | None = None
 
 @dataclass
 class RunResult:

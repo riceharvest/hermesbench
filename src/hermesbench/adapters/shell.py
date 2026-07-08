@@ -4,6 +4,6 @@ from .base import AgentAdapter, AgentRun
 class ShellAdapter(AgentAdapter):
     def __init__(self, command: str, model: str | None=None, provider: str | None=None, reasoning_effort: str | None=None):
         super().__init__(model, provider=provider, reasoning_effort=reasoning_effort); self.command=command
-    def run_task(self, task, workdir: Path) -> AgentRun:
+    def run_task(self, task, workdir: Path, hidden_dir: Path | None = None) -> AgentRun:
         p=subprocess.run(self.command, shell=True, cwd=workdir, text=True, capture_output=True, timeout=int(task.metadata['timeout_seconds']))
         return AgentRun('completed' if p.returncode==0 else 'failed', p.stdout+p.stderr, 0)

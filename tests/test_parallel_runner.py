@@ -5,21 +5,21 @@ from hermesbench.runner import run_benchmark
 
 
 def _write_task_pack(root: Path, count: int = 2) -> None:
-    suite = root / 'public-dev'
+    suite = root / 'natural-tools-dev'
     suite.mkdir(parents=True)
-    manifest = ['suite: public-dev', 'version: test', 'tasks:']
+    manifest = ['suites:', '  natural-tools-dev:', '    version: test', '    tasks:']
     for i in range(count):
         task_id = f'parallel-task-{i}'
         manifest.extend([
-            f'- id: {task_id}',
-            f'  path: public-dev/{task_id}.md',
-            '  category: parallel-test',
-            '  visibility: public',
+            f'    - id: {task_id}',
+            f'      path: natural-tools-dev/{task_id}.md',
+            '      category: natural-tool-use',
+            '      visibility: public',
         ])
         (suite / f'{task_id}.md').write_text(f'''---
 id: {task_id}
 title: Parallel task {i}
-category: parallel-test
+category: natural-tool-use
 wave: test
 visibility: public
 created_at: 2026-06-02
@@ -65,7 +65,7 @@ def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path):
     started = time.perf_counter()
     result = run_benchmark(
         agent='shell',
-        suite='public-dev',
+        suite='natural-tools-dev',
         output_dir=tmp_path / 'results',
         command="python -c 'import time, pathlib; time.sleep(0.45); pathlib.Path(\"done.txt\").write_text(\"ok\")'",
         task_root=task_root,

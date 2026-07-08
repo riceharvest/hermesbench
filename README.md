@@ -2,25 +2,27 @@
 
 [![CI](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml/badge.svg)](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Tasks](https://img.shields.io/badge/tasks-50-orange)
+![Tasks](https://img.shields.io/badge/tasks-5-orange)
 ![Status](https://img.shields.io/badge/status-pre--official-blue)
 
-HermesBench is an execution-based benchmark for Hermes-style tool-using agents: agents that read files, run commands, inspect fixtures, write artifacts, recover context, and verify work before claiming success.
+HermesBench is a **minimum-capable-model probe** for Hermes-style tool-using agents. It is designed to answer a specific question: *what is the lowest total-parameter model that can still use every tool and feature Hermes Agent exposes?* It is not a leaderboard of the best model for a fixed task; it is a search for the **worst model that is still good enough** — especially useful for local-AI deployment.
 
-Static LLM benchmarks are increasingly benchmaxxed: prompts leak, public answers get trained on, and leaderboard wins stop predicting whether an agent can actually finish messy work. HermesBench is designed around the opposite signal: did the agent produce the artifact, pass deterministic checks, avoid false-done behavior, and leave auditable evidence?
+Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers get trained on, and leaderboard wins stop predicting whether an agent can actually finish messy work. HermesBench flips the signal. We grade agentic behavior from telemetry, not output correctness. A task is a capability probe, not a puzzle with a known answer. The benchmark is open-ended by design: a model must autonomously decide which Hermes tool, skill, or workflow to invoke, and then actually do it. Failures are not "wrong answers"; they are missing capabilities.
 
 ## What makes it different
 
-- **Execution-first scoring:** deterministic, artifact, and test-based graders are preferred over vibes.
-- **False-done penalties:** agents that say “done” without verified artifacts are measured, not rewarded.
-- **Public/dev vs private/fresh/anchor splits:** public tasks are for development; official integrity requires maintainer-controlled private/fresh packs and stable anchors.
-- **Tool-using agent focus:** tasks cover terminals, files, configs, logs, docs, data analysis, scheduling-like fixtures, browser-style workflows, and multi-step local APIs.
-- **Normalized run JSON:** scores include pass@1, category scores, wall time, tool calls, timeouts, cost when available, and verification evidence.
-- **Adapter architecture:** the runner supports a mock adapter, Hermes CLI adapter, and generic shell adapter; Codex/Claude/OpenCode-style shell presets can be added without changing task format.
+- **Capability-first scoring:** tasks are scored on whether the agent used the required Hermes tool or feature class from transcript telemetry, not on whether the final artifact looks right.
+- **Minimum-capable-model goal:** the benchmark is optimized to find the smallest model (in total parameters) that can still drive every tool Hermes Agent needs.
+- **Tool-class coverage:** probes every built-in tool category: `file`, `terminal`, `web`, `browser`, `code_execution`, `vision`, `memory`, `todo`, `skills`, `session_search`, `delegation`, `clarify`, `cronjob`, and `computer_use`.
+- **Open-ended prompts:** tasks do not specify which tool to use. The agent must choose, execute, and leave auditable evidence.
+- **False-done penalties:** agents that say “done” without verified capability usage are measured, not rewarded.
+- **Telemetry-based behavior grading:** evaluates real tool usage directly from execution telemetry instead of simple output matching.
+- **Normalized run JSON:** scores include pass@1, tool-class coverage, wall time, tool calls, timeouts, cost when available, and verification evidence.
+- **Adapter architecture:** the runner supports a mock adapter, Hermes CLI adapter, and generic shell adapter; any Hermes-compatible model can be evaluated without changing task format.
 
 ## Current status
 
-HermesBench is public, CI-green, and usable locally. It is **not yet an official leaderboard**. Official scores require real private task packs outside this public repository plus archived maintainer-run manifests. See [`docs/PROCESS_STATUS.md`](docs/PROCESS_STATUS.md), [`docs/official-runs.md`](docs/official-runs.md), and [`docs/launch-readiness-v0.1.md`](docs/launch-readiness-v0.1.md).
+HermesBench is public, CI-green, and usable locally. It functions as a local probe to assess tool coverage. See [`docs/PROCESS_STATUS.md`](docs/PROCESS_STATUS.md), [`docs/official-runs.md`](docs/official-runs.md), and [`docs/launch-readiness-v0.1.md`](docs/launch-readiness-v0.1.md).
 
 ## Quick start
 
@@ -28,28 +30,28 @@ HermesBench is public, CI-green, and usable locally. It is **not yet an official
 git clone https://github.com/riceharvest/hermesbench.git
 cd hermesbench
 uv run hermesbench validate-tasks
-uv run hermesbench run --agent mock --suite public-dev --output-dir /tmp/hermesbench-results
+uv run hermesbench run --agent mock --suite natural-tools-dev --output-dir /tmp/hermesbench-results
 uv run hermesbench score /tmp/hermesbench-results/*.json
 ```
 
-The default install is intentionally lightweight. ML/model-probing dependencies are optional and are not needed for HermesBench task validation, mock runs, scoring, or the public CLI:
+The default install is intentionally lightweight. Model-probing dependencies are optional and are not needed for HermesBench task validation, mock runs, scoring, or the public CLI:
 
 ```bash
 uv sync --dev                    # development/test tools
-uv sync --extra ml               # legacy Qwen/model-probing research tools only
+uv sync --extra ml               # optional local-model research utilities
 ```
 
 Run one task:
 
 ```bash
-uv run hermesbench run --agent mock --task hb-dev-001-sanity-basic-tool-use --output-dir /tmp/hermesbench-one
+uv run hermesbench run --agent mock --task htu-dev-001-file-and-terminal-self-serve --output-dir /tmp/hermesbench-one
 uv run hermesbench score /tmp/hermesbench-one/*.json
 ```
 
-Run with Hermes CLI when you have Hermes configured:
+Run with Hermes CLI against a local model to probe tool-class coverage:
 
 ```bash
-uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite public-dev --output-dir results/hermes-public-dev
+uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite natural-tools-dev --output-dir results/hermes-natural-tools-dev
 ```
 
 ## CLI reference
@@ -57,12 +59,12 @@ uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite publi
 ```bash
 uv run hermesbench validate-tasks
 uv run hermesbench versions
-uv run hermesbench run --agent mock --suite public-dev --jobs auto
-uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --jobs auto
+uv run hermesbench run --agent mock --suite natural-tools-dev --jobs auto
+uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --suite natural-tools-dev --jobs auto
 uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1 --jobs 1
-uv run hermesbench run --agent shell --command './my-agent-runner.sh' --jobs 4
+uv run hermesbench run --agent shell --command './my-agent-runner.sh' --suite natural-tools-dev --jobs 4
 uv run hermesbench score results/<run>.json
-uv run hermesbench export --format jsonl
+uv run hermesbench export --suite natural-tools-dev --format jsonl
 uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/community-results
 uv run hermesbench serve-api --host 127.0.0.1 --port 8787
 uv run hermesbench archive-official --result results/run.json --manifest official_runs/run.yaml --output official_runs/archive/run
@@ -78,10 +80,7 @@ src/hermesbench/adapters/ mock, Hermes CLI, and shell adapter implementations
 src/hermesbench/graders/  deterministic artifact/test checks
 src/qwen_mtp_probe/       legacy research/provenance namespace; not packaged as HermesBench
 tasks/                    benchmark task markdown and manifest
-tasks/public-dev/         public development suite
-tasks/anchor/             stable anchor templates/tasks
-tasks/fresh-rolling/      fresh-wave templates/tasks
-tasks/private-holdout/    public templates only; real private pack stays private
+tasks/natural-tools-dev/  natural tool-use capability probes
 fixtures/                 local deterministic task fixtures
 benchmark_versions/       benchmark version registry
 docs/                     methodology, governance, deployment, release docs
@@ -93,37 +92,33 @@ tests/                    parser, runner, API, storage, official-run, and websit
 
 | Suite | Count | Purpose | Credential-free |
 |---|---:|---|---|
-| `public-dev` | 55 | Public local development and regression suite | Yes |
-| `anchor` | 5 | Stable longitudinal comparison templates/tasks | Yes |
-| `fresh-rolling` | 5 | Fresh-wave workflow starters | Yes |
-| `private-holdout` | 5 | Public templates for private holdout shape; not official hidden tasks | Yes |
+| `natural-tools-dev` | 5 | Open-ended capability probes for file, terminal, web, browser, code execution, vision, memory, todo, skills, delegation, and more | Some |
 
-The manifest currently contains 70 entries total: 55 public-dev tasks, 5 public anchor tasks, 5 public fresh-rolling starter tasks, and 5 public private-holdout sample/template tasks. The committed private-holdout files are executable samples; real official private packs stay outside the public repo and are loaded separately for maintainer runs.
-
-Public/dev categories include sanity/tool use, file operations, codebase navigation, bugfixes with tests, PR summaries, GitHub issue triage, docs research, provider config troubleshooting, browser automation, CSV/data analysis, log analysis, CVE triage, Dockerfile optimization, CI/CD diagnosis, cron scheduling, session/context recovery, memory/profile boundaries, email/calendar-style fixtures, mock APIs, false-done traps, skills, K8s debugging, spreadsheets, freshness-aware research, artifact audit, cost/latency analysis, tool-call planning, hidden-check design, and common-use-case domains such as marketing, SEO, technology vendor evaluation, science claim checking, translation, legal risk spotting, finance forecasting, health triage, trivia fact-checking, and academia citation auditing.
+The manifest currently contains 5 entries in the `natural-tools-dev` suite. It is the primary suite for the minimum-capable-model probe. Tasks in this suite are intentionally open-ended: they do not tell the model which tool to use, only the goal. Scoring inspects the transcript for the required Hermes tool class. A model that cannot choose and invoke the right tool class fails the capability probe, regardless of how plausible its final answer is.
 
 ## Task format
 
 Tasks are Markdown files with YAML frontmatter and structured sections:
 
 ```yaml
-id: hb-dev-001-sanity-basic-tool-use
-title: Sanity/basic tool use
-category: sanity-basic-tool-use
-wave: public-dev-2026-06
+id: htu-dev-001-file-and-terminal-self-serve
+title: Natural Tool-Use - File + Terminal Self-Serve
+category: natural-tool-use
+wave: natural-tools-v0-2026-07
 visibility: public
-created_at: 2026-06-01
-freshness_window: stable-anchor
-expected_human_minutes: 6
-difficulty: medium
+created_at: 2026-07-08
+freshness_window: static
+expected_human_minutes: 5
+difficulty: easy
 required_toolsets: [terminal, file]
 grading_type: deterministic
-timeout_seconds: 120
-contamination_notes: Public dev task; private waves vary fixture values.
-safety_notes: Local fixtures only; no credentials.
+tool_use_requirements: [file, terminal]
+timeout_seconds: 180
+contamination_notes: Vague local-only task; no hidden oracle.
+safety_notes: Credential-free local fixture.
 ```
 
-Sections include prompt, setup, expected artifacts, scoring rubric, deterministic checks, hidden-check notes, and cleanup instructions. Start from [`tasks/TASK_TEMPLATE.md`](tasks/TASK_TEMPLATE.md).
+Sections include prompt, setup, expected artifacts, capability rubric, deterministic checks, hidden-check notes, and cleanup instructions. Start from [`tasks/TASK_TEMPLATE.md`](tasks/TASK_TEMPLATE.md).
 
 ## Result schema and scoring
 
@@ -131,15 +126,17 @@ Runner output uses `hermesbench.result.v1`. Scoring emits `hermesbench.score.v1`
 
 - provider, model, and reasoning effort (`none|minimal|low|medium|high|xhigh`) because reasoning depth materially changes cost/latency/quality
 - overall score
-- category scores
+- **tool-class coverage**: which Hermes tool/feature classes were actually invoked by the agent
+- **minimum-capable-model boundary**: the smallest reported model size that still satisfies every required tool class
 - pass@1
 - cost per successful task when telemetry exists
 - median wall time
 - tool-call count
-- verification compliance
 - false-done rate
 - timeout rate
 - raw per-task evidence for audits
+
+The primary result is not a ranking of the best model; it is a **minimum-parameter boundary**. The benchmark reports the smallest model that still satisfies every `tool_use_requirements` entry. A model that is smaller but misses a required capability is the answer we are looking for, because it tells users exactly what does *not* work for local deployment.
 
 Example:
 
@@ -176,8 +173,9 @@ The site includes a landing page, methodology overview, task-suite explanation, 
 1. Copy [`tasks/TASK_TEMPLATE.md`](tasks/TASK_TEMPLATE.md).
 2. Add fixture files under `fixtures/<task-id>/` unless `no_fixture_required: true` is justified.
 3. Document `Failure mode tested`, `Why hard for agents`, and `Overfitting risk` (see [`docs/task-format.md`](docs/task-format.md)).
-4. Use at least four substantive deterministic checks whenever possible, including command and semantic validation rather than marker-only files.
-5. Add hidden-check notes for future private/fresh variants.
+4. For capability tasks, declare the required Hermes tool/feature classes in `tool_use_requirements` and keep the prompt open-ended so the model must choose the tool.
+5. Use at least four substantive deterministic checks whenever possible, including command and semantic validation rather than marker-only files.
+6. Add hidden-check notes for future private/fresh variants.
 6. Update `tasks/manifest.yaml`.
 7. Run:
 
@@ -188,12 +186,12 @@ uv run pytest tests/test_hermesbench_core.py -q
 
 ## Reproducibility and benchmark integrity
 
-- Public/dev tasks require no external credentials.
+- Capability tasks may require credentials (web search, browser, external APIs) and are marked accordingly.
+- Public natural-tool-use tasks require no external credentials unless noted.
 - Each task runs in an isolated temp workdir.
 - Fixtures are copied per task.
 - Hidden checks are not emitted in public output.
-- Official runs require maintainer-controlled private/fresh packs, run manifests, hashes, and archived score evidence.
-- Do not compare unofficial public/dev self-runs to official private/fresh/anchor leaderboard runs.
+- Trajectory telemetry is retained locally to audit tool invocation evidence.
 
 ## Development checks
 
@@ -201,7 +199,7 @@ uv run pytest tests/test_hermesbench_core.py -q
 uv run pytest
 uv run hermesbench validate-tasks
 rm -rf /tmp/hermesbench-results
-uv run hermesbench run --agent mock --suite public-dev --output-dir /tmp/hermesbench-results
+uv run hermesbench run --agent mock --suite natural-tools-dev --output-dir /tmp/hermesbench-results
 uv run hermesbench score /tmp/hermesbench-results/*.json
 cd website && pnpm install && pnpm build
 ```

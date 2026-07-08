@@ -7,9 +7,23 @@ from hermesbench.runner import run_benchmark
 from hermesbench.submissions import make_submission_payload
 
 
+NATURAL_TASK = 'htu-dev-001-file-and-terminal-self-serve'
+
+
 def _payload(tmp_path, official=False):
-    result_path = run_benchmark(agent='mock', suite='public-dev', task_id='hb-dev-001-sanity-basic-tool-use', output_dir=tmp_path)
+    result_path = run_benchmark(
+        agent='mock',
+        suite='natural-tools-dev',
+        task_id=NATURAL_TASK,
+        output_dir=tmp_path,
+    )
     payload = json.loads(Path(result_path).read_text())
+    # Make the submission look like a passing run so leaderboard tests verify
+    # HTTP API extraction independently of real tool telemetry.
+    payload['results'][0]['score'] = 1.0
+    payload['results'][0]['raw_task_score'] = 1.0
+    payload['results'][0]['effective_task_score'] = 1.0
+    payload['results'][0]['passed'] = True
     payload['submission_token'] = 'secret'
     payload.setdefault('metadata', {})['official'] = official
     return payload
@@ -36,7 +50,12 @@ def test_http_valid_upload_strips_token_and_leaderboard(tmp_path):
 
 def test_http_accepts_cli_submission_wrapper(tmp_path):
     app = create_app(store_path=tmp_path / 'submissions.jsonl', submission_token='secret')
-    result_path = Path(run_benchmark(agent='mock', suite='public-dev', task_id='hb-dev-001-sanity-basic-tool-use', output_dir=tmp_path))
+    result_path = Path(run_benchmark(
+        agent='mock',
+        suite='natural-tools-dev',
+        task_id=NATURAL_TASK,
+        output_dir=tmp_path,
+    ))
     result = json.loads(result_path.read_text())
     result['submission_token'] = 'secret'
     result_path.write_text(json.dumps(result))

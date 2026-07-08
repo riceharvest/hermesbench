@@ -7,8 +7,16 @@ from hermesbench.runner import run_benchmark
 from hermesbench.storage import SQLiteSubmissionStore, create_sqlite_store
 
 
+NATURAL_TASK = 'htu-dev-001-file-and-terminal-self-serve'
+
+
 def _payload(tmp_path, run_id='run-1', score=1.0, official=False):
-    result_path = run_benchmark(agent='mock', suite='public-dev', task_id='hb-dev-001-sanity-basic-tool-use', output_dir=tmp_path)
+    result_path = run_benchmark(
+        agent='mock',
+        suite='natural-tools-dev',
+        task_id=NATURAL_TASK,
+        output_dir=tmp_path,
+    )
     payload = json.loads(Path(result_path).read_text())
     payload['run_id'] = run_id
     payload['submission_token'] = 'secret'

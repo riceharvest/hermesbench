@@ -52,14 +52,7 @@ def aggregate(path: str | Path) -> dict:
     false_done_rate=sum(1 for r in rs if r.get('false_done'))/n
     timeout_rate=sum(1 for r in rs if r.get('timeout'))/n
     endurance_score=max(0.0, score_percentage * (1.0 - false_done_rate) * (1.0 - timeout_rate))
-    long_horizon_metrics={
-      'endurance_score': endurance_score,
-      'stage_completion_proxy': raw_total_score/max_score if max_score else 0,
-      'false_done_resistance': 1.0 - false_done_rate,
-      'timeout_resistance': 1.0 - timeout_rate,
-      'median_task_minutes': (statistics.median(wall_times)/60) if wall_times else 0,
-      'p95_task_minutes': ((_percentile(wall_times, 95) or 0)/60),
-    } if str(data.get('suite','')).startswith('long-horizon') else None
+
     return {
       'schema_version':'hermesbench.score.v1',
       'run_id':data['run_id'], 'agent':data['agent'], 'model':data.get('model'), 'suite':data['suite'],
@@ -94,5 +87,42 @@ def aggregate(path: str | Path) -> dict:
       'false_done_rate':false_done_rate,
       'timeout_count': sum(1 for r in rs if r.get('timeout')),
       'timeout_rate':timeout_rate,
-      'long_horizon_metrics': long_horizon_metrics,
+
+      'tool_use_behavior': {
+        'tasks_with_tool_use_requirements': sum(1 for r in rs if _extract_required_tool_classes(r)),
+        'tool_use_tasks_passed': sum(1 for r in rs if _extract_required_tool_classes(r) and _extract_required_tool_classes(r).issubset(_extract_used_tool_classes(r))),
+        'tool_use_pass_rate': sum(1 for r in rs if _extract_required_tool_classes(r) and _extract_required_tool_classes(r).issubset(_extract_used_tool_classes(r))) / max(1, sum(1 for r in rs if _extract_required_tool_classes(r))),
+        'tool_classes_used': sorted({cls for r in rs for cls in _extract_used_tool_classes(r)}),
+        'tool_classes_required': sorted({cls for r in rs for cls in _extract_required_tool_classes(r)}),
+      },
+      'capability_pass': is_capability_pass({'results': rs}),
     }
+
+
+def _extract_used_tool_classes(r: dict) -> set[str]:
+    """Return the tool classes the agent actually invoked according to telemetry."""
+    return set(r.get('tool_classes_used') or [])
+
+
+def _extract_required_tool_classes(r: dict) -> set[str]:
+    """Return the tool classes declared as required by the task."""
+    return set(r.get('required_tool_classes') or [])
+
+
+def is_capability_pass(score_or_result: dict) -> bool:
+    """Return True iff every required tool class was used in every task that has requirements.
+
+    This is the core minimum-capable-model boundary check.
+    """
+    rs = score_or_result.get('results', score_or_result.get('tool_use_behavior', {}))
+    if isinstance(rs, dict):
+        # Called with an aggregate score dict
+        used = set(rs.get('tool_classes_used', []))
+        required = set(rs.get('tool_classes_required', []))
+        return required.issubset(used)
+    for r in rs:
+        used = _extract_used_tool_classes(r)
+        required = _extract_required_tool_classes(r)
+        if required and not required.issubset(used):
+            return False
+    return True

@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os, re, yaml
 from pathlib import Path
-from .schemas import Task, REQUIRED_TASK_FIELDS, GRADING_TYPES, QUALITY_TIERS
+from .schemas import Task, REQUIRED_TASK_FIELDS, GRADING_TYPES, QUALITY_TIERS, NATURAL_TOOL_CLASSES, Any
 
 ROOT = Path(__file__).resolve().parents[2]
 QUALITY_TEMPLATE_SECTIONS = ("Failure mode tested", "Why hard for agents", "Overfitting risk")
@@ -51,6 +51,17 @@ def parse_task_markdown(path: str | Path) -> Task:
             checks.append({'type':'command_not_contains','command':cmd.strip(),'needle':needle.strip()})
     return Task(meta, sections.get('Prompt','').strip(), sections.get('Setup','').strip(), lines('Expected artifacts'), sections.get('Scoring rubric','').strip(), checks, lines('Hidden checks'), sections.get('Cleanup','').strip(), str(path))
 
+def _validate_tool_use_requirements(meta: dict[str, Any], tid: str) -> list[str]:
+    findings = []
+    reqs = meta.get('tool_use_requirements', [])
+    if reqs is not None and not isinstance(reqs, list):
+        findings.append(f'ERROR {tid}: tool_use_requirements must be a list or omitted')
+        return findings
+    invalid = set(reqs or []) - NATURAL_TOOL_CLASSES
+    if invalid:
+        findings.append(f'ERROR {tid}: tool_use_requirements contains unknown tool classes: {sorted(invalid)}')
+    return findings
+
 def task_quality_findings(task: Task, root: Path = ROOT) -> list[str]:
     """Return quality lint findings as WARNING/ERROR strings for one task.
 
@@ -59,6 +70,7 @@ def task_quality_findings(task: Task, root: Path = ROOT) -> list[str]:
     """
     tid=task.metadata.get('id','<unknown>')
     findings=[]
+    findings.extend(_validate_tool_use_requirements(task.metadata, tid))
     checks=task.deterministic_checks or []
     if len(checks) <= 3:
         findings.append(f'WARNING {tid}: quality lint: has {len(checks)} deterministic checks; use at least 4 independent checks')
@@ -111,16 +123,36 @@ def _task_base(root: Path = ROOT, task_root: str | Path | None = None) -> Path:
         return Path(os.environ['HERMESBENCH_PRIVATE_PACK_DIR'])
     return root/'tasks'
 
-def discover_tasks(suite='public-dev', root: Path = ROOT, task_root: str | Path | None = None) -> list[Task]:
+def _suite_entries(manifest: dict, suite: str) -> list[dict]:
+    """Return task entries for a named suite, supporting legacy list and multi-suite `suites` dict formats.
+
+    For legacy manifests, the top-level `suite` field is also honored when the
+    requested suite matches (or when no suite name was provided and the fallback
+    default `natural-tools-dev` is requested).
+    """
+    suites_meta = manifest.get('suites', {})
+    raw_tasks = manifest.get('tasks', [])
+    if isinstance(suites_meta, dict) and suite in suites_meta:
+        return suites_meta[suite].get('tasks', [])
+    if isinstance(raw_tasks, dict):
+        return raw_tasks.get(suite, {}).get('tasks', [])
+    # Legacy single-suite manifest with a top-level `suite` field.
+    if isinstance(raw_tasks, list) and manifest.get('suite') == suite:
+        return raw_tasks
+    return list(raw_tasks)
+
+
+def discover_tasks(suite='natural-tools-dev', root: Path = ROOT, task_root: str | Path | None = None) -> list[Task]:
     base=_task_base(root, task_root)
     manifest_path=base/'manifest.yaml'
     if not manifest_path.exists():
         raise FileNotFoundError(f'missing manifest {manifest_path}')
     manifest=yaml.safe_load(manifest_path.read_text()) or {}
+    entries = _suite_entries(manifest, suite)
     tasks=[]
-    for entry in manifest.get('tasks', []):
+    for entry in entries:
         rel=Path(entry.get('path',''))
-        if not rel.parts or rel.parts[0] != suite:
+        if not rel.parts:
             continue
         path=base/rel
         t=parse_task_markdown(path)
@@ -129,29 +161,66 @@ def discover_tasks(suite='public-dev', root: Path = ROOT, task_root: str | Path 
         tasks.append(t)
     return tasks
 
+def _manifest_entries(manifest: dict) -> list[dict]:
+    """Return flat task entries across all suites for validation purposes."""
+    entries: list[dict] = []
+    for suite_name in _manifest_suite_names(manifest):
+        entries.extend(_suite_entries(manifest, suite_name))
+    return entries
+
+
+def _manifest_suite_names(manifest: dict) -> list[str]:
+    """Return all suite names declared in the manifest."""
+    suites_meta = manifest.get('suites', {})
+    raw_tasks = manifest.get('tasks', [])
+    if isinstance(suites_meta, dict) and suites_meta:
+        return sorted(suites_meta.keys())
+    if isinstance(raw_tasks, dict) and raw_tasks:
+        return sorted(raw_tasks.keys())
+    # Legacy single-suite manifest: honor top-level `suite` if present, otherwise default.
+    if manifest.get('suite'):
+        return [str(manifest['suite'])]
+    return ['default']
+
+
 def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None, include_quality: bool = False, quality_only: bool = False) -> list[str]:
-    errors=[]; ids=set()
+    errors=[]; ids: dict[str, str] = {}
     base=_task_base(root, task_root)
+    # Quality-only calls should not be affected by manifest structural checks; the
+    # caller may just want the lint findings for a single synthetic task. We use
+    # `discover_tasks('default', ...)` as a fallback for legacy single-suite manifests.
     manifest_path=base/'manifest.yaml'
     if not manifest_path.exists(): return [f'missing manifest {manifest_path}']
     manifest = yaml.safe_load(manifest_path.read_text()) or {}
-    entries=manifest.get('tasks', [])
+    entries=_manifest_entries(manifest)
     listed={t['id'] for t in entries}
     manifest_paths={Path(t.get('path','')) for t in entries}
     actual_paths={p.relative_to(base) for p in base.glob('*/*.md') if p.name.lower() != 'readme.md' and p.name != 'TASK_TEMPLATE.md'}
     if not quality_only:
-        for p in sorted(actual_paths-manifest_paths): errors.append(f'{p} missing from manifest')
-        for p in sorted(manifest_paths-actual_paths): errors.append(f'manifest references missing path: {p}')
+        for p in sorted(actual_paths - manifest_paths):
+            # Only complain if a file is under a suite that has *some* entries in the manifest.
+            suite = p.parts[0] if p.parts else ''
+            if any(Path(e.get('path', '')).parts[0] == suite for e in entries):
+                errors.append(f'{p} missing from manifest')
+        for p in sorted(manifest_paths - actual_paths):
+            errors.append(f'manifest references missing path: {p}')
     tasks=[]
-    for suite in sorted({p.parts[0] for p in manifest_paths if p.parts}):
+    suites=_manifest_suite_names(manifest)
+    for suite in suites:
         try:
             tasks.extend(discover_tasks(suite, root, base))
         except Exception as exc:
             errors.append(str(exc))
     for t in tasks:
         tid=t.metadata['id']
-        if not quality_only and tid in ids: errors.append(f'duplicate id {tid}')
-        ids.add(tid)
+        # In multi-suite manifests, a task may legitimately appear under more than one suite.
+        # Only flag as duplicates when the same task id is repeated within the same
+        # manifest path.
+        if not quality_only and tid in ids:
+            seen_path = ids[tid]
+            if seen_path != t.path:
+                errors.append(f'duplicate id {tid}')
+        ids[tid] = t.path
         if not quality_only and tid not in listed: errors.append(f'{tid} missing from manifest')
         entry=next((e for e in entries if e.get('id') == tid), {})
         if not quality_only:
@@ -164,5 +233,10 @@ def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None, inclu
                 errors.append(f'{tid} private task has no hidden checks note')
         if include_quality or quality_only:
             errors.extend(task_quality_findings(t, base.parent if base.name == 'tasks' else root))
-    if not quality_only and listed-ids: errors.append(f'manifest references missing tasks: {sorted(listed-ids)}')
+    if not quality_only and listed - set(ids):
+        # In multi-suite manifests, a task may legitimately appear under more than one suite.
+        # Only flag tasks that are listed but were never discovered.
+        missing = listed - set(ids)
+        if missing:
+            errors.append(f'manifest references missing tasks: {sorted(missing)}')
     return errors

@@ -48,20 +48,13 @@ const routes = [
 ];
 
 const taskStats = {
-  total: 80,
-  publicDev: 55,
-  longHorizon: 10,
+  total: 5,
+  publicDev: 5,
   packs: [
-    ['Short reliability', 'public-dev', '55', 'Fast local tasks for tool use, file reads, edits, test runs, and final-answer honesty.'],
-    ['Long-horizon endurance', 'long-horizon-dev', '10', 'Multi-stage jobs where the agent must keep context, recover from friction, and prove the result.'],
-    ['Anchor set', 'anchor', '5', 'Stable tasks retained over time so old and new runs can be compared without moving the goalposts.'],
-    ['Fresh waves', 'fresh-rolling', '5', 'New public tasks that make memorization less useful and keep the benchmark alive.'],
-    ['Private holdout', 'private-holdout', '5', 'Hidden official tasks for cleaner rankings when maintainers need a less gameable read.'],
+    ['Natural Tools Dev', 'natural-tools-dev', '5', 'Open-ended capability probes for file, terminal, web, browser, code execution, vision, memory, todo, skills, delegation, and more.'],
   ],
   categories: [
-    'read files', 'edit files', 'run tests', 'debug CI', 'inspect logs', 'analyze CSVs',
-    'research docs', 'fix bugs', 'write artifacts', 'harden Docker', 'recover context',
-    'catch false done', 'use browser', 'schedule jobs', 'respect privacy', 'summarize evidence',
+    'natural-tool-use', 'file', 'terminal', 'web', 'browser', 'code_execution', 'vision', 'memory', 'todo', 'skills', 'delegation', 'clarify', 'cronjob', 'computer_use'
   ],
 };
 
@@ -79,10 +72,10 @@ const state = {
     provider: 'openai-codex',
     model: 'gpt-5.5',
     reasoning: 'low',
-    suite: 'public-dev',
+    suite: 'natural-tools-dev',
     task: '',
     jobs: 'auto',
-    outputDir: 'results/hermes-openai-codex-gpt-5.5-public-dev-low',
+    outputDir: 'results/hermes-openai-codex-gpt-5.5-natural-tools-dev-low',
     endpoint: defaultApiEndpoint,
   },
 };
@@ -268,13 +261,13 @@ function homePage() {
     <div>
       <span class="crumb">proof, not posture</span>
       <h1>Did the agent actually do the work?</h1>
-      <p class="lede">HermesBench gives agents real tool-using tasks, then checks files, logs, commands, tests, and final claims.</p>
+      <p class="lede">HermesBench gives agents open-ended capability probes, then checks tool execution logs and telemetry directly to verify which tool classes are autonomously used.</p>
       <div class="hero-actions"><a class="btn primary" href="#/leaderboard">Compare runs</a><a class="btn secondary" href="#/methodology">Read scoring</a></div>
     </div>
     ${heroReceipt(best)}
   </section>
   <section class="stat-wall" aria-label="Benchmark summary">
-    <div class="stat"><b>${fmt.num(taskStats.total)}</b><span>tasks across public, fresh, anchor, private, and long-horizon packs</span></div>
+    <div class="stat"><b>${fmt.num(taskStats.total)}</b><span>natural tool-use capability probes</span></div>
     <div class="stat"><b>${fmt.num(all.length)}</b><span>public sample runs currently visible in this static site</span></div>
     <div class="stat"><b>${fmt.pct(reliabilityOf(best))}</b><span>best-run reliability after false-done and timeout pressure</span></div>
     <div class="stat"><b>${fmt.compact(tokenCountOf(best))}</b><span>tokens spent by the current top public sample</span></div>
@@ -411,7 +404,7 @@ const providerModels = {
   custom: ['provider/model'],
 };
 const reasoningOptions = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'];
-const suiteOptions = ['public-dev', 'long-horizon-dev', 'anchor', 'fresh-rolling', 'private-holdout'];
+const suiteOptions = ['natural-tools-dev'];
 
 function shellArg(value) {
   const s = String(value ?? '');
@@ -493,7 +486,7 @@ function commandBuilder() {
         <label class="control"><span>Reasoning</span><select id="cmd-reasoning">${optionList(reasoningOptions, c.reasoning)}</select></label>
         <label class="control"><span>Suite</span><select id="cmd-suite">${optionList(suiteOptions, c.suite)}</select></label>
         <label class="control"><span>Jobs</span><select id="cmd-jobs">${optionList(['auto', '1', '2', '4', '8'], c.jobs)}</select></label>
-        <label class="control"><span>Specific task optional</span><input id="cmd-task" placeholder="hb-dev-001-sanity-basic-tool-use" value="${escapeHtml(c.task)}"></label>
+        <label class="control"><span>Specific task optional</span><input id="cmd-task" placeholder="hbo-dev-001-project-board-recovery" value="${escapeHtml(c.task)}"></label>
         <label class="control wide"><span>Output directory</span><input id="cmd-output" value="${escapeHtml(c.outputDir)}"></label>
         <label class="control wide"><span>Community API route</span><input id="cmd-endpoint" placeholder="https://hermesbench.site/v1/community-results" value="${escapeHtml(c.endpoint || defaultApiEndpoint)}"></label>
       </div>
@@ -671,10 +664,10 @@ function bindCommandBuilder() {
       provider: 'openai-codex',
       model: 'gpt-5.5',
       reasoning: 'low',
-      suite: 'public-dev',
+      suite: 'natural-tools-dev',
       task: '',
       jobs: 'auto',
-      outputDir: 'results/hermes-openai-codex-gpt-5.5-public-dev-low',
+      outputDir: 'results/hermes-openai-codex-gpt-5.5-natural-tools-dev-low',
       endpoint: defaultApiEndpoint,
     };
     render(false);

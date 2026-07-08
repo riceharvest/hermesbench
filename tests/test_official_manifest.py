@@ -10,8 +10,16 @@ from hermesbench.official import archive_official_run, load_official_manifest, v
 from hermesbench.runner import run_benchmark
 
 
+NATURAL_TASK = 'htu-dev-001-file-and-terminal-self-serve'
+
+
 def _result(tmp_path):
-    return Path(run_benchmark(agent='mock', suite='public-dev', task_id='hb-dev-001-sanity-basic-tool-use', output_dir=tmp_path))
+    return Path(run_benchmark(
+        agent='mock',
+        suite='natural-tools-dev',
+        task_id=NATURAL_TASK,
+        output_dir=tmp_path,
+    ))
 
 
 def _manifest(result_path, **overrides):
@@ -86,7 +94,8 @@ def test_archive_official_cli(tmp_path):
     manifest_path.write_text(yaml.safe_dump(_manifest(result)))
     out = tmp_path / 'cli-archive'
     completed = subprocess.run([
-        sys.executable, '-m', 'hermesbench.cli', 'archive-official', '--result', str(result), '--manifest', str(manifest_path), '--output', str(out)
+        sys.executable, '-m', 'hermesbench.cli', 'archive-official',
+        '--result', str(result), '--manifest', str(manifest_path), '--output', str(out),
     ], check=True, text=True, capture_output=True)
     assert str(out) in completed.stdout
     assert (out / 'score-summary.json').exists()

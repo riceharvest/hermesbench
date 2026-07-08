@@ -8,7 +8,7 @@ def test_aggregate_exposes_pinchbench_style_and_agent_metrics(tmp_path):
     result.write_text(json.dumps({
         'schema_version': 'hermesbench.result.v1',
         'run_id': 'metrics',
-        'suite': 'public-dev',
+        'suite': 'natural-tools-dev',
         'agent': 'hermes',
         'model': 'm',
         'started_at': 's',

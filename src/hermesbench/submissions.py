@@ -44,7 +44,7 @@ def make_submission_payload(result_path: str | Path, strip_logs: bool = True) ->
         "github_issue": {
             "title": f"HermesBench submission: {data.get('agent')} {data.get('model') or ''} ({data.get('suite')})".strip(),
             "labels": ["hermesbench-submission", classification],
-            "body": "Please review this sanitized HermesBench submission. Public-dev submissions are unofficial unless accompanied by maintainer-issued private pack manifests.\n\n```json\n" + json.dumps({"run_id": data.get("run_id"), "score": score, "classification": classification}, indent=2) + "\n```",
+            "body": "Please review this sanitized HermesBench submission.\n\n```json\n" + json.dumps({"run_id": data.get("run_id"), "score": score, "classification": classification}, indent=2) + "\n```",
         },
     }
 

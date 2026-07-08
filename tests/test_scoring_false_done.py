@@ -8,7 +8,7 @@ def test_false_done_zeroes_effective_score_in_aggregate(tmp_path):
     result.write_text(json.dumps({
         'schema_version': 'hermesbench.result.v1',
         'run_id': 'r',
-        'suite': 'public-dev',
+        'suite': 'natural-tools-dev',
         'agent': 'hermes',
         'model': 'm',
         'started_at': 's',

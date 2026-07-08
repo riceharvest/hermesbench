@@ -36,6 +36,7 @@ def _summarize_group(rows: list[dict]) -> dict:
     agent, provider, model, reasoning, official = _model_key(best)
     out = {
         'agent': agent, 'provider': provider or None, 'model': model or None, 'reasoning_effort': reasoning or None,
+        'model_key': f"{agent or 'agent'}:{provider or 'local'}:{model or 'unspecified'}:{reasoning or 'default'}",
         'official': official, 'classification': 'official' if official else 'unofficial', 'submission_count': len(rows),
         'best_submission_id': best.get('run_id'), 'best_score_percentage': max(scores) if scores else 0, 'average_score_percentage': avg,
         'score_stddev': std, 'score_ci95_low': max(0, avg - ci), 'score_ci95_high': min(1, avg + ci),
@@ -85,7 +86,7 @@ def build_data(results_dir: Path = ROOT / 'results', out_dir: Path = ROOT / 'web
     groups: dict[tuple[str, str, str, str, bool], list[dict]] = {}
     for entry in entries: groups.setdefault(_model_key(entry), []).append(entry)
     summaries=sorted((_summarize_group(rows) for rows in groups.values()), key=lambda e: (not e['official'], -e['average_score_percentage'], -(e['submission_count'])))
-    payload={'schema_version':'hermesbench.website.leaderboard.v3','generated_from':'committed results/ files','metric_notes':'Public-dev rows are single-run samples unless grouped by repeated runs; official rankings require maintainer private/fresh packs.','official':[e for e in entries if e['official']],'unofficial':[e for e in entries if not e['official']],'model_summaries':summaries,'entries':entries}
+    payload={'schema_version':'hermesbench.website.leaderboard.v3','generated_from':'committed results/ files','metric_notes':'Tool class coverage runs for minimum-capable-model capability boundaries.','official':[e for e in entries if e['official']],'unofficial':[e for e in entries if not e['official']],'model_summaries':summaries,'entries':entries}
     out_dir.mkdir(parents=True, exist_ok=True)
     lb=out_dir/'leaderboard.json'; lb.write_text(json.dumps(payload,indent=2,sort_keys=True))
     demo=out_dir/'latest-result.json'; demo.write_text(json.dumps(details[0] if details else {},indent=2,sort_keys=True))

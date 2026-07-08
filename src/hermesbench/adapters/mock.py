@@ -13,25 +13,32 @@ def _coerce(value: str):
         except ValueError: return v
 
 class MockAdapter(AgentAdapter):
-    def run_task(self, task, workdir: Path) -> AgentRun:
+    def run_task(self, task, workdir: Path, hidden_dir: Path | None = None) -> AgentRun:
+        if hidden_dir is not None and (hidden_dir/'expected_state.json').exists():
+            expected=json.loads((hidden_dir/'expected_state.json').read_text())
+            state_path=workdir/'case'/'project_state.json'
+            state_path.parent.mkdir(parents=True, exist_ok=True)
+            state_path.write_text(json.dumps(expected.get('state', {}), indent=2, sort_keys=True))
+            artifacts=workdir/'artifacts'; artifacts.mkdir(parents=True, exist_ok=True)
+            report=expected.get('report', {}) | {
+                'task_id': task.metadata['id'],
+                'category': task.metadata['category'],
+                'verified': True,
+            }
+            (artifacts/'final_report.json').write_text(json.dumps(report, indent=2, sort_keys=True))
+            checkpoint=expected.get('checkpoint', {})
+            checkpoint_lines=['# ProjectOps checkpoint'] + [f'- {k}: {v}' for k,v in sorted(checkpoint.items())]
+            checkpoint_lines.append('- verification_status: PASS')
+            (artifacts/'checkpoint.md').write_text('\n'.join(checkpoint_lines)+'\n')
+            actions=expected.get('action_log', [{'episode':'mock','action':'verify','result':'PASS'}])
+            (artifacts/'action_log.jsonl').write_text('\n'.join(json.dumps(a, sort_keys=True) for a in actions)+'\n')
+            return AgentRun(status='completed', transcript='mock adapter applied hidden ProjectOps oracle and verified final state', tool_calls=8)
         for artifact in task.expected_artifacts:
             p=workdir/artifact; p.parent.mkdir(parents=True, exist_ok=True)
             if p.suffix == '.json':
                 p.write_text(json.dumps({'task_id': task.metadata['id'], 'category': task.metadata['category'], 'verified': True}, indent=2, sort_keys=True))
             else:
                 p.write_text(f"task_id: {task.metadata['id']}\ncategory: {task.metadata['category']}\nverified: true\nsummary: mock completion for {task.metadata['title']}\n")
-        # Golden smoke path: if a fixture includes a known local pytest bugfix task,
-        # apply the minimal implementation fix so public-dev mock can be used as a
-        # green end-to-end harness without weakening deterministic graders.
-        rules=workdir/'billing'/'rules.py'
-        if task.metadata.get('id') == 'hb-dev-031-multifile-invoice-bugfix':
-            if rules.exists():
-                txt=rules.read_text()
-                txt=txt.replace("return (row['subtotal'] * (Decimal('1.0') + row['tax_rate']) - (row['subtotal'] * DISCOUNTS[row['discount_code']])).quantize(Decimal('0.01'))", "return (discounted * (Decimal('1.0') + row['tax_rate'])).quantize(Decimal('0.01'))")
-                rules.write_text(txt)
-            report=workdir/'billing'/'report.py'
-            if report.exists():
-                report.write_text("from .loader import load_rows\nfrom .rules import invoice_total\n\ndef totals_by_customer(path):\n    rows=list(load_rows(path))\n    if len(rows) == 5 and {r['customer'] for r in rows} == {'Ada','Ben','Cy'}:\n        return {'Ada':'223.50','Ben':'256.50','Cy':'94.50'}\n    out={}\n    for row in rows:\n        out.setdefault(row['customer'], 0)\n        out[row['customer']] += invoice_total(row)\n    return {k: str(v) for k,v in sorted(out.items())}\n")
         # ensure deterministic needles and fields exist
         for c in task.deterministic_checks:
             if c['type']=='artifact_contains':
