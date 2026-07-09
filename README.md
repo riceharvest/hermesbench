@@ -22,7 +22,7 @@ Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers g
 
 ## Current status
 
-HermesBench is public, CI-green, and usable locally. It functions as a local probe to assess tool coverage. See [`docs/PROCESS_STATUS.md`](docs/PROCESS_STATUS.md), [`docs/official-runs.md`](docs/official-runs.md), and [`docs/launch-readiness-v0.1.md`](docs/launch-readiness-v0.1.md).
+HermesBench is public, CI-green, and usable locally. It functions as a local probe to assess tool coverage. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
 
 ## Quick start
 
@@ -34,11 +34,10 @@ uv run hermesbench run --agent mock --suite natural-tools-dev --output-dir /tmp/
 uv run hermesbench score /tmp/hermesbench-results/*.json
 ```
 
-The default install is intentionally lightweight. Model-probing dependencies are optional and are not needed for HermesBench task validation, mock runs, scoring, or the public CLI:
+The default install is intentionally lightweight:
 
 ```bash
 uv sync --dev                    # development/test tools
-uv sync --extra ml               # optional local-model research utilities
 ```
 
 Run one task:
@@ -65,7 +64,7 @@ uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1 --jobs 
 uv run hermesbench run --agent shell --command './my-agent-runner.sh' --suite natural-tools-dev --jobs 4
 uv run hermesbench score results/<run>.json
 uv run hermesbench export --suite natural-tools-dev --format jsonl
-uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/community-results
+uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/results
 uv run hermesbench serve-api --host 127.0.0.1 --port 8787
 uv run hermesbench archive-official --result results/run.json --manifest official_runs/run.yaml --output official_runs/archive/run
 ```
@@ -81,9 +80,8 @@ src/hermesbench/graders/  deterministic artifact/test checks and telemetry-based
 tasks/                    benchmark task markdown and manifest
 tasks/natural-tools-dev/  natural tool-use capability probes
 fixtures/                 local deterministic task fixtures
-benchmark_versions/       benchmark version registry
 docs/                     methodology, governance, deployment, release docs
-website/                  static leaderboard/landing site scaffold
+website/                  leaderboard site with authenticated submissions
 tests/                    parser, runner, API, storage, official-run, and website-adjacent tests
 ```
 
@@ -165,13 +163,12 @@ uv run hermesbench score /tmp/hermesbench-results/*.json
 
 ## Submissions and API
 
-The current API scaffold supports two submission lanes:
+The current API scaffold supports one submission lane:
 
-- `POST /v1/community-results` and `GET /v1/community-leaderboard` for tokenless self-serve community runs.
-- `POST /v1/results` and `GET /v1/leaderboard` for protected maintainer/promoted runs.
+- `POST /v1/results` and `GET /v1/leaderboard` for authenticated submissions.
 - `GET /health`
 
-Community uploads are unofficial and never enter the main leaderboard. `metadata.official=true` is maintainer-reserved and rejected by public upload validation. Submission tokens are stripped before persistence. See [`docs/api.md`](docs/api.md) and [`docs/deployment-api.md`](docs/deployment-api.md).
+Uploaded runs are unofficial until maintainers promote them. `metadata.official=true` is maintainer-reserved and rejected by public upload validation. Submission tokens are stripped before persistence. See [`docs/api.md`](docs/api.md) and [`docs/deployment-api.md`](docs/deployment-api.md).
 
 ## Website
 

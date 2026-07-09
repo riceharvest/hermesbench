@@ -4,10 +4,8 @@ const path = require('node:path');
 
 const API_SCHEMA_VERSION = 'hermesbench.api.v0-dev';
 const SUBMISSION_PREFIX = 'submissions/';
-const COMMUNITY_SUBMISSION_PREFIX = 'community-submissions/';
 const RATE_LIMIT_PREFIX = 'ratelimits/';
 const LOCAL_STORE_PATH = process.env.HERMESBENCH_STORE_PATH || path.join(process.cwd(), '.tmp', 'submissions.jsonl');
-const LOCAL_COMMUNITY_STORE_PATH = process.env.HERMESBENCH_COMMUNITY_STORE_PATH || path.join(process.cwd(), '.tmp', 'community-submissions.jsonl');
 const LOCAL_RATE_LIMIT_STORE_PATH = process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH || path.join(process.cwd(), '.tmp', 'rate-limits.json');
 const SENSITIVE_LOG_KEYS = new Set(['logs', 'messages', 'transcript', 'stdout', 'stderr']);
 
@@ -91,12 +89,6 @@ function timingSafeEqual(a, b) {
   return left.length === right.length && crypto.timingSafeEqual(left, right);
 }
 
-function rejectReservedOfficial(payload, result) {
-  if (payload.classification === 'official' || result.metadata?.official === true) {
-    throw new Error('official flag is maintainer-reserved');
-  }
-}
-
 function validateSubmission(payload, req = null) {
   const result = resultFromPayload(payload);
   validateResultShape(result);
@@ -108,14 +100,6 @@ function validateSubmission(payload, req = null) {
   if (expectedToken && !timingSafeEqual(token, expectedToken)) {
     throw new ApiError(401, 'missing or invalid submission token');
   }
-  rejectReservedOfficial(payload, result);
-  return result;
-}
-
-function validateCommunitySubmission(payload) {
-  const result = resultFromPayload(payload);
-  validateResultShape(result);
-  rejectReservedOfficial(payload, result);
   return result;
 }
 
@@ -292,26 +276,8 @@ async function persistSubmission(result) {
   });
 }
 
-async function persistCommunitySubmission(result) {
-  const communityResult = JSON.parse(JSON.stringify(result));
-  communityResult.metadata = {
-    ...(communityResult.metadata || {}),
-    official: false,
-    classification: 'community',
-  };
-  return persistToStore(communityResult, {
-    prefix: COMMUNITY_SUBMISSION_PREFIX,
-    localPath: LOCAL_COMMUNITY_STORE_PATH,
-    storeName: 'community-jsonl',
-  });
-}
-
 async function readSubmissions() {
   return readStore({ prefix: SUBMISSION_PREFIX, localPath: LOCAL_STORE_PATH });
-}
-
-async function readCommunitySubmissions() {
-  return readStore({ prefix: COMMUNITY_SUBMISSION_PREFIX, localPath: LOCAL_COMMUNITY_STORE_PATH });
 }
 
 module.exports = {
@@ -319,13 +285,10 @@ module.exports = {
   readBody,
   sendJson,
   validateSubmission,
-  validateCommunitySubmission,
   sanitizeResult,
   enforceRateLimit,
   persistSubmission,
-  persistCommunitySubmission,
   readSubmissions,
-  readCommunitySubmissions,
   scorePayload,
   blobEnabled,
 };

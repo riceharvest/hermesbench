@@ -10,21 +10,11 @@ HermesBench is the public benchmark identity of this repository. The repository 
 ## Benchmark assets
 
 - `tasks/manifest.yaml` — manifest defining the active suite and tasks.
-- `tasks/natural-tools-dev/` — 5 open-ended capability probes for file, terminal, web, browser, code execution, vision, memory, todo, skills, delegation, and more.
+- `tasks/natural-tools-dev/` — 15 capability probes covering all Hermes tool classes.
 - `fixtures/` — deterministic local fixtures copied into isolated task workdirs.
 
 ## Docs and site
 
-- `docs/` — methodology, governance, architecture, provenance, API, and deployment docs.
-- `website/` — static landing/leaderboard scaffold and demo data.
+- `docs/` — methodology, governance, architecture, API, and deployment docs.
+- `website/` — leaderboard and result display site (static frontend + submission API).
 - `CHANGELOG.md` — human-facing release/change notes.
-
-## Legacy/provenance material
-
-- `src/qwen_mtp_probe/` — legacy Qwen/MTP model-probing research namespace. It is preserved in the source tree for provenance and local research, but it is not packaged as HermesBench and is not part of the benchmark runtime API.
-- `data/eval/hermes_v0_eval.jsonl` and related conversion/training scripts — historical evaluation/SFT artifacts that informed HermesBench design. They may need optional ML dependencies (`torch`, `transformers`, `accelerate`, `safetensors`) and should not be treated as required benchmark dependencies.
-- top-level `modal_*` and selected `scripts/` files — legacy experiment helpers retained for auditability.
-
-## Dependency policy
-
-A core HermesBench install stays lightweight and supports validation, mock/shell/Hermes CLI runs, scoring, and local API/storage tests without model stacks. Heavy model dependencies live in optional extras/dependency groups (`ml`), and test tooling lives in the development/test extras/groups.

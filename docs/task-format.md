@@ -35,6 +35,6 @@ Avoid marker-only tasks. A good deterministic check set normally has at least fo
 
 Quality findings are printed as `WARNING` or `ERROR` lines so maintainers can distinguish shallow tasks from structural format failures.
 
-## Non-public and generated packs
+## Non-public and generated packs (optional)
 
-The committed `private-holdout` suite is a sample/template pack: it must contain real prompts, fixtures, and deterministic checks, but it is not the maintainer secret pack. Official private packs live outside git and are selected with `HERMESBENCH_PRIVATE_PACK_DIR`, using the same manifest/task layout. Fresh rolling packs should be regenerated with `scripts/create_fresh_wave.py` so dates, dataset ids, policy codes, checksums, and fixture values rotate between waves.
+Private packs are unnecessary for most capability probes because contamination is irrelevant: the probe tests whether the agent chooses the right tool class, not whether it memorizes a specific puzzle solution. If you do use a private pack for sensitive or rotating fixture data, it should live outside git and be selected with `HERMESBENCH_PRIVATE_PACK_DIR`, using the same `manifest.yaml` plus `suite/task.md` layout as `tasks/`. The committed `private-holdout` directory, if present, is only a sample/template and must not contain real secrets.

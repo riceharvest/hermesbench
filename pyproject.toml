@@ -12,12 +12,6 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-ml = [
-  "accelerate",
-  "safetensors",
-  "torch",
-  "transformers>=5.0.0",
-]
 test = ["pytest", "pytest-xdist"]
 dev = [
   "pytest",
@@ -28,12 +22,6 @@ dev = [
 dev = [
   "pytest",
   "pytest-xdist",
-]
-ml = [
-  "accelerate",
-  "safetensors",
-  "torch",
-  "transformers>=5.0.0",
 ]
 
 [project.scripts]
