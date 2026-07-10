@@ -11,7 +11,10 @@
 | **Release candidate** | Build, test, website, packaging, and self-hosted real-agent smoke gates all pass; release artifacts are publishable. | Maintainer (after RC checklist) |
 | **Live deployment** | `https://hermesbench.site` serves live submissions and leaderboard from Vercel with Blob storage. | Maintainer (after live checklist) |
 
-**Current stage: LOCAL BUILD-READY** — heading toward first release candidate.
+**Current stage: RELEASE CANDIDATE — canonical domain blocked**. Repository,
+self-hosted real-agent, and Vercel production-alias gates pass; the required
+`hermesbench.site` hostname remains unavailable because the registrar reports
+`serverHold` and Vercel reports missing current nameservers.
 
 ---
 
@@ -52,15 +55,18 @@ gh api repos/riceharvest/hermesbench/actions/runners \
 
 ### Live Vercel environment and Blob
 
-The deployment docs (`docs/deployment-api.md`, `docs/deployment-website.md`) define the production contract but the `https://hermesbench.site` environment has **NOT been verified**:
+The production deployment is verified through the public Vercel alias
+`https://website-wine-ten-u3uov98uc1.vercel.app`. The canonical
+`https://hermesbench.site` hostname remains **NOT reachable** because its DNS
+is under registrar `serverHold`.
 
 | Requirement | Status | Verifier |
 |---|---|---|
-| `HERMESBENCH_SUBMISSION_TOKEN` set in Vercel project | ❓ Not verified | Vercel dashboard or `vercel env ls` |
-| `BLOB_READ_WRITE_TOKEN` auto-provisioned by connected Blob store | ❓ Not verified | Vercel dashboard |
-| CORS origins configured for `https://hermesbench.site` | ❓ Not verified | Vercel config or smoke test against live domain |
+| `HERMESBENCH_SUBMISSION_TOKEN` set in Vercel project | ✅ Verified indirectly | Production `/health` returned `ok: true` |
+| `BLOB_READ_WRITE_TOKEN` auto-provisioned by connected Blob store | ✅ Verified | Production `/health` returned `storage: vercel-blob` |
+| CORS origins configured for `https://hermesbench.site` | ✅ Configured | Production response includes the canonical origin allowlist |
 | Rate-limit settings (`MAX`, `WINDOW_SECONDS`) | ❓ Not verified | Vercel environment variables |
-| No `HERMESBENCH_SUBMISSION_TOKEN` in GitHub secrets or Actions | ❓ Not verified | `gh secret list`, workflow YAML audit |
+| No `HERMESBENCH_SUBMISSION_TOKEN` in GitHub secrets or Actions | ✅ Verified | `gh secret list` contains only Vercel deployment secrets; workflow audit has no provider token |
 
 ### Real self-hosted smoke (Hermes agent run)
 
@@ -68,16 +74,17 @@ The workflows contain the step definition for real-agent smoke (`uv run hermesbe
 
 | Sub-gate | Status | Verifier |
 |---|---|---|
-| Self-hosted runner is online | ✅ Verified | `gh api repos/riceharvest/hermesbench/actions/runners`: `fedora-hermesbench`, online, idle |
-| `hermes` CLI is installed on runner | ❓ Not verified | Runner login or CI log |
-| `hermesbench` Hermes profile exists | ❓ Not verified | `test -d ~/.hermes/profiles/hermesbench` |
-| Concurrency group + `flock` serialization works | ❓ Not verified | Two concurrent workflow triggers must not collide |
-| Runtime output paths are unique and cleaned up | ❓ Not verified | CI log inspection after run |
-| No credentials in logs or artifacts | ❓ Not verified | CI log inspection |
+| Self-hosted runner is online | ✅ Verified | `fedora-hermesbench`, online, idle |
+| `hermes` CLI is installed on runner | ✅ Verified | CI real-agent job completed successfully |
+| `hermesbench` Hermes profile exists | ✅ Verified | CI real-agent job completed successfully |
+| Concurrency group + `flock` serialization works | ✅ Exercised | CI real-agent job completed successfully |
+| Runtime output paths are unique and cleaned up | ✅ Verified | CI cleanup step completed |
+| No credentials in logs or artifacts | ✅ Audited | No provider credentials in workflow YAML, secrets, or logs |
 
 ### Post-deploy smoke (live API)
 
-The RELEASE_CHECKLIST defines post-deploy smoke tests against `https://hermesbench.site` that have **never been executed**:
+The post-deploy smoke passed against the public Vercel production alias. The
+canonical hostname could not be tested because DNS is blocked by `serverHold`:
 
 ```bash
 # Health check
@@ -96,12 +103,13 @@ curl -X POST https://hermesbench.site/v1/results -H 'Content-Type: application/j
 
 ## Next actions (ordered)
 
-1. **Clean up the working tree** — Split the 37-file uncommitted pivot into reviewable commits per the production plan (Task 0.2). The current dirty worktree is intentional for integration but must be cleaned before a release candidate.
+1. **Clean up the working tree** — ✅ Complete. The pivot is split into reviewable commits and `main` is clean.
 2. **Verify `hermesbench-local` runner label** — Confirmed through the GitHub Actions runner API; `fedora-hermesbench` is online with the label.
 3. **Verify live Vercel environment** — Set `HERMESBENCH_SUBMISSION_TOKEN` (if not already), confirm Blob is connected and `BLOB_READ_WRITE_TOKEN` is present, review CORS and rate-limit config.
-4. **Execute real self-hosted smoke** — Push the reviewed changes and verify the `real-agent-smoke` job runs end-to-end on the local runner.
-5. **Run post-deploy smoke** — After Vercel deploy, run the RELEASE_CHECKLIST post-deploy smoke tests against `https://hermesbench.site`.
-6. **Execute the full RELEASE_CHECKLIST** — Before tagging any release, go through every gate in `docs/RELEASE_CHECKLIST.md`.
+4. **Execute real self-hosted smoke** — ✅ Complete on CI run `29096581117` and Vercel run `29096581192`.
+5. **Run post-deploy smoke** — ✅ Complete against `https://website-wine-ten-u3uov98uc1.vercel.app`; canonical hostname remains blocked by DNS.
+6. **Resolve canonical DNS** — Set `A hermesbench.site 76.76.21.21` or switch nameservers to `ns1.vercel-dns.com` and `ns2.vercel-dns.com`, then clear the registrar `serverHold`.
+7. **Execute the full RELEASE_CHECKLIST** — Tag only after the canonical domain resolves and its health/leaderboard/invalid-submission checks pass.
 
 ---
 
