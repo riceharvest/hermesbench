@@ -63,7 +63,7 @@ jobs:
         id: hermes-pre
         run: |
           if command -v hermes >/dev/null 2>&1; then
-            echo "pre_version=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo 'pre-installed')" >> "$GITHUB_OUTPUT"
+            echo "pre_version=$(hermes --version 2>/dev/null | sed -n '1p' || hermes version 2>/dev/null | sed -n '1p' || echo 'pre-installed')" >> "$GITHUB_OUTPUT"
           else
             echo "pre_version=none" >> "$GITHUB_OUTPUT"
           fi
@@ -90,7 +90,7 @@ jobs:
             }
 
             # Record Hermes version for job output
-            echo "hermes_version=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo '\"'\"'unknown'\"'\"')\" >> \"$GITHUB_OUTPUT\"
+            echo "hermes_version=$(hermes --version 2>/dev/null | sed -n '1p' || hermes version 2>/dev/null | sed -n '1p' || echo 'unknown')" >> "$GITHUB_OUTPUT"
 
             # Verify local Hermes benchmark profile
             test -d "$HOME/.hermes/profiles/hermesbench" || {
