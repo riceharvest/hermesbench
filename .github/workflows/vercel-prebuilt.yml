@@ -157,9 +157,12 @@ jobs:
       - name: Deploy prebuilt artifact
         id: deploy
         run: |
-          url=$(vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN")
-          echo "deployed_url=$url" >> "$GITHUB_OUTPUT"
-          echo "Deployed: $url"
+          deployment_url=$(vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN")
+          deployment_json=$(vercel inspect "$deployment_url" --token "$VERCEL_TOKEN" --json)
+          smoke_url=$(printf '%s' "$deployment_json" | jq -r '.aliases[0] // .url')
+          test -n "$smoke_url" && test "$smoke_url" != "null"
+          echo "deployed_url=https://$smoke_url" >> "$GITHUB_OUTPUT"
+          echo "Deployed production alias: https://$smoke_url"
 
   # ── Post-deploy smoke (cloud runner) ─────────────────────────────────
   # Read-only health + leaderboard check against the just-deployed URL.
