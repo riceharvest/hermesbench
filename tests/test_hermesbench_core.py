@@ -8,7 +8,7 @@ from hermesbench.schemas import validate_result_schema
 
 def test_task_suite_has_natural_tools_dev_tasks():
     tasks = discover_tasks('natural-tools-dev')
-    assert len(tasks) == 15
+    assert len(tasks) == 38
     assert all(t.metadata.get('tool_use_requirements') for t in tasks)
     assert not validate_tasks()
 
@@ -84,6 +84,29 @@ def test_task_markdown_parser_extracts_checks():
     parsed = parse_task_markdown(task.path)
     assert parsed.metadata['id'].startswith('htu-dev-')
     assert parsed.deterministic_checks
+
+
+def test_hermes_run_rejects_unavailable_cli_toolsets(tmp_path):
+    import pytest
+
+    with pytest.raises(ValueError, match='CLI-unavailable toolsets.*semantic_search'):
+        run_benchmark(
+            agent='hermes', suite='natural-tools-dev',
+            task_id='htu-dev-025-semantic-search', output_dir=tmp_path,
+        )
+
+
+def test_hermes_runner_rejects_unknown_toolsets_before_adapter_launch(tmp_path, monkeypatch):
+    import pytest
+    import hermesbench.runner as runner
+    from types import SimpleNamespace
+
+    task = SimpleNamespace(metadata={'id': 'unknown-toolset', 'required_toolsets': ['imaginary_toolset']})
+    monkeypatch.setattr(runner, 'discover_tasks', lambda *args, **kwargs: [task])
+    monkeypatch.setattr(runner, 'get_adapter', lambda *args, **kwargs: pytest.fail('adapter must not launch'))
+
+    with pytest.raises(ValueError, match='Unknown task-requested toolsets.*imaginary_toolset'):
+        runner.run_benchmark(agent='hermes', suite='natural-tools-dev', output_dir=tmp_path)
 
 
 def test_mock_adapter_run_and_score(tmp_path):

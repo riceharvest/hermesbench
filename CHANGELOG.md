@@ -3,7 +3,7 @@
 ## Unreleased
 
 - Pivoted the benchmark from a ProjectOps correctness scoreboard to a **minimum-capable-model probe** for Hermes Agent tool coverage.
-- Restructured task inventory to only ship `natural-tools-dev` containing 15 capability-focused tool-use tasks.
+- Restructured the combined `natural-tools-dev` development inventory to 38 scoped tool-use probes (3 core CLI and 35 integration probes).
 - Introduced telemetry-based behavior grading: a task passes if the model successfully invokes the required tool classes, rather than grading output artifacts.
 - Removed legacy model-probing packages and data; the repository now contains only the benchmark runtime and website.
 - Added parallel task execution for benchmark runs via `--jobs auto|N`, with isolated per-task sandboxes and ordered result output.

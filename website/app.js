@@ -36,6 +36,7 @@ const fmt = {
 };
 const DATA_BASE = 'data';
 const apiEndpoint = 'https://hermesbench.site/v1/results';
+const leaderboardEndpoint = 'https://hermesbench.site/v1/leaderboard';
 
 const routes = [
   ['/', 'Overview'],
@@ -46,13 +47,15 @@ const routes = [
 ];
 
 const taskStats = {
-  total: 15,
-  publicDev: 15,
+  total: 38,
+  coreCli: 3,
+  integrations: 35,
   packs: [
-    ['Natural Tools Dev', 'natural-tools-dev', '15', 'Open-ended capability probes for file, terminal, web, browser, code execution, vision, image_gen, memory, todo, skills, session_search, delegation, clarify, cronjob, computer_use, and messaging.'],
+    ['Core CLI', 'core-cli', '3', 'Hermes CLI-supported tasks. Report this scope separately from connected services.'],
+    ['Integrations', 'integrations', '35', 'Tasks that need configured integrations, credentials, or local services; unavailable integrations are environment skips.'],
   ],
   categories: [
-    'natural-tool-use', 'file', 'terminal', 'web', 'browser', 'code_execution', 'vision', 'image_gen', 'memory', 'todo', 'skills', 'session_search', 'delegation', 'clarify', 'cronjob', 'computer_use', 'messaging'
+    'natural-tool-use', 'file', 'terminal', 'web', 'browser', 'browser_cdp', 'code_execution', 'vision', 'image_gen', 'video', 'video_gen', 'tts', 'memory', 'todo', 'skills', 'session_search', 'semantic_search', 'delegation', 'clarify', 'cronjob', 'computer_use', 'homeassistant', 'kanban', 'project', 'discord', 'discord_admin', 'x_search', 'yuanbao', 'spotify', 'feishu', 'messaging', 'stt', 'obsidian', 'github', 'docker', 'notion', 'linear', 'maps', 'himalaya', 'openhue'
   ],
 };
 
@@ -69,13 +72,25 @@ const state = {
     provider: 'openai-codex',
     model: 'gpt-5.5',
     reasoning: 'low',
-    suite: 'natural-tools-dev',
+    suite: 'core-cli',
     task: '',
     jobs: 'auto',
-    outputDir: 'results/hermes-openai-codex-gpt-5.5-natural-tools-dev-low',
+    outputDir: 'results/hermes-openai-codex-gpt-5.5-core-cli-low',
     endpoint: apiEndpoint,
   },
 };
+
+function isCapabilityData(leaderboard = state.leaderboard) {
+  return Boolean(leaderboard?.capability_evidence) && leaderboard?.data_status !== 'historical_mock_fixture';
+}
+
+function isCapabilityRun(run) {
+  return Boolean(run?.capability_evidence) && run?.evidence_class === 'official_evidence';
+}
+
+function historicalNotice(leaderboard = state.leaderboard) {
+  return leaderboard?.display_notice || 'Historical mock fixture: plumbing-only data, not model-capability evidence.';
+}
 
 function sourceRows(leaderboard = state.leaderboard) {
   if (!leaderboard) return [];
@@ -144,6 +159,9 @@ function providerLine(row) {
 }
 
 function statusLabel(row) {
+  if (row.evidence_class === 'historical_mock') return 'historical mock fixture';
+  if (!row.capability_evidence && row.data_status === 'live_api') return 'sample';
+  if (!row.capability_evidence) return 'historical mock fixture';
   return row.official || row.classification === 'official' ? 'official' : 'sample';
 }
 
@@ -202,7 +220,7 @@ function currentRows(leaderboard = state.leaderboard) {
 }
 
 function bestRow() {
-  return dedupe(sourceRows()).sort((a, b) => scoreOf(b) - scoreOf(a))[0] || state.latest || {};
+  return dedupe(sourceRows()).filter(isCapabilityRun).sort((a, b) => scoreOf(b) - scoreOf(a))[0] || {};
 }
 
 function pageHead(kicker, title, body, aside = '') {
@@ -254,21 +272,25 @@ function heroReceipt(row) {
 function homePage() {
   const all = dedupe(sourceRows());
   const best = bestRow();
+  const capability = isCapabilityData();
+  const summary = capability
+    ? `<section class="stat-wall" aria-label="Benchmark summary">
+        <div class="stat"><b>${fmt.num(taskStats.total)}</b><span>natural tool-use capability probes</span></div>
+        <div class="stat"><b>${fmt.num(all.length)}</b><span>public sample runs currently visible in this static site</span></div>
+        <div class="stat"><b>${fmt.pct(reliabilityOf(best))}</b><span>reliability after false-done and timeout pressure</span></div>
+        <div class="stat"><b>${fmt.compact(tokenCountOf(best))}</b><span>tokens spent by the top visible public sample</span></div>
+      </section>`
+    : `<section class="wide-callout"><h2>Historical mock fixture</h2><p>${escapeHtml(historicalNotice())}</p><p>Competitive ranking, podiums, reliability, and current-top performance claims are disabled for this data.</p></section>`;
   return `<section class="hero">
     <div>
       <span class="crumb">proof, not posture</span>
       <h1>Did the agent actually do the work?</h1>
-      <p class="lede">HermesBench gives agents open-ended capability probes, then checks tool execution logs and telemetry directly to verify which tool classes are autonomously used.</p>
+      <p class="lede">${escapeHtml(state.leaderboard?.display_notice || 'HermesBench records tool-use evidence with scope and provenance.')}</p>
       <div class="hero-actions"><a class="btn primary" href="#/leaderboard">Compare runs</a><a class="btn secondary" href="#/methodology">Read scoring</a></div>
     </div>
-    ${heroReceipt(best)}
+    ${capability ? heroReceipt(best) : ''}
   </section>
-  <section class="stat-wall" aria-label="Benchmark summary">
-    <div class="stat"><b>${fmt.num(taskStats.total)}</b><span>natural tool-use capability probes</span></div>
-    <div class="stat"><b>${fmt.num(all.length)}</b><span>public sample runs currently visible in this static site</span></div>
-    <div class="stat"><b>${fmt.pct(reliabilityOf(best))}</b><span>best-run reliability after false-done and timeout pressure</span></div>
-    <div class="stat"><b>${fmt.compact(tokenCountOf(best))}</b><span>tokens spent by the current top public sample</span></div>
-  </section>
+  ${summary}
   <section class="split-section">
     <div class="section-title"><h2>The benchmark is a receipt checker.</h2><p>Normal leaderboards reward answers. HermesBench rewards completed work with a trail you can inspect.</p></div>
     <div class="evidence-list">
@@ -304,6 +326,7 @@ function controls(leaderboard = state.leaderboard) {
 }
 
 function podium(rows) {
+  if (!isCapabilityData()) return '';
   const top = rows[0];
   if (!top) return '';
   return `<section class="podium" aria-label="Top visible run">
@@ -325,6 +348,12 @@ function podium(rows) {
 
 function runCard(row, index) {
   const runId = runIdOf(row);
+  if (!isCapabilityRun(row) && row.data_status !== 'live_api') {
+    return `<article class="run-card historical-fixture">
+      <div class="run-title"><h2>${escapeHtml(modelTitle(row))}</h2><p>${tag('historical mock fixture', true)} Plumbing-only record / <span class="mono">${escapeHtml(runId || 'n/a')}</span></p><p class="muted">${escapeHtml(historicalNotice())}</p></div>
+      <div class="hero-actions" style="grid-column: 1 / -1; margin-top: 0"><a class="text-pill" href="#/runs/${encodeURIComponent(runId)}">Inspect fixture record</a></div>
+    </article>`;
+  }
   return `<article class="run-card">
     <div class="rank-number">${String(index + 1).padStart(2, '0')}</div>
     <div class="run-title"><h2>${escapeHtml(modelTitle(row))}</h2><p>${escapeHtml(statusLabel(row))} / ${escapeHtml(providerLine(row))} / <span class="mono">${escapeHtml(runId || 'n/a')}</span></p></div>
@@ -339,11 +368,14 @@ function runCard(row, index) {
 
 function leaderboardPage() {
   const rows = currentRows();
-  return `${pageHead('leaderboard', 'Who finished the most real work?', 'Sort by score, reliability, speed, token efficiency, or value. Public samples are useful evidence, not final official rankings.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)}
-  ${controls(state.leaderboard)}
+  const capability = isCapabilityData();
+  const head = capability
+    ? pageHead('leaderboard', 'Who finished the most real work?', 'Sort by score, reliability, speed, token efficiency, or value. Public samples are useful evidence, not final official rankings.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)
+    : pageHead('fixture records', 'Historical mock fixtures', historicalNotice(), `<aside class="panel">${metricRow('fixture records', fmt.num(rows.length))}${metricRow('competitive mode', 'disabled')}</aside>`);
+  return `${head}
+  ${capability ? controls(state.leaderboard) : ''}
   ${rows.length ? `${podium(rows)}<section class="run-list" id="leaderboard-results" aria-live="polite">${rows.map(runCard).join('')}</section>` : emptyState('No matching runs', 'Try a broader model name or clear the task-set filter.', '<button class="btn secondary" type="button" data-reset>Clear filters</button>')}
-  ${fold('How should I read this?', '<p>Start with tasks passed and false-done count. Speed and token use matter after the run proves it actually completed the task.</p>')}
-  ${fold('Why not call these official rankings?', '<p>The public runs are visible and therefore gameable. Consider the scores directional — useful for development, not for final model selection.</p>')}`;
+  ${capability ? fold('How should I read this?', '<p>Start with tasks passed and false-done count. Speed and token use matter after the run proves it actually completed the task.</p>') : fold('Why is competitive mode disabled?', '<p>These records were produced by mock plumbing. They preserve auditability, but they are not model runs and cannot support ranks, reliability, best-run, or current-top claims.</p>', true)}`;
 }
 
 function tasksPage() {
@@ -380,7 +412,10 @@ const providerModels = {
   custom: ['provider/model'],
 };
 const reasoningOptions = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'];
-const suiteOptions = ['natural-tools-dev'];
+const suiteOptions = [
+  ['core-cli', 'Core CLI (default)'],
+  ['integrations', 'Integrations (configured services required)'],
+];
 
 function shellArg(value) {
   const s = String(value ?? '');
@@ -454,7 +489,7 @@ function commandBuilder() {
     <div class="panel">
       <span class="crumb">command builder</span>
       <h2>Pick the run settings.</h2>
-      <p class="muted">Choose the runner, provider, model, reasoning effort, suite, and output path. The exact command updates on the right.</p>
+      <p class="muted">Core CLI is the default. Integrations require configured services, credentials, or local tooling; unavailable integration tasks are environment skips, not model failures.</p>
       <div class="builder-grid">
         <label class="control"><span>Runner</span><select id="cmd-agent">${optionList(['hermes', 'mock', 'shell'], c.agent)}</select></label>
         <label class="control"><span>Provider</span><select id="cmd-provider">${optionList(providers, c.provider)}</select></label>
@@ -473,12 +508,30 @@ function commandBuilder() {
       <div class="command-actions"><button class="btn primary" type="button" id="copy-command">Copy command</button><button class="btn secondary" type="button" id="reset-command">Reset defaults</button></div>
       <p class="copy-status" id="copy-status" aria-live="polite"></p>
     </aside>
+  </div></section>`;
+}
+
+function browserUploadForm() {
+  return `<section class="wide-callout upload-form" style="margin-top: clamp(18px, 3vw, 36px)" aria-label="Browser upload">
+    <h2>Browser upload (maintainers)</h2>
+    <p>Upload a scored result JSON file directly. The token is sent via HTTP header and never stored or logged by this page.</p>
+    <div class="builder-grid" style="margin-top: 16px">
+      <label class="control wide"><span>Result file (JSON)</span><input type="file" id="upload-file" accept=".json,application/json"></label>
+      <label class="control"><span>API endpoint</span><input id="upload-endpoint" value="${escapeHtml(apiEndpoint)}" readonly></label>
+      <label class="control"><span>Submission token</span><input type="password" id="upload-token" placeholder="token from deployment settings" autocomplete="off" style="font-family:var(--mono)"></label>
+    </div>
+    <div class="command-actions" style="margin-top: 14px">
+      <button class="btn primary" type="button" id="upload-submit">Upload result</button>
+      <button class="btn secondary" type="button" id="upload-clear">Clear</button>
+    </div>
+    <p class="copy-status" id="upload-status" aria-live="polite">Select a scored JSON file and enter the submission token.</p>
   </section>`;
 }
 
 function submitPage() {
   return `${pageHead('run locally', 'Build and submit an agent run.', 'Pick provider, model, reasoning effort, task set, and output path. The builder gives the exact run, score, and submission commands.')}
   ${commandBuilder()}
+  ${browserUploadForm()}
   <section class="split-section"><div class="section-title"><h2>Before submitting, prove the run.</h2><p>A useful submission includes exact model, provider, reasoning effort, tool access, suite, costs where available, and task-level evidence files.</p></div><div class="evidence-list">
     ${evidenceRow('A', 'Validate tasks', 'Task definitions should pass schema checks before a run starts.')}
     ${evidenceRow('B', 'Keep artifacts', 'Do not delete logs, generated files, transcripts, or verifier output needed for review.')}
@@ -500,15 +553,13 @@ function taskStatus(task) {
   return [task.status || 'failed', 'no'];
 }
 
-function taskEvidenceList(tasks) {
+function taskEvidenceList(tasks, capability = true) {
   if (!tasks.length) return emptyState('No task evidence in this file', 'The summary loaded, but this public result does not include task-level checks.');
   return `<section class="task-list">${tasks.map((task) => {
     const [label, cls] = taskStatus(task);
-    return `<details><summary><span class="task-summary"><span class="status ${cls}">${escapeHtml(label)}</span><span>${escapeHtml(task.task_id || 'task')}</span><span class="mono">${fmt.pct(task.score)}</span></span></summary><div class="fold-body">
+    return `<details><summary><span class="task-summary"><span class="status ${cls}">${escapeHtml(label)}</span><span>${escapeHtml(task.task_id || 'task')}</span>${capability ? `<span class="mono">${fmt.pct(task.score)}</span>` : '<span class="mono">plumbing-only</span>'}</span></summary><div class="fold-body">
       <div class="mini-metrics">
-        ${miniMetric('time', fmt.seconds(task.wall_time_seconds))}
-        ${miniMetric('tool calls', fmt.num(task.tool_calls))}
-        ${miniMetric('tokens', fmt.compact(task.token_usage?.total_tokens))}
+        ${capability ? `${miniMetric('time', fmt.seconds(task.wall_time_seconds))}${miniMetric('tool calls', fmt.num(task.tool_calls))}${miniMetric('tokens', fmt.compact(task.token_usage?.total_tokens))}` : '<p class="muted">Fixture plumbing only; score, timing, token, and tool-call metrics are suppressed.</p>'}
       </div>
       ${task.category ? `<p style="margin-top:12px">Category: <span class="mono">${escapeHtml(task.category)}</span></p>` : ''}
       ${checksList(task)}
@@ -526,6 +577,10 @@ async function loadRun(runId) {
 
 async function runDetailPage(runId) {
   const run = await loadRun(runId);
+  const capability = isCapabilityRun(run);
+  if (!capability) return `${backLink('Back to fixture records')}${pageHead('fixture record', `Run ${run.run_id}`, 'Historical fixture: not model-capability evidence. Task labels and checks are retained only to inspect benchmark plumbing.', `<aside class="panel">${metricRow('record type', 'plumbing-only')}${metricRow('competitive metrics', 'suppressed')}</aside>`)}
+  <section class="wide-callout historical-fixture"><h2>Historical fixture: not model-capability evidence.</h2><p>Fixture plumbing only; score, timing, token, and tool-call metrics are suppressed.</p></section>
+  <section class="run-detail"><div>${taskEvidenceList(run.tasks || [], false)}</div></section>`;
   return `${backLink()}${pageHead('task report', `Run ${run.run_id}`, `${modelLabel(run)}. This page focuses on task evidence, not leaderboard decoration.`, `<aside class="panel">${metricRow('overall score', fmt.pct(run.overall_score ?? run.score_percentage))}${metricRow('passed', `${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}`)}${metricRow('reasoning effort', escapeHtml(run.reasoning_effort || 'not labeled'))}</aside>`)}
   <section class="run-detail">
     <aside class="panel sticky-panel">
@@ -640,10 +695,10 @@ function bindCommandBuilder() {
       provider: 'openai-codex',
       model: 'gpt-5.5',
       reasoning: 'low',
-      suite: 'natural-tools-dev',
+      suite: 'core-cli',
       task: '',
       jobs: 'auto',
-      outputDir: 'results/hermes-openai-codex-gpt-5.5-natural-tools-dev-low',
+      outputDir: 'results/hermes-openai-codex-gpt-5.5-core-cli-low',
       endpoint: apiEndpoint,
     };
     render(false);
@@ -676,6 +731,74 @@ function bindControls() {
     state.sort = 'score';
     render(false);
   }));
+  bindBrowserUpload();
+}
+
+/**
+ * Wire up the browser upload form on the /submit page.
+ * Sends the selected JSON file and token to the API via X-Hermesbench-Submission-Token header.
+ * The token is used in-memory only and never persisted, logged, or hardcoded.
+ */
+function bindBrowserUpload() {
+  const submitBtn = document.getElementById('upload-submit');
+  const clearBtn = document.getElementById('upload-clear');
+  const fileInput = document.getElementById('upload-file');
+  const tokenInput = document.getElementById('upload-token');
+  const statusEl = document.getElementById('upload-status');
+  if (!submitBtn || !statusEl) return;
+
+  submitBtn.addEventListener('click', async () => {
+    const file = fileInput?.files?.[0];
+    const token = tokenInput?.value?.trim();
+    if (!file) { statusEl.textContent = 'Select a result JSON file to upload.'; return; }
+    if (!token) { statusEl.textContent = 'Enter the submission token from your deployment settings.'; return; }
+    if (file.type && file.type !== 'application/json' && !file.name.endsWith('.json')) {
+      statusEl.textContent = 'The selected file does not look like a JSON results file. Expected .json extension.';
+      return;
+    }
+    statusEl.textContent = 'Uploading…';
+    submitBtn.disabled = true;
+    try {
+      const text = await file.text();
+      let payload;
+      try { payload = JSON.parse(text); } catch (_) {
+        statusEl.textContent = 'The selected file is not valid JSON. Check the file and try again.';
+        submitBtn.disabled = false;
+        return;
+      }
+      // Safety: validate basic shape before sending — must contain result.run_id or run_id
+      if (!payload?.result?.run_id && !payload?.run_id) {
+        statusEl.textContent = 'Payload does not look like a HermesBench result (missing run_id).';
+        submitBtn.disabled = false;
+        return;
+      }
+      const response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Hermesbench-Submission-Token': token,
+        },
+        body: text,
+      });
+      const result = response.ok ? null : await response.json().catch(() => null);
+      if (response.ok) {
+        statusEl.textContent = 'Upload accepted ✓ A new leaderboard fetch will show the entry.';
+      } else {
+        const errMsg = result?.error || `HTTP ${response.status} — server rejected the payload.`;
+        statusEl.textContent = `Upload rejected: ${errMsg}`;
+      }
+    } catch (err) {
+      statusEl.textContent = `Network error: ${err.message || 'upload failed'}`;
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  if (clearBtn) clearBtn.addEventListener('click', () => {
+    if (fileInput) fileInput.value = '';
+    if (tokenInput) tokenInput.value = '';
+    if (statusEl) statusEl.textContent = 'Cleared. Select a scored JSON file and enter the submission token.';
+  });
 }
 
 function routePath() {
@@ -715,12 +838,67 @@ async function render(shouldScroll = true) {
   state.lastPath = path;
 }
 
+/**
+ * Normalize a /v1/leaderboard API response (shape: { entries: [...] })
+ * into the frontend's expected enriched shape with provenance fields.
+ *
+ * Live API submissions are explicitly non-capability evidence; they carry
+ * evidence_class: 'unofficial_submission' and capability_evidence: false
+ * so the frontend's isCapabilityData()/isCapabilityRun() guards prevent
+ * their use for competitive ranking, reliability, or "best" claims.
+ */
+function normalizeApiToFrontendShape(apiBody) {
+  const entries = Array.isArray(apiBody?.entries) ? apiBody.entries : [];
+  const liveNotice = 'Live leaderboard from the submissions API. Results are scored submissions, not official capability evidence.';
+  const shape = {
+    data_status: 'live_api',
+    display_notice: liveNotice,
+    capability_evidence: false,
+    evidence_class: 'unofficial_submission',
+    entries: entries.map((e) => ({ ...e, data_status: 'live_api', evidence_class: 'unofficial_submission', capability_evidence: false })),
+    official: entries.filter((e) => e.official === true).map((e) => ({ ...e, data_status: 'live_api', evidence_class: 'unofficial_submission', capability_evidence: false })),
+    unofficial: entries.filter((e) => e.official !== true).map((e) => ({ ...e, data_status: 'live_api', evidence_class: 'unofficial_submission', capability_evidence: false })),
+    model_summaries: apiBody.model_summaries || null,
+  };
+  // Ensure individual entries never inherit a top-level default that contradicts their row-level markers.
+  for (const group of ['entries', 'official', 'unofficial']) {
+    for (const entry of shape[group] || []) {
+      if (entry.capability_evidence == null) entry.capability_evidence = false;
+      if (entry.evidence_class == null) entry.evidence_class = 'unofficial_submission';
+    }
+  }
+  return shape;
+}
+
+/**
+ * Fetch live leaderboard from the submissions API, falling back
+ * to the checked-in static JSON fixture if the API is unreachable.
+ * The static fallback is explicitly labeled as a historical mock fixture
+ * and never treated as capability evidence.
+ */
+async function loadLeaderboard() {
+  try {
+    const response = await fetch(leaderboardEndpoint);
+    if (response.ok) {
+      const apiBody = await response.json();
+      const normalized = normalizeApiToFrontendShape(apiBody);
+      return normalized;
+    }
+    // Non-2xx: fall through to static fallback
+  } catch (_) {
+    // Network error: fall through to static fallback
+  }
+  // Static fallback — clearly labeled as historical mock fixture.
+  const staticData = await loadJson('data/leaderboard.json');
+  return staticData;
+}
+
 async function init() {
   document.getElementById('desktop-nav').innerHTML = navHtml();
   document.getElementById('mobile-nav').innerHTML = navHtml();
   try {
     const [leaderboard, latest] = await Promise.all([
-      loadJson('data/leaderboard.json'),
+      loadLeaderboard(),
       loadJson('data/latest-result.json').catch(() => null),
     ]);
     state.leaderboard = leaderboard;

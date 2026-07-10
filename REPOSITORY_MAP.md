@@ -10,7 +10,7 @@ HermesBench is the public benchmark identity of this repository. The repository 
 ## Benchmark assets
 
 - `tasks/manifest.yaml` — manifest defining the active suite and tasks.
-- `tasks/natural-tools-dev/` — 15 capability probes covering all Hermes tool classes.
+- `tasks/natural-tools-dev/` — 38 development probes spanning core CLI and integration tool classes.
 - `fixtures/` — deterministic local fixtures copied into isolated task workdirs.
 
 ## Docs and site

@@ -1,17 +1,32 @@
 name: CI
 on: [push, pull_request]
 jobs:
-  test:
+  validate-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: astral-sh/setup-uv@v4
-      - run: uv run pytest
-      - run: uv run hermesbench validate-tasks
-      - run: uv run hermesbench run --agent mock --suite public-dev --output-dir /tmp/hermesbench-results
-      - run: uv run hermesbench score /tmp/hermesbench-results/*.json
+      - name: Validate task inventory
+        run: uv run hermesbench validate-tasks
+      - name: Run unit tests
+        run: uv run pytest
+      - name: Build Python distributions
+        run: uv build
+      - name: Non-capability mock plumbing smoke
+        run: |
+          uv run hermesbench run --agent mock --task htu-dev-001-file-and-terminal-self-serve --output-dir /tmp/hermesbench-mock-smoke
+          uv run hermesbench score /tmp/hermesbench-mock-smoke/*.json
+  website:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
         with: {version: 9}
       - uses: actions/setup-node@v4
         with: {node-version: 20}
-      - run: cd website && pnpm install && pnpm build
+      - name: Install website dependencies
+        run: cd website && pnpm install --frozen-lockfile
+      - name: Build website
+        run: cd website && pnpm build
+      - name: Smoke website API
+        run: cd website && pnpm test:api

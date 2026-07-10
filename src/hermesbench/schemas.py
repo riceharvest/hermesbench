@@ -5,7 +5,13 @@ from typing import Any
 REQUIRED_TASK_FIELDS = {"id","title","category","wave","visibility","created_at","freshness_window","expected_human_minutes","difficulty","required_toolsets","grading_type","timeout_seconds","contamination_notes","safety_notes"}
 GRADING_TYPES = {"deterministic","artifact","test","judge","hybrid"}
 QUALITY_TIERS = {"gold", "silver", "bronze", "experimental", "needs-review"}
-NATURAL_TOOL_CLASSES = {"file", "terminal", "web", "browser", "code_execution", "vision", "image_gen", "memory", "todo", "skills", "session_search", "delegation", "clarify", "cronjob", "computer_use", "messaging"}
+NATURAL_TOOL_CLASSES = {
+    "file", "terminal", "web", "browser", "browser_cdp", "code_execution", "vision", "image_gen",
+    "video", "video_gen", "tts", "memory", "todo", "skills", "session_search", "semantic_search",
+    "delegation", "clarify", "cronjob", "computer_use", "homeassistant", "kanban", "project",
+    "discord", "discord_admin", "x_search", "yuanbao", "spotify", "feishu", "messaging",
+    "stt", "obsidian", "github", "docker", "notion", "linear", "maps", "himalaya", "openhue",
+}
 
 @dataclass
 class Task:

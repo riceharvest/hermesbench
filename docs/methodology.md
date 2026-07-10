@@ -1,14 +1,17 @@
 # Benchmark methodology
 
-HermesBench centers on the **minimum-capable-model probe** for Hermes Agent. The benchmark answers: *what is the smallest total-parameter model that can still autonomously use every Hermes tool class?*
+HermesBench is an early-stage harness for collecting auditable tool-use evidence. It separates the portable **core CLI** surface from optional **integrations**. The core CLI covers behavior that can be exercised in a local runner; integrations include browser automation, connected services, desktop control, and configured skills, and require their runtime prerequisites to be available and disclosed.
 
-The suite consists of the `natural-tools-dev` suite, containing 15 open-ended tool-use probes.
+The current `natural-tools-dev` inventory contains 38 development probes. It is a public development suite, not a completed capability certification for every Hermes Agent feature.
 
 ## Behavior grading
 
-Scrubbing traditional scoreboards and correctness rankings, scoring is behavior-based from telemetry:
+Scoring uses execution telemetry and deterministic checks:
 
-- **Trajectory evaluation**: Rather than grading output artifacts, we inspect the Hermes telemetry log to verify whether the agent successfully and correctly invoked the required tool classes during the execution.
-- **Tool class mapping**: Telemetry events map specific tools to their core capability classes (e.g., `file`, `terminal`, `web`, `browser`, `code_execution`, `vision`, `image_gen`, `memory`, `todo`, `skills`, `session_search`, `delegation`, `clarify`, `cronjob`, `computer_use`, `messaging`).
-- **Scoring**: A task is scored as `1.0` if every required tool class was invoked at least once during execution, and `0.0` otherwise.
-- **Minimum-capable model boundary**: The benchmark registry lists the parameter boundaries to identify the smallest models that achieve 100% coverage on required tool classes.
+- **Trajectory evidence:** telemetry records which requested tool classes were actually invoked during a run.
+- **Scope-aware interpretation:** a core-CLI result speaks only to that core scope. An integration result is interpretable only with the enabled toolset, credentials/service state, and environment disclosure. Missing integrations are environmental skips, not model failures.
+- **Scoring:** task scores report observed evidence and deterministic checks. They do not by themselves prove a general model capability claim.
+- **Official evidence:** a capability claim requires a maintainer-reviewed archive with result hash, environment metadata, declared scope, and public-safe evidence under [`official-runs/`](official-runs.md).
+- **Mock adapter:** mock runs validate parser, runner, scoring, website, and API plumbing. Their synthetic telemetry is explicitly non-capability evidence and must not appear as model performance.
+
+Until official scoped archives exist, checked-in website entries are historical/mock fixtures for UI and pipeline development, not a model leaderboard or a minimum-capable-model boundary.

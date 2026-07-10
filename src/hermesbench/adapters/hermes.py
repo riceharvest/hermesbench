@@ -1,8 +1,10 @@
 from __future__ import annotations
-import json, re, subprocess, time
+import json, re, shutil, subprocess, uuid
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 from .base import AgentAdapter, AgentRun
 
@@ -24,6 +26,17 @@ _TOKEN_KEYS = {
 }
 
 
+# Hermes CLI built-ins as of the runtime inventory used by this adapter.  Names
+# outside this set must not be passed to --toolsets: Hermes silently resolves
+# unknown toolsets to an empty schema, which would turn an environment/setup
+# error into a bogus model failure.
+_CLI_TOOLSETS = {
+    "web", "browser", "terminal", "file", "code_execution", "vision", "video",
+    "image_gen", "video_gen", "x_search", "tts", "skills", "todo", "memory",
+    "session_search", "clarify", "delegation", "cronjob", "homeassistant",
+    "spotify", "yuanbao", "computer_use",
+}
+
 _TOOLSET_MAP = {
     "web": "web",
     "browser": "browser",
@@ -32,17 +45,39 @@ _TOOLSET_MAP = {
     "code_execution": "code_execution",
     "vision": "vision",
     "image_gen": "image_gen",
+    "video": "video",
+    "video_gen": "video_gen",
+    "tts": "tts",
     "skills": "skills",
     "memory": "memory",
     "session_search": "session_search",
+    "semantic_search": "semantic_search",
     "clarify": "clarify",
     "delegation": "delegation",
     "cronjob": "cronjob",
     "computer_use": "computer_use",
     "todo": "todo",
+    "kanban": "kanban",
+    "project": "project",
     "x_search": "x_search",
+    "yuanbao": "yuanbao",
+    "spotify": "spotify",
+    "feishu": "feishu",
+    "discord": "discord",
+    "discord_admin": "discord_admin",
+    "stt": "stt",
+    "obsidian": "obsidian",
+    "github": "github",
+    "docker": "docker",
+    "notion": "notion",
+    "linear": "linear",
+    "maps": "maps",
+    "himalaya": "himalaya",
+    "openhue": "openhue",
+    "homeassistant": "homeassistant",
     "messaging": "messaging",
     "search": "web",
+    "browser_cdp": "browser_cdp",
 }
 
 # Map a capability class (as used in tool_use_requirements) to the Hermes
@@ -50,20 +85,42 @@ _TOOLSET_MAP = {
 _CAPABILITY_TOOLSETS = {
     "web": ["web"],
     "browser": ["browser", "web"],
+    "browser_cdp": ["browser"],
     "terminal": ["terminal"],
     "file": ["file"],
     "code_execution": ["code_execution"],
     "vision": ["vision"],
     "image_gen": ["image_gen"],
+    "video": ["video"],
+    "video_gen": ["video_gen"],
+    "tts": ["tts"],
     "skills": ["skills"],
     "memory": ["memory"],
     "session_search": ["session_search"],
+    "semantic_search": ["semantic_search"],
     "clarify": ["clarify"],
     "delegation": ["delegation"],
     "cronjob": ["cronjob"],
     "computer_use": ["computer_use"],
     "todo": ["todo"],
+    "kanban": ["kanban"],
+    "project": ["project"],
     "x_search": ["x_search"],
+    "yuanbao": ["yuanbao"],
+    "spotify": ["spotify"],
+    "feishu": ["feishu"],
+    "discord": ["discord"],
+    "discord_admin": ["discord_admin"],
+    "stt": ["stt"],
+    "obsidian": ["obsidian"],
+    "github": ["github"],
+    "docker": ["docker"],
+    "notion": ["notion"],
+    "linear": ["linear"],
+    "maps": ["maps"],
+    "himalaya": ["himalaya"],
+    "openhue": ["openhue"],
+    "homeassistant": ["homeassistant"],
     "messaging": ["messaging"],
 }
 
@@ -186,10 +243,12 @@ def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTele
     return telemetry
 
 
-def _recent_hermes_text(started_at: float, limit_files: int = 8, max_bytes: int = 64_000, session_id: str | None = None) -> tuple[str, str | None]:
+def _recent_hermes_text(started_at: float, limit_files: int = 8, max_bytes: int = 64_000, session_id: str | None = None, profile_dir: Path | None = None) -> tuple[str, str | None]:
     """Read only bounded Hermes runtime files, never recursively scan venv/cache."""
     home = Path.home() / ".hermes"
     roots = [home / "logs", home / "sessions"]
+    if profile_dir is not None:
+        roots.extend([profile_dir / "logs", profile_dir / "sessions"])
     candidates: list[Path] = []
     for root in roots:
         if not root.exists():
@@ -222,6 +281,9 @@ def _resolve_toolsets(task) -> list[str]:
     external-only tools unless the task explicitly asks for them.
     """
     requested = [str(t).lower().strip() for t in task.metadata.get("required_toolsets", []) or []]
+    unknown = sorted({t or "<empty>" for t in requested if t != "all" and t not in _CAPABILITY_TOOLSETS and t not in _TOOLSET_MAP})
+    if unknown:
+        raise ValueError(f"Unknown task-requested toolsets: {', '.join(unknown)}")
     if "all" in requested:
         return sorted(set(_TOOLSET_MAP.values()))
     out = []
@@ -236,40 +298,215 @@ def _resolve_toolsets(task) -> list[str]:
     return sorted(set(out))
 
 
+def unsupported_cli_toolsets(task) -> list[str]:
+    """Return requested toolsets that Hermes CLI cannot expose via --toolsets."""
+    return sorted(set(_resolve_toolsets(task)) - _CLI_TOOLSETS)
+
+
+@dataclass
+class StateDBTelemetry:
+    trusted: bool = False
+    session_id: str | None = None
+    events: list[dict] = None
+    tool_calls: int = 0
+    token_usage: dict[str, int | float] | None = None
+    cost_usd: float | None = None
+
+
+def _extract_state_db_telemetry(db_path: Path, started_at: float, workdir: Path) -> StateDBTelemetry:
+    """Read structured telemetry from the isolated Hermes session database.
+
+    The temporary profile is empty before launch, so a session selected by its
+    creation time and configured cwd is agent-owned evidence, not model output.
+    Ambiguous matches fail closed.
+    """
+    import sqlite3
+    result = StateDBTelemetry(events=[])
+    if not db_path.exists():
+        return result
+    try:
+        conn = sqlite3.connect(str(db_path))
+        rows = conn.execute(
+            "SELECT id, started_at, ended_at, tool_call_count, input_tokens, output_tokens, reasoning_tokens, estimated_cost_usd, actual_cost_usd, cwd "
+            "FROM sessions WHERE started_at >= ? ORDER BY started_at DESC",
+            (started_at - 2.0,),
+        ).fetchall()
+        if len(rows) != 1:
+            conn.close()
+            return result
+        session_id, *_ = rows[0]
+        row = rows[0]
+        messages = conn.execute(
+            "SELECT role, tool_name, tool_calls, timestamp FROM messages WHERE session_id = ? ORDER BY rowid",
+            (session_id,),
+        ).fetchall()
+        for role, tool_name, tool_calls, timestamp in messages:
+            if role == "tool" and tool_name:
+                result.events.append({"tool_name": tool_name, "timestamp": timestamp})
+            elif tool_calls:
+                try:
+                    decoded = json.loads(tool_calls) if isinstance(tool_calls, str) else tool_calls
+                    calls = decoded if isinstance(decoded, list) else [decoded]
+                    for call in calls:
+                        name = call.get("function", {}).get("name") if isinstance(call, dict) else None
+                        if name:
+                            result.events.append({"tool_name": name, "timestamp": timestamp})
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    pass
+        conn.close()
+        result.trusted = True
+        result.session_id = session_id
+        result.tool_calls = len(result.events)
+        result.token_usage = {"input_tokens": row[4], "output_tokens": row[5], "reasoning_tokens": row[6]}
+        result.cost_usd = row[8] if row[8] is not None else row[7]
+        return result
+    except (OSError, sqlite3.Error):
+        return result
+
+
+def _tool_log_lines(profile_dir: Path | None, session_id: str | None = None) -> str:
+    """Extract tool completion records from a Hermes profile directory.
+
+    The CLI runs in -Q quiet mode, so stdout only contains the final response.
+    Tool execution evidence is stored in the profile's state DB. We query the
+    messages table for the current session and append synthetic log lines so the
+    behavior grader can map observed tool names to capability classes.
+    """
+    if profile_dir is None:
+        return ""
+    logs: list[str] = []
+    db_path = profile_dir / "state.db"
+    if db_path.exists():
+        try:
+            import sqlite3
+            conn = sqlite3.connect(str(db_path))
+            if session_id:
+                rows = conn.execute(
+                    "SELECT tool_name FROM messages WHERE session_id = ? AND role = 'tool' AND tool_name IS NOT NULL",
+                    (session_id,),
+                ).fetchall()
+            else:
+                rows = []
+            for (tool_name,) in rows:
+                logs.append(f"agent.tool_executor: tool {tool_name} completed (from_state_db)")
+            conn.close()
+        except Exception:
+            pass
+    return "\n".join(logs)
+
+
+def _marked_session_id(text: str, run_marker: str) -> str | None:
+    """Accept a state-db session only when CLI output binds it to this run."""
+    for obj in _json_objects(text):
+        if obj.get("hermesbench_run_marker") != run_marker:
+            continue
+        session_id = obj.get("session_id")
+        if isinstance(session_id, str) and re.fullmatch(r"[\w-]+", session_id):
+            return session_id
+    return None
+
+
+def _profile_with_cwd(profile: str | None, workdir: Path) -> tuple[str, Path]:
+    """Create a temporary profile that overrides terminal.cwd to workdir.
+
+    Hermes tools use the configured terminal.cwd, not the subprocess cwd. Without
+    this override file/terminal/search tools operate in the wrong directory and
+    benchmark tasks fail.
+    """
+    home = Path.home() / ".hermes"
+    profiles_dir = home / "profiles"
+    profiles_dir.mkdir(parents=True, exist_ok=True)
+    src = profiles_dir / profile if profile else None
+    tmp_name = f"hermesbench-{uuid.uuid4().hex[:12].lower()}"
+    dst = profiles_dir / tmp_name
+    try:
+        # Carry profile configuration, authentication, plugins, and skills forward, but
+        # never seed a benchmark task with another agent session, memory, cache, or
+        # telemetry. Apart from contaminating behavior grading, copied state can let a
+        # task access unrelated user context.
+        if src is not None and src.is_dir():
+            shutil.copytree(
+                src,
+                dst,
+                ignore=shutil.ignore_patterns(
+                    "state.db*", "memory_store.db*", "verification_evidence.db*",
+                    "semantic_index.sqlite*", "projects.db*", "logs", "sessions",
+                    "runtime", "memories", "cron", "cache", "models_dev_cache.json",
+                    ".update_check", ".skills_prompt_snapshot.json",
+                ),
+            )
+        else:
+            dst.mkdir()
+        cfg = dst / "config.yaml"
+        data = yaml.safe_load(cfg.read_text()) if cfg.exists() else {}
+        data = data if isinstance(data, dict) else {}
+        terminal = data.setdefault("terminal", {})
+        if not isinstance(terminal, dict):
+            terminal = data["terminal"] = {}
+        # Hermes tools honor terminal.cwd rather than the launcher cwd.
+        terminal["cwd"] = str(workdir.resolve())
+        cfg.write_text(yaml.safe_dump(data, sort_keys=False))
+        return tmp_name, dst
+    except Exception:
+        shutil.rmtree(dst, ignore_errors=True)
+        raise
+
+
 class HermesCLIAdapter(AgentAdapter):
+    def __init__(self, model: str | None = None, provider: str | None = None, reasoning_effort: str | None = None, profile: str | None = None):
+        super().__init__(model, provider=provider, reasoning_effort=reasoning_effort)
+        self.profile = profile
+
     def run_task(self, task, workdir: Path, hidden_dir: Path | None = None) -> AgentRun:
         toolsets = _resolve_toolsets(task)
-        # Open-ended instruction: the model must decide which tools to use and how.
-        # We do not list expected artifacts or specific commands in the prompt.
+        unsupported = sorted(set(toolsets) - _CLI_TOOLSETS)
+        if unsupported:
+            raise ValueError(f"CLI-unavailable toolsets: {', '.join(unsupported)}")
+        expected = task.metadata.get("expected_artifacts") or []
+        artifacts_hint = ""
+        if expected:
+            artifacts_hint = (
+                "\n\nREQUIRED ARTIFACTS — you must create these files with the write_file tool: "
+                + ", ".join(str(a) for a in expected) + ". "
+                "Do not put the answer only in your response text; the final text response is not graded. "
+                "If the task asks for a final answer, write it into the artifact file(s) instead of (or in addition to) the response text."
+            )
         prompt = (
             f"HermesBench task {task.metadata['id']}\n\n"
             f"{task.prompt}\n\n"
             f"Workdir: {workdir}. Use the tools available to you to complete this task. "
             "You are expected to choose the right tools and features naturally, not to rely on the final answer text alone."
+            f"{artifacts_hint}\n\n"
+            "Important: the file/terminal/search tools operate inside the Workdir above. "
+            "Always use paths relative to the Workdir, not system paths found by search."
         )
-        cmd = ["hermes", "chat", "-q", prompt, "-Q", "--toolsets", ",".join(toolsets)]
-        if getattr(self, "provider", None):
-            cmd += ["--provider", self.provider]
-        if self.model:
-            cmd += ["--model", self.model]
-        # Hermes exposes reasoning effort through config, not a chat CLI flag.
-        # The benchmark still records it in result metadata; callers should set
-        # `hermes config set agent.reasoning_effort <level>` before long runs.
-        started_at = time.time()
-        p = subprocess.run(cmd, cwd=workdir, text=True, capture_output=True, timeout=int(task.metadata["timeout_seconds"]))
-        transcript = p.stdout + p.stderr
-        telemetry = extract_hermes_telemetry(transcript, "stdout/stderr")
-        if not (telemetry.tool_calls or telemetry.token_usage or telemetry.cost_usd is not None):
-            m = re.search(r"session_id:\s*([\w-]+)", transcript)
-            recent_text, recent_source = _recent_hermes_text(started_at, session_id=m.group(1) if m else None)
-            if recent_text:
-                telemetry = extract_hermes_telemetry(recent_text, recent_source)
-        return AgentRun(
-            "completed" if p.returncode == 0 else "failed",
-            transcript,
-            telemetry.tool_calls,
-            telemetry.cost_usd,
-            True,
-            telemetry.token_usage,
-            telemetry.source,
-        )
+        cmd = ["hermes"]
+        tmp_profile_dir: Path | None = None
+        try:
+            started_at = __import__("time").time()
+            profile_name, tmp_profile_dir = _profile_with_cwd(self.profile, workdir)
+            cmd += ["-p", profile_name]
+            cmd += ["chat", "-q", prompt, "-Q", "--toolsets", ",".join(toolsets), "--max-turns", "20"]
+            if getattr(self, "provider", None):
+                cmd += ["--provider", self.provider]
+            if self.model:
+                cmd += ["--model", self.model]
+            p = subprocess.run(cmd, cwd=workdir, text=True, capture_output=True, timeout=int(task.metadata["timeout_seconds"]))
+            transcript = p.stdout + p.stderr
+            telemetry = _extract_state_db_telemetry(
+                tmp_profile_dir / "state.db", started_at=started_at, workdir=workdir
+            ) if tmp_profile_dir is not None else StateDBTelemetry(events=[])
+            return AgentRun(
+                "completed" if p.returncode == 0 else "failed",
+                transcript,
+                telemetry.tool_calls,
+                telemetry.cost_usd,
+                bool(p.returncode == 0 and re.search(r"\b(done|completed|finished)\b", transcript, re.I)),
+                telemetry.token_usage,
+                "profile-state-db" if telemetry.trusted else None,
+                tool_events=telemetry.events,
+                behavior_evidence_trusted=telemetry.trusted,
+            )
+        finally:
+            if tmp_profile_dir is not None:
+                shutil.rmtree(tmp_profile_dir, ignore_errors=True)

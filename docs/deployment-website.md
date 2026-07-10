@@ -20,7 +20,7 @@ Deploy `website/dist` as a static site.
 - Connect a Vercel Blob store so production/preview have `BLOB_READ_WRITE_TOKEN`.
 
 ## Configuration
-The main leaderboard pages use checked-in JSON under `website/data`. Authenticated submissions use `https://hermesbench.site/v1/results`, persist sanitized uploads to Vercel Blob, and feed the leaderboard.
+The main leaderboard pages use checked-in JSON under `website/data`. The committed sample set is a labeled historical mock fixture for website/pipeline development, not model-capability evidence; new public capability evidence belongs in a reviewed `official-runs/` archive. Authenticated submissions use `https://hermesbench.site/v1/results`, persist sanitized uploads to Vercel Blob, and feed the API leaderboard.
 
 ## Smoke checklist
 - Landing page loads.
@@ -28,6 +28,6 @@ The main leaderboard pages use checked-in JSON under `website/data`. Authenticat
 - Leaderboard page renders entries from the API.
 - Result detail page shows task evidence and status badge.
 - Methodology, tasks, and run instructions are reachable.
-- Browser `POST /v1/results` works for maintainers with `HERMESBENCH_SUBMISSION_TOKEN`.
-- `HERMESBENCH_SUBMISSION_TOKEN=UPLOAD_SECRET uv run hermesbench upload <result.json> --endpoint https://hermesbench.site/v1/results` returns `202` and the run appears in `GET /v1/leaderboard`.
+|- Browser upload form on /submit page lets maintainers select a scored JSON file, enter a submission token, and POST to `/v1/results` without the token being stored or logged.
+|- `HERMESBENCH_SUBMISSION_TOKEN=UPLOAD_SECRET uv run hermesbench upload <result.json> --endpoint https://hermesbench.site/v1/results` returns `202` and the run appears in `GET /v1/leaderboard`.
 - No private task data or local paths appear in the deployed bundle.

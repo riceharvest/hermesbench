@@ -1,71 +1,319 @@
----
 version: 0.3.0
-description: 'HermesBench task manifest — minimum-capable-model probe'
-# This manifest only contains the natural tool-use probe suite.
-# Legacy ProjectOps suites have been removed as part of the minimum-capable-model
-# pivot; see REPOSITORY_MAP.md or git history for prior ProjectOps task files.
+description: "HermesBench task manifest — deterministic core and integration suites"
 suites:
+  core-cli:
+    version: 0.1.0
+    description: Hermetic, deterministic local tasks only.
+    tasks:
+      - id: htu-dev-001-file-and-terminal-self-serve
+        path: natural-tools-dev/htu-dev-001-file-and-terminal-self-serve.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-007-code-execution
+        path: natural-tools-dev/htu-dev-007-code-execution.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-013-vision-image
+        path: natural-tools-dev/htu-dev-013-vision-image.md
+        category: natural-tool-use
+        visibility: public
+  integrations:
+    version: 0.1.0
+    description: Tasks requiring external services, persistent state, configured providers, or non-local generation.
+    tasks:
+      - id: htu-dev-002-web-search-required
+        path: natural-tools-dev/htu-dev-002-web-search-required.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-003-use-a-skill
+        path: natural-tools-dev/htu-dev-003-use-a-skill.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-004-memory-recall
+        path: natural-tools-dev/htu-dev-004-memory-recall.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-005-delegate-parallel-subtasks
+        path: natural-tools-dev/htu-dev-005-delegate-parallel-subtasks.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-006-todo-plan
+        path: natural-tools-dev/htu-dev-006-todo-plan.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-008-browser-required
+        path: natural-tools-dev/htu-dev-008-browser-required.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-009-session-search
+        path: natural-tools-dev/htu-dev-009-session-search.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-010-clarify-ambiguous
+        path: natural-tools-dev/htu-dev-010-clarify-ambiguous.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-011-cronjob-schedule
+        path: natural-tools-dev/htu-dev-011-cronjob-schedule.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-012-computer-use
+        path: natural-tools-dev/htu-dev-012-computer-use.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-014-image-gen
+        path: natural-tools-dev/htu-dev-014-image-gen.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-015-messaging
+        path: natural-tools-dev/htu-dev-015-messaging.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-016-x-search
+        path: natural-tools-dev/htu-dev-016-x-search.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-017-video
+        path: natural-tools-dev/htu-dev-017-video.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-018-video-gen
+        path: natural-tools-dev/htu-dev-018-video-gen.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-019-tts
+        path: natural-tools-dev/htu-dev-019-tts.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-020-homeassistant
+        path: natural-tools-dev/htu-dev-020-homeassistant.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-021-discord
+        path: natural-tools-dev/htu-dev-021-discord.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-022-browser-cdp
+        path: natural-tools-dev/htu-dev-022-browser-cdp.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-023-kanban
+        path: natural-tools-dev/htu-dev-023-kanban.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-024-project
+        path: natural-tools-dev/htu-dev-024-project.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-025-semantic-search
+        path: natural-tools-dev/htu-dev-025-semantic-search.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-026-feishu
+        path: natural-tools-dev/htu-dev-026-feishu.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-027-yuanbao
+        path: natural-tools-dev/htu-dev-027-yuanbao.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-028-spotify
+        path: natural-tools-dev/htu-dev-028-spotify.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-029-discord-admin
+        path: natural-tools-dev/htu-dev-029-discord-admin.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-030-stt
+        path: natural-tools-dev/htu-dev-030-stt.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-031-obsidian
+        path: natural-tools-dev/htu-dev-031-obsidian.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-032-github
+        path: natural-tools-dev/htu-dev-032-github.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-033-docker
+        path: natural-tools-dev/htu-dev-033-docker.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-034-notion
+        path: natural-tools-dev/htu-dev-034-notion.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-035-linear
+        path: natural-tools-dev/htu-dev-035-linear.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-036-maps
+        path: natural-tools-dev/htu-dev-036-maps.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-037-himalaya
+        path: natural-tools-dev/htu-dev-037-himalaya.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-038-openhue
+        path: natural-tools-dev/htu-dev-038-openhue.md
+        category: natural-tool-use
+        visibility: public
   natural-tools-dev:
     version: 0.2.0
-    description: 'Natural Tool-Use Suite: tasks that require the model to autonomously discover and use Hermes tools/features'
+    description: Legacy compatibility suite retaining all 38 natural tool-use tasks; not the default.
     tasks:
-    - id: htu-dev-001-file-and-terminal-self-serve
-      path: natural-tools-dev/htu-dev-001-file-and-terminal-self-serve.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-002-web-search-required
-      path: natural-tools-dev/htu-dev-002-web-search-required.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-003-use-a-skill
-      path: natural-tools-dev/htu-dev-003-use-a-skill.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-004-memory-recall
-      path: natural-tools-dev/htu-dev-004-memory-recall.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-005-delegate-parallel-subtasks
-      path: natural-tools-dev/htu-dev-005-delegate-parallel-subtasks.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-006-todo-plan
-      path: natural-tools-dev/htu-dev-006-todo-plan.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-007-code-execution
-      path: natural-tools-dev/htu-dev-007-code-execution.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-008-browser-required
-      path: natural-tools-dev/htu-dev-008-browser-required.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-009-session-search
-      path: natural-tools-dev/htu-dev-009-session-search.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-010-clarify-ambiguous
-      path: natural-tools-dev/htu-dev-010-clarify-ambiguous.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-011-cronjob-schedule
-      path: natural-tools-dev/htu-dev-011-cronjob-schedule.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-012-computer-use
-      path: natural-tools-dev/htu-dev-012-computer-use.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-013-vision-image
-      path: natural-tools-dev/htu-dev-013-vision-image.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-014-image-gen
-      path: natural-tools-dev/htu-dev-014-image-gen.md
-      category: natural-tool-use
-      visibility: public
-    - id: htu-dev-015-messaging
-      path: natural-tools-dev/htu-dev-015-messaging.md
-      category: natural-tool-use
-      visibility: public
+      - id: htu-dev-001-file-and-terminal-self-serve
+        path: natural-tools-dev/htu-dev-001-file-and-terminal-self-serve.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-002-web-search-required
+        path: natural-tools-dev/htu-dev-002-web-search-required.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-003-use-a-skill
+        path: natural-tools-dev/htu-dev-003-use-a-skill.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-004-memory-recall
+        path: natural-tools-dev/htu-dev-004-memory-recall.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-005-delegate-parallel-subtasks
+        path: natural-tools-dev/htu-dev-005-delegate-parallel-subtasks.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-006-todo-plan
+        path: natural-tools-dev/htu-dev-006-todo-plan.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-007-code-execution
+        path: natural-tools-dev/htu-dev-007-code-execution.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-008-browser-required
+        path: natural-tools-dev/htu-dev-008-browser-required.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-009-session-search
+        path: natural-tools-dev/htu-dev-009-session-search.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-010-clarify-ambiguous
+        path: natural-tools-dev/htu-dev-010-clarify-ambiguous.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-011-cronjob-schedule
+        path: natural-tools-dev/htu-dev-011-cronjob-schedule.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-012-computer-use
+        path: natural-tools-dev/htu-dev-012-computer-use.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-013-vision-image
+        path: natural-tools-dev/htu-dev-013-vision-image.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-014-image-gen
+        path: natural-tools-dev/htu-dev-014-image-gen.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-015-messaging
+        path: natural-tools-dev/htu-dev-015-messaging.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-016-x-search
+        path: natural-tools-dev/htu-dev-016-x-search.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-017-video
+        path: natural-tools-dev/htu-dev-017-video.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-018-video-gen
+        path: natural-tools-dev/htu-dev-018-video-gen.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-019-tts
+        path: natural-tools-dev/htu-dev-019-tts.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-020-homeassistant
+        path: natural-tools-dev/htu-dev-020-homeassistant.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-021-discord
+        path: natural-tools-dev/htu-dev-021-discord.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-022-browser-cdp
+        path: natural-tools-dev/htu-dev-022-browser-cdp.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-023-kanban
+        path: natural-tools-dev/htu-dev-023-kanban.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-024-project
+        path: natural-tools-dev/htu-dev-024-project.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-025-semantic-search
+        path: natural-tools-dev/htu-dev-025-semantic-search.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-026-feishu
+        path: natural-tools-dev/htu-dev-026-feishu.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-027-yuanbao
+        path: natural-tools-dev/htu-dev-027-yuanbao.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-028-spotify
+        path: natural-tools-dev/htu-dev-028-spotify.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-029-discord-admin
+        path: natural-tools-dev/htu-dev-029-discord-admin.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-030-stt
+        path: natural-tools-dev/htu-dev-030-stt.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-031-obsidian
+        path: natural-tools-dev/htu-dev-031-obsidian.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-032-github
+        path: natural-tools-dev/htu-dev-032-github.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-033-docker
+        path: natural-tools-dev/htu-dev-033-docker.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-034-notion
+        path: natural-tools-dev/htu-dev-034-notion.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-035-linear
+        path: natural-tools-dev/htu-dev-035-linear.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-036-maps
+        path: natural-tools-dev/htu-dev-036-maps.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-037-himalaya
+        path: natural-tools-dev/htu-dev-037-himalaya.md
+        category: natural-tool-use
+        visibility: public
+      - id: htu-dev-038-openhue
+        path: natural-tools-dev/htu-dev-038-openhue.md
+        category: natural-tool-use
+        visibility: public

@@ -2,27 +2,27 @@
 
 [![CI](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml/badge.svg)](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
-![Tasks](https://img.shields.io/badge/tasks-15-orange)
+![Tasks](https://img.shields.io/badge/tasks-38-orange)
 ![Status](https://img.shields.io/badge/status-pre--official-blue)
 
-HermesBench is a **minimum-capable-model probe** for Hermes-style tool-using agents. It is designed to answer a specific question: *what is the lowest total-parameter model that can still use every tool and feature Hermes Agent exposes?* It is not a leaderboard of the best model for a fixed task; it is a search for the **worst model that is still good enough** — especially useful for local-AI deployment.
+HermesBench is an **early-stage tool-use benchmark harness** for Hermes-style agents. It distinguishes the portable **core CLI** surface (local file, terminal, task, and runner behavior) from optional **integrations** (for example browser, cloud services, desktop control, and connected skills). It does not yet establish a minimum-capable-model boundary for the full Hermes Agent surface; that requires archived, reproducible runs in an environment where the requested integrations are available.
 
 Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers get trained on, and leaderboard wins stop predicting whether an agent can actually finish messy work. HermesBench flips the signal. We grade agentic behavior from telemetry, not output correctness. A task is a capability probe, not a puzzle with a known answer. The benchmark is open-ended by design: a model must autonomously decide which Hermes tool, skill, or workflow to invoke, and then actually do it. Failures are not "wrong answers"; they are missing capabilities.
 
 ## What makes it different
 
-- **Capability-first scoring:** tasks are scored on whether the agent used the required Hermes tool or feature class from transcript telemetry, not on whether the final artifact looks right.
-- **Minimum-capable-model goal:** the benchmark is optimized to find the smallest model (in total parameters) that can still drive every tool Hermes Agent needs.
-- **Tool-class coverage:** probes every built-in tool category: `file`, `terminal`, `web`, `browser`, `code_execution`, `vision`, `image_gen`, `memory`, `todo`, `skills`, `session_search`, `delegation`, `clarify`, `cronjob`, `computer_use`, and `messaging`.
-- **Open-ended prompts:** tasks do not specify which tool to use. The agent must choose, execute, and leave auditable evidence.
+- **Scoped capability evidence:** core-CLI probes can be evaluated in a local runner; integration probes are evidence only when the matching toolset, credentials, and service are available and disclosed.
+- **Future minimum-capable-model goal:** once official, reproducible coverage exists, the data can be used to estimate the smallest model that satisfies a stated capability scope.
+- **Tool-class coverage:** probes every built-in tool category: `file`, `terminal`, `web`, `browser`, `browser_cdp`, `code_execution`, `vision`, `image_gen`, `video`, `video_gen`, `tts`, `memory`, `todo`, `skills`, `session_search`, `semantic_search`, `delegation`, `clarify`, `cronjob`, `computer_use`, `homeassistant`, `kanban`, `project`, `discord`, `discord_admin`, `x_search`, `yuanbao`, `spotify`, `feishu`, `messaging`, `stt`, `obsidian`, `github`, `docker`, `notion`, `linear`, `maps`, `himalaya`, and `openhue`.
+- **Auditable prompts:** tasks state a goal and required evidence; the agent must execute tools and leave verifiable artifacts. Some development probes explicitly name the target capability and are not yet autonomous-selection evaluations.
 - **False-done penalties:** agents that say “done” without verified capability usage are measured, not rewarded.
 - **Telemetry-based behavior grading:** evaluates real tool usage directly from execution telemetry instead of simple output matching.
 - **Normalized run JSON:** scores include pass@1, tool-class coverage, wall time, tool calls, timeouts, cost when available, and verification evidence.
-- **Adapter architecture:** the runner supports a mock adapter, Hermes CLI adapter, and generic shell adapter; any Hermes-compatible model can be evaluated without changing task format.
+- **Adapter architecture:** the runner supports a mock adapter for deterministic plumbing, a Hermes CLI adapter for configured core-CLI/integration environments, and a generic shell adapter. Adapter availability is not a claim that every Hermes integration is available or benchmarked.
 
 ## Current status
 
-HermesBench is public, CI-green, and usable locally. It functions as a local probe to assess tool coverage. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
+HermesBench is under active validation. The task inventory and mock adapter exercise only benchmark plumbing; mock output is explicitly non-capability evidence. Hermes CLI runs are preflighted against the toolsets the active runtime exposes. Core CLI and each optional integration must be reported separately; unavailable integrations are environmental skips, not model failures. The checked-in website samples are historical mock fixtures, not a public model leaderboard. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
 
 ## Quick start
 
@@ -30,7 +30,7 @@ HermesBench is public, CI-green, and usable locally. It functions as a local pro
 git clone https://github.com/riceharvest/hermesbench.git
 cd hermesbench
 uv run hermesbench validate-tasks
-uv run hermesbench run --agent mock --suite natural-tools-dev --output-dir /tmp/hermesbench-results
+uv run hermesbench run --agent mock --suite core-cli --output-dir /tmp/hermesbench-results
 uv run hermesbench score /tmp/hermesbench-results/*.json
 ```
 
@@ -50,7 +50,9 @@ uv run hermesbench score /tmp/hermesbench-one/*.json
 Run with Hermes CLI against a local model to probe tool-class coverage:
 
 ```bash
-uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite natural-tools-dev --output-dir results/hermes-natural-tools-dev
+uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite core-cli --output-dir results/hermes-core-cli
+# Run integrations only in an environment that exposes and documents them:
+uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite integrations --output-dir results/hermes-integrations
 ```
 
 ## CLI reference
@@ -58,15 +60,15 @@ uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite natur
 ```bash
 uv run hermesbench validate-tasks
 uv run hermesbench versions
-uv run hermesbench run --agent mock --suite natural-tools-dev --jobs auto
-uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --suite natural-tools-dev --jobs auto
+uv run hermesbench run --agent mock --suite core-cli --jobs auto  # plumbing smoke only
+uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --suite core-cli --jobs auto
 uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1 --jobs 1
 uv run hermesbench run --agent shell --command './my-agent-runner.sh' --suite natural-tools-dev --jobs 4
 uv run hermesbench score results/<run>.json
 uv run hermesbench export --suite natural-tools-dev --format jsonl
 uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/results
 uv run hermesbench serve-api --host 127.0.0.1 --port 8787
-uv run hermesbench archive-official --result results/run.json --manifest official_runs/run.yaml --output official_runs/archive/run
+uv run hermesbench archive-official --result results/run.json --manifest official-runs/run.yaml --output official-runs/archive/run
 ```
 
 ## Repository layout
@@ -89,9 +91,11 @@ tests/                    parser, runner, API, storage, official-run, and websit
 
 | Suite | Count | Purpose | Credential-free |
 |---|---:|---|---|
-|| `natural-tools-dev` | 15 | Open-ended capability probes for file, terminal, web, browser, code execution, vision, image generation, memory, todo, skills, session search, delegation, clarification, cron, computer use, and messaging | Some |
+| `core-cli` | 3 | Hermes CLI-supported core tasks | Varies |
+| `integrations` | 35 | Tasks requiring configured Hermes integrations unavailable to the CLI adapter | No |
+| `natural-tools-dev` | 38 | Combined development inventory; not a single capability claim | Some |
 
-The `natural-tools-dev` suite is the primary suite for the minimum-capable-model probe. It contains 15 public tasks, each targeting one or more Hermes tool classes. Tasks are intentionally open-ended: they do not tell the model which tool to use, only the goal. Scoring inspects the transcript for the required Hermes tool class. A model that cannot choose and invoke the right tool class fails the capability probe, regardless of how plausible its final answer is.
+`core-cli` and `integrations` are separate reporting scopes. Run and publish them separately: core-CLI results do not imply connected-service or desktop capability, and unavailable integrations are environmental skips rather than model failures. `natural-tools-dev` is the combined public development inventory. The `mock` adapter is a deterministic harness double for parser/runner/website development; its synthetic telemetry must not be used as model-capability evidence.
 
 | Task | Required tool classes | Difficulty | Notes |
 |---|---|---:|---|
@@ -110,8 +114,31 @@ The `natural-tools-dev` suite is the primary suite for the minimum-capable-model
 | `htu-dev-013` | `vision` | medium | read a value from an image |
 | `htu-dev-014` | `image_gen` | medium | generate an image matching constraints |
 | `htu-dev-015` | `messaging` | medium | message a user to report status |
+| `htu-dev-016` | `x_search` | medium | search X for a recent post |
+| `htu-dev-017` | `video` | medium | analyze a local video file |
+| `htu-dev-018` | `video_gen` | medium | generate a short video |
+| `htu-dev-019` | `tts` | medium | convert text to speech |
+| `htu-dev-020` | `homeassistant` | medium | list Home Assistant entities |
+| `htu-dev-021` | `discord` | medium | list Discord channels |
+| `htu-dev-022` | `browser_cdp` | medium | inspect a page via browser CDP |
+| `htu-dev-023` | `kanban` | medium | list Kanban tasks |
+| `htu-dev-024` | `project` | medium | list available projects |
+| `htu-dev-025` | `semantic_search` | medium | find files by semantic search |
+| `htu-dev-026` | `feishu` | medium | read a Feishu document |
+| `htu-dev-027` | `yuanbao` | medium | query a Yuanbao group |
+| `htu-dev-028` | `spotify` | medium | search Spotify for a track |
+| `htu-dev-029` | `discord_admin` | medium | inspect Discord administration capabilities |
+| `htu-dev-030` | `stt` | medium | transcribe an audio sample |
+| `htu-dev-031` | `obsidian` | medium | read a vault note |
+| `htu-dev-032` | `github` | medium | inspect GitHub workflow state |
+| `htu-dev-033` | `docker` | medium | inspect Docker runtime state |
+| `htu-dev-034` | `notion` | medium | read a Notion page |
+| `htu-dev-035` | `linear` | medium | search Linear issues |
+| `htu-dev-036` | `maps` | medium | geocode a location |
+| `htu-dev-037` | `himalaya` | medium | list email folders |
+| `htu-dev-038` | `openhue` | medium | inspect Hue lights |
 
-Experimental tasks (browser, clarify, cronjob, computer_use, image_gen) require the corresponding Hermes toolset to be enabled and may depend on external credentials or a desktop environment.
+Experimental tasks (browser, browser_cdp, clarify, cronjob, computer_use, image_gen, video, video_gen, tts, homeassistant, discord, discord_admin, kanban, project, semantic_search, feishu, yuanbao, spotify, x_search, messaging, stt, obsidian, github, docker, notion, linear, maps, himalaya, openhue) require the corresponding Hermes toolset to be enabled and may depend on credentials, local services, or a desktop environment.
 
 ## Task format
 
@@ -215,7 +242,7 @@ uv run pytest tests/test_hermesbench_core.py -q
 uv run pytest
 uv run hermesbench validate-tasks
 rm -rf /tmp/hermesbench-results
-uv run hermesbench run --agent mock --suite natural-tools-dev --output-dir /tmp/hermesbench-results
+uv run hermesbench run --agent mock --suite core-cli --output-dir /tmp/hermesbench-results
 uv run hermesbench score /tmp/hermesbench-results/*.json
 cd website && pnpm install && pnpm build
 ```

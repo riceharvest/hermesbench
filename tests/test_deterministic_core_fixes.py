@@ -66,6 +66,36 @@ Do it.
     assert any('extra.md missing from manifest' in e for e in validate_tasks(task_root=tasks_dir))
 
 
+def test_false_done_cannot_pass_capability_probe(monkeypatch, tmp_path):
+    from hermesbench.adapters.base import AgentRun
+    import hermesbench.runner as runner
+    from hermesbench.scoring import aggregate
+
+    class FalseDoneAdapter:
+        def run_task(self, task, workdir, hidden_dir=None):
+            return AgentRun(
+                status='completed',
+                transcript=(
+                    'agent.tool_executor: tool read_file completed (test)\n'
+                    'agent.tool_executor: tool terminal completed (test)'
+                ),
+                tool_calls=2,
+                claimed_done=True,
+            )
+
+    monkeypatch.setattr(runner, 'get_adapter', lambda *args, **kwargs: FalseDoneAdapter())
+    result = runner.run_benchmark(
+        agent='hermes', suite='natural-tools-dev',
+        task_id='htu-dev-001-file-and-terminal-self-serve', output_dir=tmp_path,
+    )
+    task_result = json.loads(Path(result).read_text())['results'][0]
+    assert task_result['raw_task_score'] < 1.0
+    assert task_result['false_done'] is True
+    assert task_result['effective_task_score'] == 0.0
+    assert task_result['passed'] is False
+    assert aggregate(result)['capability_pass'] is False
+
+
 def test_result_exposes_effective_scoring_and_sandbox(tmp_path):
     result = run_benchmark(
         agent='mock',
@@ -80,4 +110,4 @@ def test_result_exposes_effective_scoring_and_sandbox(tmp_path):
     assert r['raw_task_score'] == 1.0
     # The mock adapter mock-emits tool telemetry, so effective_task_score should be 1.0.
     assert r['effective_task_score'] == 1.0
-    assert r['logs']['sandbox']['env_policy']['mode'] == 'allowlist+scrub'
+    assert r['logs']['sandbox']['env_policy']['mode'] == 'inherited-by-adapter'

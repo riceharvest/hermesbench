@@ -123,6 +123,6 @@ def is_capability_pass(score_or_result: dict) -> bool:
     for r in rs:
         used = _extract_used_tool_classes(r)
         required = _extract_required_tool_classes(r)
-        if required and not required.issubset(used):
+        if required and (not r.get('passed') or r.get('false_done') or r.get('timeout') or not required.issubset(used)):
             return False
     return True

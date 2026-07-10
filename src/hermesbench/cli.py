@@ -21,10 +21,10 @@ def _format_size(s):
 def main(argv=None):
     p=argparse.ArgumentParser(prog='hermesbench', description='Minimum-capable-model probe for Hermes-style tool-using agents.')
     sub=p.add_subparsers(dest='cmd', required=True)
-    r=sub.add_parser('run', help='run a suite against an agent adapter'); r.add_argument('--agent', default='mock'); r.add_argument('--provider'); r.add_argument('--model'); r.add_argument('--reasoning-effort', choices=['none','minimal','low','medium','high','xhigh']); r.add_argument('--suite', default='natural-tools-dev', help='suite to run (default: natural-tools-dev)'); r.add_argument('--task'); r.add_argument('--output-dir', default='results'); r.add_argument('--command'); r.add_argument('--benchmark-version'); r.add_argument('--task-root'); r.add_argument('--model-size', type=float, help='total parameter count (e.g. 7e9 for 7B) for minimum-capable-model boundary tracking'); r.add_argument('--jobs', default='auto', help='parallel task workers: auto, 1, or an integer'); r.add_argument('--quantization', help='quantization level (e.g., Q4_K_M, IQ3_XS, EXL2-4.0bpw)'); r.add_argument('--backend', help='local model serving backend (e.g., llama.cpp, vllm, sglang, ollama)')
-    s=sub.add_parser('score', help='aggregate a run JSON into a score report'); s.add_argument('result')
+    r=sub.add_parser('run', help='run a suite against an agent adapter'); r.add_argument('--agent', default='mock'); r.add_argument('--provider'); r.add_argument('--model'); r.add_argument('--profile'); r.add_argument('--reasoning-effort', choices=['none','minimal','low','medium','high','xhigh']); r.add_argument('--suite', default='core-cli', help='suite to run (default: core-cli)'); r.add_argument('--task'); r.add_argument('--output-dir', default='results'); r.add_argument('--command'); r.add_argument('--benchmark-version'); r.add_argument('--task-root'); r.add_argument('--model-size', type=float, help='total parameter count (e.g. 7e9 for 7B) for minimum-capable-model boundary tracking'); r.add_argument('--jobs', default='auto', help='parallel task workers: auto, 1, or an integer'); r.add_argument('--quantization', help='quantization level (e.g., Q4_K_M, IQ3_XS, EXL2-4.0bpw)'); r.add_argument('--backend', help='local model serving backend (e.g., llama.cpp, vllm, sglang, ollama)')
+    s=sub.add_parser('score', help='aggregate a run JSON into a score report'); s.add_argument('result'); s.add_argument('--require-capability-pass', action='store_true', help='exit nonzero unless every required capability task passed with verified telemetry'); s.add_argument('--min-overall-score', type=float, help='exit nonzero when overall score is below this fraction (0..1)')
     vt=sub.add_parser('validate-tasks', help='validate task manifests and task quality'); vt.add_argument('--task-root')
-    e=sub.add_parser('export', help='export task prompts as JSONL'); e.add_argument('--format', choices=['jsonl'], default='jsonl'); e.add_argument('--suite', default='natural-tools-dev', help='suite to export (default: natural-tools-dev)'); e.add_argument('--task-root')
+    e=sub.add_parser('export', help='export task prompts as JSONL'); e.add_argument('--format', choices=['jsonl'], default='jsonl'); e.add_argument('--suite', default='core-cli', help='suite to export (default: core-cli)'); e.add_argument('--task-root')
     u=sub.add_parser('upload'); u.add_argument('result'); u.add_argument('--endpoint'); u.add_argument('--submission-token'); u.add_argument('--output-dir', default='submissions'); u.add_argument('--keep-logs', action='store_true'); u.add_argument('--print-issue', action='store_true')
     srv=sub.add_parser('serve-api'); srv.add_argument('--host', default='127.0.0.1'); srv.add_argument('--port', type=int, default=8787); srv.add_argument('--store-path', default='submissions/submissions.jsonl'); srv.add_argument('--submission-token')
     arch=sub.add_parser('archive-official'); arch.add_argument('--result', required=True); arch.add_argument('--manifest', required=True); arch.add_argument('--output', required=True)
@@ -42,7 +42,7 @@ def main(argv=None):
             print('ok')
     elif a.cmd=='run':
         from .scoring import aggregate, is_capability_pass
-        result_path = run_benchmark(a.agent,a.suite,a.task,a.output_dir,a.model,a.command,a.benchmark_version,a.provider,a.reasoning_effort,a.task_root,a.jobs,a.quantization,a.backend)
+        result_path = run_benchmark(a.agent,a.suite,a.task,a.output_dir,a.model,a.command,a.benchmark_version,a.provider,a.reasoning_effort,a.task_root,a.jobs,a.quantization,a.backend,a.profile)
         if a.model_size is not None:
             score = aggregate(result_path)
             passed = is_capability_pass(score)
@@ -55,7 +55,14 @@ def main(argv=None):
         print(result_path)
     elif a.cmd=='score':
         from .scoring import aggregate
-        print(json.dumps(aggregate(a.result), indent=2))
+        if a.min_overall_score is not None and not 0 <= a.min_overall_score <= 1:
+            p.error('--min-overall-score must be between 0 and 1')
+        score = aggregate(a.result)
+        print(json.dumps(score, indent=2))
+        if a.require_capability_pass and not score['capability_pass']:
+            raise SystemExit(2)
+        if a.min_overall_score is not None and score['overall_score'] < a.min_overall_score:
+            raise SystemExit(2)
     elif a.cmd=='export':
         for t in discover_tasks(a.suite, task_root=a.task_root): print(json.dumps({'id':t.metadata['id'],'title':t.metadata['title'],'category':t.metadata['category'],'prompt':t.prompt}))
     elif a.cmd=='upload':

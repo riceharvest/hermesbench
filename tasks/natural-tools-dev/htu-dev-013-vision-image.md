@@ -12,6 +12,8 @@ difficulty: easy
 required_toolsets:
 - vision
 - file
+fixtures:
+- case/image.png
 grading_type: deterministic
 timeout_seconds: 180
 contamination_notes: Static local fixture. Public prompt is stable; the image content is fixed.

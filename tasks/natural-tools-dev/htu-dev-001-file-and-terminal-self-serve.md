@@ -12,7 +12,8 @@ difficulty: easy
 required_toolsets:
 - terminal
 - file
-no_fixture_required: true
+fixtures:
+- data/records.txt
 grading_type: deterministic
 timeout_seconds: 180
 contamination_notes: Vague local-only task. No hidden oracle. Fixture data rotates; public prompt is stable, but the expected answer changes with the seeded numbers.

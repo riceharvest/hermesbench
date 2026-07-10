@@ -6,6 +6,15 @@ __pycache__/
 *.pyd
 .DS_Store
 reports/*.log
+# Local exploratory benchmark output. Commit reviewed evidence only under official-runs/.
+/results/
+/artifacts/
+/reports/
+/docs/reports/
+!official-runs/
+!official-runs/**
+# Build artifacts (wheel/sdist) — dist/.gitignore is brittle alone
+/dist/
 outputs/
 checkpoints/
 wandb/

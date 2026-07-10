@@ -32,7 +32,7 @@ class MockAdapter(AgentAdapter):
             (artifacts/'checkpoint.md').write_text('\n'.join(checkpoint_lines)+'\n')
             actions=expected.get('action_log', [{'episode':'mock','action':'verify','result':'PASS'}])
             (artifacts/'action_log.jsonl').write_text('\n'.join(json.dumps(a, sort_keys=True) for a in actions)+'\n')
-            return AgentRun(status='completed', transcript='mock adapter applied hidden ProjectOps oracle and verified final state', tool_calls=8)
+            return AgentRun(status='completed', transcript='mock adapter applied hidden ProjectOps oracle and verified final state', tool_calls=8, behavior_evidence_trusted=True)
         for artifact in task.expected_artifacts:
             p=workdir/artifact; p.parent.mkdir(parents=True, exist_ok=True)
             if p.suffix == '.json':
@@ -66,11 +66,19 @@ class MockAdapter(AgentAdapter):
         # Emit fake telemetry for the required tool classes so the behavior grader sees them.
         tool_class_to_name = {
             'file': 'read_file', 'terminal': 'terminal', 'web': 'web_search',
-            'browser': 'browser_navigate', 'code_execution': 'execute_code',
-            'vision': 'vision_analyze', 'image_gen': 'image_gen', 'memory': 'memory',
+            'browser': 'browser_navigate', 'browser_cdp': 'browser_cdp', 'code_execution': 'execute_code',
+            'vision': 'vision_analyze', 'image_gen': 'image_gen', 'video': 'video_analyze',
+            'video_gen': 'video_generate', 'tts': 'text_to_speech', 'memory': 'memory',
             'todo': 'todo', 'skills': 'skill_view', 'session_search': 'session_search',
-            'delegation': 'delegate_task', 'clarify': 'clarify', 'cronjob': 'cronjob',
-            'computer_use': 'computer_use', 'messaging': 'send_message',
+            'semantic_search': 'semantic_search', 'delegation': 'delegate_task', 'clarify': 'clarify',
+            'cronjob': 'cronjob', 'computer_use': 'computer_use', 'homeassistant': 'ha_list_entities',
+            'kanban': 'kanban_show', 'project': 'project_list', 'discord': 'discord',
+            'x_search': 'x_search', 'yuanbao': 'yb_query_group_info', 'spotify': 'spotify_search',
+            'feishu': 'feishu_doc_read', 'messaging': 'send_message',
+            'discord_admin': 'discord_admin',
+            'stt': 'speech_to_text', 'obsidian': 'obsidian_read', 'github': 'github',
+            'docker': 'docker_ps', 'notion': 'notion_page_read', 'linear': 'linear_search',
+            'maps': 'maps_geocode', 'himalaya': 'himalaya_list', 'openhue': 'openhue_light_set',
         }
         required = task.metadata.get('tool_use_requirements', []) or []
         telemetry_lines = []
@@ -78,4 +86,4 @@ class MockAdapter(AgentAdapter):
             name = tool_class_to_name.get(cls, cls)
             telemetry_lines.append(f'agent.tool_executor: tool {name} completed (task={task.metadata["id"]})')
         transcript = 'mock adapter created requested artifacts and verification evidence\n' + '\n'.join(telemetry_lines)
-        return AgentRun(status='completed', transcript=transcript, tool_calls=len(required))
+        return AgentRun(status='completed', transcript=transcript, tool_calls=len(required), behavior_evidence_trusted=True)

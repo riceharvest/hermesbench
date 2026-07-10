@@ -139,10 +139,10 @@ def _suite_entries(manifest: dict, suite: str) -> list[dict]:
     # Legacy single-suite manifest with a top-level `suite` field.
     if isinstance(raw_tasks, list) and manifest.get('suite') == suite:
         return raw_tasks
-    return list(raw_tasks)
+    return []
 
 
-def discover_tasks(suite='natural-tools-dev', root: Path = ROOT, task_root: str | Path | None = None) -> list[Task]:
+def discover_tasks(suite='core-cli', root: Path = ROOT, task_root: str | Path | None = None) -> list[Task]:
     base=_task_base(root, task_root)
     manifest_path=base/'manifest.yaml'
     if not manifest_path.exists():
@@ -160,6 +160,33 @@ def discover_tasks(suite='natural-tools-dev', root: Path = ROOT, task_root: str 
             raise ValueError(f"manifest id mismatch for {path}: {entry.get('id')} != {t.metadata['id']}")
         tasks.append(t)
     return tasks
+
+
+def _safe_relative_path(value: object) -> bool:
+    """Return whether a declared path is confined to the task sandbox."""
+    path = Path(str(value))
+    return bool(str(value)) and not path.is_absolute() and ".." not in path.parts
+
+
+def _fixture_contract_findings(task: Task, fixtures_root: Path) -> list[str]:
+    """Validate explicitly declared fixture inputs and artifact destinations."""
+    tid = task.metadata['id']
+    findings: list[str] = []
+    declared: list[object] = []
+    for key in ('fixtures', 'fixture', 'inputs', 'input_files'):
+        value = task.metadata.get(key)
+        if value is not None:
+            declared.extend(value if isinstance(value, list) else [value])
+    for value in declared:
+        if not _safe_relative_path(value) or not (fixtures_root / tid / str(value)).is_file():
+            findings.append(f'ERROR {tid}: declared fixture missing or unsafe: {value}')
+    artifact_paths = list(task.expected_artifacts)
+    artifact_paths.extend(check['path'] for check in task.deterministic_checks if check.get('path'))
+    for value in artifact_paths:
+        if not _safe_relative_path(value):
+            findings.append(f'ERROR {tid}: unsafe artifact path: {value}')
+    return findings
+
 
 def _manifest_entries(manifest: dict) -> list[dict]:
     """Return flat task entries across all suites for validation purposes."""
@@ -231,6 +258,7 @@ def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None, inclu
             if not t.deterministic_checks: errors.append(f'{tid} has no deterministic checks')
             if t.metadata['visibility'] == 'private' and not t.hidden_checks:
                 errors.append(f'{tid} private task has no hidden checks note')
+            errors.extend(_fixture_contract_findings(t, base.parent / 'fixtures'))
         if include_quality or quality_only:
             errors.extend(task_quality_findings(t, base.parent if base.name == 'tasks' else root))
     if not quality_only and listed - set(ids):

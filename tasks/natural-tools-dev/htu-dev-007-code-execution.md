@@ -12,6 +12,8 @@ difficulty: easy
 required_toolsets:
 - code_execution
 - file
+fixtures:
+- case/numbers.txt
 grading_type: deterministic
 timeout_seconds: 180
 contamination_notes: Static local fixture. Public prompt is stable; the fixture value is fixed.

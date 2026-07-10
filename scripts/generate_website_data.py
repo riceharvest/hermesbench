@@ -2,6 +2,10 @@ from __future__ import annotations
 import argparse, json, math, re, statistics
 from pathlib import Path
 from hermesbench.scoring import aggregate
+try:  # Supports both `python scripts/generate_website_data.py` and package imports in tests.
+    from scripts.archive_paths import is_official_archive_source
+except ModuleNotFoundError:
+    from archive_paths import is_official_archive_source
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -10,6 +14,47 @@ def _model_key(entry: dict) -> tuple[str, str, str, str, bool]:
 
 def _slug(s: str) -> str:
     return re.sub(r'[^a-z0-9]+', '-', (s or 'unknown').lower()).strip('-')
+
+def _evidence_class(entry: dict) -> str:
+    if entry.get('agent') == 'mock':
+        return 'historical_mock'
+    if entry.get('official') and is_official_archive_source(entry.get('source')):
+        return 'official_evidence'
+    return 'unofficial_submission'
+
+
+def _sanitize_historical_mock(entry: dict, tasks: list[dict] | None = None) -> dict:
+    """Publish historical mock plumbing only, never capability-looking outcomes."""
+    public = {
+        key: entry[key]
+        for key in ('run_id', 'agent', 'suite', 'schema_version', 'official', 'classification', 'evidence_class', 'capability_evidence', 'source')
+        if key in entry
+    }
+    public['plumbing_audit'] = 'Historical fixture record; capability outcomes and metrics are suppressed.'
+    if tasks is not None:
+        public['tasks'] = [
+            {
+                'task_id': task.get('task_id', 'task'),
+                'category': task.get('category'),
+                'grading_type': task.get('grading_type') or task.get('category') or 'deterministic',
+                'plumbing_audit': 'Recorded for fixture wiring only.',
+            }
+            for task in tasks
+        ]
+    return public
+
+
+def _public_source(result_path: Path) -> str | None:
+    """Return only repository-relative reviewed archive paths, never local run paths."""
+    try:
+        relative = result_path.resolve().relative_to(ROOT.resolve())
+    except ValueError:
+        return None
+    source = relative.as_posix()
+    if is_official_archive_source(source):
+        return source
+    return None
+
 
 def _enhance(entry: dict) -> dict:
     score = float(entry.get('score_percentage', entry.get('overall_score', 0)) or 0)
@@ -23,7 +68,7 @@ def _enhance(entry: dict) -> dict:
     cpst = None
     if cost is not None and entry.get('passed_task_count'):
         cpst = cost / entry['passed_task_count']
-    return {**entry, 'reliability_score': reliability, 'token_efficiency_score': token_efficiency, 'value_score': value_score, 'cpst': cpst, 'model_slug': _slug(f"{entry.get('provider','')}-{entry.get('model','')}-{entry.get('reasoning_effort','')}")}
+    return {**entry, 'evidence_class': _evidence_class(entry), 'reliability_score': reliability, 'token_efficiency_score': token_efficiency, 'value_score': value_score, 'cpst': cpst, 'model_slug': _slug(f"{entry.get('provider','')}-{entry.get('model','')}-{entry.get('reasoning_effort','')}")}
 
 def _summarize_group(rows: list[dict]) -> dict:
     best = max(rows, key=lambda e: (e.get('score_percentage', e.get('overall_score', 0)), e.get('pass_at_1', 0)))
@@ -74,19 +119,50 @@ def build_data(results_dir: Path = ROOT / 'results', out_dir: Path = ROOT / 'web
         data=json.loads(result_path.read_text())
         score=aggregate(result_path)
         official=bool(data.get('metadata', {}).get('official'))
-        source=str(result_path.relative_to(ROOT)) if result_path.is_relative_to(ROOT) else str(result_path)
-        entry=_enhance({**score,'official':official,'classification':'official' if official else 'unofficial','source':source})
+        source=_public_source(result_path)
+        entry_input={**score,'official':official,'classification':'official' if official else 'unofficial'}
+        if source:
+            entry_input['source'] = source
+        entry=_enhance(entry_input)
+        entry['capability_evidence'] = entry['evidence_class'] == 'official_evidence'
         tasks=[_task_detail(t) for t in data.get('results',[])]
         detail={**entry,'tasks':tasks,'raw_result_schema_version':data.get('schema_version'),'started_at':data.get('started_at'),'completed_at':data.get('completed_at'),'metadata':data.get('metadata',{})}
+        if entry['evidence_class'] == 'historical_mock':
+            entry = _sanitize_historical_mock(entry)
+            detail = _sanitize_historical_mock(detail, tasks)
         entries.append(entry); details.append(detail)
-        (runs_dir / f"{entry['run_id']}.json").write_text(json.dumps(detail,indent=2,sort_keys=True))
-    entries.sort(key=lambda e: (not e['official'], -e['overall_score'], e['run_id']))
+    entries.sort(key=lambda e: (not e['official'], -e.get('overall_score', 0), e['run_id']))
     for i,e in enumerate([e for e in entries if e['official']],1): e['rank']=i
     for i,e in enumerate([e for e in entries if not e['official']],1): e['rank']=i
     groups: dict[tuple[str, str, str, str, bool], list[dict]] = {}
     for entry in entries: groups.setdefault(_model_key(entry), []).append(entry)
     summaries=sorted((_summarize_group(rows) for rows in groups.values()), key=lambda e: (not e['official'], -e['average_score_percentage'], -(e['submission_count'])))
-    payload={'schema_version':'hermesbench.website.leaderboard.v3','generated_from':'committed results/ files','metric_notes':'Tool class coverage runs for minimum-capable-model capability boundaries.','official':[e for e in entries if e['official']],'unofficial':[e for e in entries if not e['official']],'model_summaries':summaries,'entries':entries}
+    evidence_classes = {entry['evidence_class'] for entry in entries}
+    is_historical_mock_fixture = bool(entries) and evidence_classes == {'historical_mock'}
+    data_status = 'historical_mock_fixture' if is_historical_mock_fixture else 'run_data'
+    capability_evidence = any(entry['capability_evidence'] for entry in entries)
+    display_notice = (
+        'Historical mock-fixture data for website and pipeline development; it must not be used as model-capability evidence.'
+        if is_historical_mock_fixture else
+        'Run data is classified per entry; only archived official runs are official capability evidence.'
+    )
+    for entry in entries:
+        entry.update(data_status=data_status, display_notice=display_notice)
+    for detail in details:
+        detail.update(
+            data_status=data_status,
+            capability_evidence=detail['evidence_class'] == 'official_evidence',
+            display_notice=display_notice,
+        )
+        (runs_dir / f"{detail['run_id']}.json").write_text(json.dumps(detail, indent=2, sort_keys=True))
+    payload={
+        'schema_version':'hermesbench.website.leaderboard.v3',
+        'generated_from':'committed result files',
+        'data_status':data_status,
+        'capability_evidence':capability_evidence,
+        'display_notice':display_notice,
+        'metric_notes':'Tool class coverage runs for minimum-capable-model capability boundaries.',
+        'official':[e for e in entries if e['official']],'unofficial':[e for e in entries if not e['official']],'model_summaries':summaries,'entries':entries}
     out_dir.mkdir(parents=True, exist_ok=True)
     lb=out_dir/'leaderboard.json'; lb.write_text(json.dumps(payload,indent=2,sort_keys=True))
     demo=out_dir/'latest-result.json'; demo.write_text(json.dumps(details[0] if details else {},indent=2,sort_keys=True))

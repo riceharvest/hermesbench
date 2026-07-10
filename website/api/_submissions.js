@@ -9,6 +9,15 @@ const LOCAL_STORE_PATH = process.env.HERMESBENCH_STORE_PATH || path.join(process
 const LOCAL_RATE_LIMIT_STORE_PATH = process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH || path.join(process.cwd(), '.tmp', 'rate-limits.json');
 const SENSITIVE_LOG_KEYS = new Set(['logs', 'messages', 'transcript', 'stdout', 'stderr']);
 
+// --- Security-hardening constants (all configurable via env) ---
+const MAX_BODY_BYTES = Number.parseInt(process.env.HERMESBENCH_MAX_BODY_BYTES || (1024 * 1024).toString(), 10); // 1 MiB default
+const MAX_RESULT_FIELDS_BYTES = Number.parseInt(process.env.HERMESBENCH_MAX_RESULT_FIELDS_BYTES || (512 * 1024).toString(), 10); // 512 KiB
+const MAX_TASKS = Number.parseInt(process.env.HERMESBENCH_MAX_TASKS || '200', 10);
+const MAX_METADATA_KEYS = Number.parseInt(process.env.HERMESBENCH_MAX_METADATA_KEYS || '20', 10);
+
+// Fields allowed in public leaderboard responses (explicit allowlist).
+const PUBLIC_SCORE_FIELDS = new Set(['run_id', 'agent', 'provider', 'model', 'suite', 'overall_score', 'pass_at_1', 'task_count', 'official', 'submitted_at']);
+
 class ApiError extends Error {
   constructor(status, message, headers = {}) {
     super(message);
@@ -24,12 +33,12 @@ try {
   blobClient = null;
 }
 
-function sendJson(res, status, body, extraHeaders = {}) {
+function sendJson(res, status, body, extraHeaders = {}, req = null) {
   res.statusCode = status;
   for (const [key, value] of Object.entries({
     'content-type': 'application/json; charset=utf-8',
     'x-hermesbench-api-schema': API_SCHEMA_VERSION,
-    ...corsHeaders(),
+    ...corsHeaders(req),
     ...extraHeaders,
   })) {
     res.setHeader(key, value);
@@ -37,23 +46,53 @@ function sendJson(res, status, body, extraHeaders = {}) {
   res.end(JSON.stringify(body));
 }
 
-function corsHeaders() {
+/**
+ * Build CORS headers. Origin-aware: returns the request's Origin header value
+ * only if it appears in the allowlist; falls back to allowed[0] when no Origin
+ * is present.  Emits Vary: Origin so intermediaries don't cache the same response
+ * for different origins.  Never emits a wildcard.
+ */
+function corsHeaders(req) {
   const allowed = (process.env.HERMESBENCH_CORS_ORIGINS || 'https://hermesbench.site,http://localhost:4173,http://localhost:4177')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
+  const defaultOrigin = allowed[0] || 'https://hermesbench.site';
+  const reqOrigin = req?.headers?.origin || req?.headers?.Origin || null;
+  const matchedOrigin = reqOrigin && allowed.includes(reqOrigin) ? reqOrigin : null;
   return {
-    'access-control-allow-origin': allowed[0] || 'https://hermesbench.site',
+    'access-control-allow-origin': matchedOrigin || defaultOrigin,
+    'vary': 'Origin',
     'access-control-allow-methods': 'GET,POST,OPTIONS',
     'access-control-allow-headers': 'content-type,x-hermesbench-submission-token,authorization',
   };
 }
 
 async function readBody(req) {
-  if (req.body && typeof req.body === 'object') return req.body;
-  if (typeof req.body === 'string') return JSON.parse(req.body || '{}');
+  if (req.body && typeof req.body === 'object') {
+    const bodyBytes = Buffer.byteLength(JSON.stringify(req.body), 'utf8');
+    if (bodyBytes > MAX_BODY_BYTES) {
+      throw new ApiError(413, `request body exceeds ${MAX_BODY_BYTES} byte limit`);
+    }
+    return req.body;
+  }
+  if (typeof req.body === 'string') {
+    const bodyBytes = Buffer.byteLength(req.body, 'utf8');
+    if (bodyBytes > MAX_BODY_BYTES) {
+      throw new ApiError(413, `request body exceeds ${MAX_BODY_BYTES} byte limit`);
+    }
+    return JSON.parse(req.body || '{}');
+  }
   const chunks = [];
-  for await (const chunk of req) chunks.push(Buffer.from(chunk));
+  let totalBytes = 0;
+  for await (const chunk of req) {
+    const buf = Buffer.from(chunk);
+    totalBytes += buf.length;
+    if (totalBytes > MAX_BODY_BYTES) {
+      throw new ApiError(413, `request body exceeds ${MAX_BODY_BYTES} byte limit`);
+    }
+    chunks.push(buf);
+  }
   const raw = Buffer.concat(chunks).toString('utf8');
   return raw ? JSON.parse(raw) : {};
 }
@@ -92,6 +131,30 @@ function timingSafeEqual(a, b) {
 function validateSubmission(payload, req = null) {
   const result = resultFromPayload(payload);
   validateResultShape(result);
+
+  // Reject official-flagged submissions — only maintainers use the offline archive-official flow.
+  if (
+    (typeof payload.classification === 'string' && payload.classification.toLowerCase() === 'official') ||
+    (result.metadata && result.metadata.official === true)
+  ) {
+    throw new ApiError(400, 'official flag is maintainer-reserved');
+  }
+
+  // Enforce reasonable bounds on payload fields.
+  if (Array.isArray(result.results) && result.results.length > MAX_TASKS) {
+    throw new ApiError(413, `task count ${result.results.length} exceeds maximum ${MAX_TASKS}`);
+  }
+  if (result.metadata && typeof result.metadata === 'object') {
+    const metaKeys = Object.keys(result.metadata);
+    if (metaKeys.length > MAX_METADATA_KEYS) {
+      throw new ApiError(413, `metadata key count ${metaKeys.length} exceeds maximum ${MAX_METADATA_KEYS}`);
+    }
+  }
+  const serializedBytes = Buffer.byteLength(JSON.stringify(result), 'utf8');
+  if (serializedBytes > MAX_RESULT_FIELDS_BYTES) {
+    throw new ApiError(413, `result payload ${serializedBytes} bytes exceeds ${MAX_RESULT_FIELDS_BYTES} byte limit`);
+  }
+
   const expectedToken = process.env.HERMESBENCH_SUBMISSION_TOKEN;
   if (!expectedToken && process.env.VERCEL_ENV === 'production') {
     throw new ApiError(503, 'submission token is not configured');
@@ -103,15 +166,49 @@ function validateSubmission(payload, req = null) {
   return result;
 }
 
+// Fields allowed in sanitized public-safe result payloads (metadata + task-level).
+// Only fields listed here are retained — everything else is stripped.
+const PUBLIC_METADATA_KEYS = new Set([
+  'sanitized', 'official', 'reasoning_effort', 'agent_version', 'runner',
+  'environment', 'ci_run', 'provider', 'model', 'suite',
+]);
+const PUBLIC_TASK_KEYS = new Set([
+  'task_id', 'category', 'status', 'score', 'passed',
+  'wall_time_seconds', 'tool_calls', 'token_usage',
+  'checks', 'timeout', 'false_done', 'plumbing_audit', 'source',
+]);
+
 function sanitizeResult(result) {
   const clean = JSON.parse(JSON.stringify(result));
   delete clean.submission_token;
-  for (const task of clean.results || []) {
-    for (const key of Object.keys(task)) {
-      if (SENSITIVE_LOG_KEYS.has(key.toLowerCase())) delete task[key];
-    }
+
+  // Strip any sensitive log/transcript keys from the top level.
+  for (const key of Object.keys(clean)) {
+    if (SENSITIVE_LOG_KEYS.has(key.toLowerCase())) delete clean[key];
   }
-  clean.metadata = { ...(clean.metadata || {}), sanitized: true };
+
+  // Explicit allowlist for metadata (public-safe fields only).
+  if (clean.metadata && typeof clean.metadata === 'object') {
+    const safeMeta = {};
+    for (const key of Object.keys(clean.metadata)) {
+      if (PUBLIC_METADATA_KEYS.has(key)) safeMeta[key] = clean.metadata[key];
+    }
+    safeMeta.sanitized = true;
+    clean.metadata = safeMeta;
+  } else {
+    clean.metadata = { sanitized: true };
+  }
+
+  // Explicit allowlist for each task-level result entry.
+  if (Array.isArray(clean.results)) {
+    clean.results = clean.results.map((task) => {
+      const safe = {};
+      for (const key of PUBLIC_TASK_KEYS) {
+        if (Object.prototype.hasOwnProperty.call(task, key)) safe[key] = task[key];
+      }
+      return safe;
+    });
+  }
   return clean;
 }
 
@@ -119,7 +216,7 @@ function scorePayload(payload) {
   const rows = payload.results || [];
   const n = rows.length || 1;
   const overall = rows.reduce((sum, row) => sum + Number(row.score || 0), 0) / n;
-  return {
+  const entry = {
     run_id: payload.run_id,
     agent: payload.agent,
     provider: payload.provider || null,
@@ -131,6 +228,11 @@ function scorePayload(payload) {
     official: Boolean(payload.metadata?.official),
     submitted_at: payload.submitted_at || payload.completed_at || null,
   };
+  // Explicit public field allowlist — strip anything not in PUBLIC_SCORE_FIELDS.
+  for (const key of Object.keys(entry)) {
+    if (!PUBLIC_SCORE_FIELDS.has(key)) delete entry[key];
+  }
+  return entry;
 }
 
 function blobEnabled() {
@@ -179,21 +281,26 @@ async function writeLocalRateBuckets(buckets) {
   await fs.writeFile(LOCAL_RATE_LIMIT_STORE_PATH, JSON.stringify(buckets));
 }
 
-async function readBlobRateBucket(pathname) {
-  if (!blobEnabled() || !blobClient?.get) return null;
-  const found = await blobClient.get(pathname, { access: 'public' });
-  if (!found?.stream) return null;
-  return JSON.parse(await new Response(found.stream).text());
-}
-
-async function writeBlobRateBucket(pathname, bucket) {
-  await blobClient.put(pathname, JSON.stringify(bucket), {
-    access: 'public',
-    addRandomSuffix: false,
-    allowOverwrite: true,
-    contentType: 'application/json',
-  });
-}
+/**
+ * Rate-limit bucket stored in Vercel Blob.
+ *
+ * Concurrency model: optimistic concurrency via ETag (ifMatch).
+ * This is the safest mechanism Vercel Blob offers — it is NOT a distributed lock.
+ * Under extreme concurrent contention (e.g. multiple rapid-fire requests from the
+ * same IP within the same window), two reads may observe the same ETag, both
+ * attempt conditional puts, and one succeeds while the other retries. The retry
+ * loop (max 3 attempts) makes the race window vanishingly small but does NOT
+ * guarantee strict linearizability across Vercel's global edge.
+ *
+ * If the Blob precondition check fails on every retry, the request is FAIL-CLOSED
+ * (thrown as a 429) rather than silently allowing the request through. In
+ * practice this is a safe conservative stance — the rate-limit check is
+ * preferentially strict.
+ *
+ * The local-filesystem path (used outside Vercel) is single-process and
+ * effectively atomic by nature of Node.js event loop serialization.
+ */
+const BLOB_RATE_LIMIT_RETRIES = 3;
 
 async function enforceRateLimit(req) {
   const { max, windowSeconds } = rateLimitConfig();
@@ -205,18 +312,85 @@ async function enforceRateLimit(req) {
   const key = rateLimitKey(req, windowStart);
   const retryAfter = Math.max(1, resetAt - Math.ceil(now / 1000));
 
-  if (blobEnabled() && blobClient?.get) {
+  // --- Blob (Vercel) path: optimistic concurrency via ETag ---
+  if (blobEnabled() && blobClient?.head && blobClient?.put) {
     const pathname = `${RATE_LIMIT_PREFIX}${key}.json`;
-    const bucket = (await readBlobRateBucket(pathname)) || { count: 0, reset_at: resetAt };
-    bucket.count += 1;
-    bucket.reset_at = resetAt;
-    if (bucket.count > max) {
-      throw new ApiError(429, 'rate limit exceeded', { 'retry-after': String(retryAfter) });
+
+    for (let attempt = 0; attempt < BLOB_RATE_LIMIT_RETRIES; attempt++) {
+      // Read current blob state and its ETag.
+      // head() is safe for non-existent blobs (returns null).
+      let current;
+      try {
+        current = await blobClient.head(pathname);
+      } catch (_) {
+        current = null;
+      }
+
+      let bucket;
+      let etag = null;
+
+      if (current) {
+        etag = current.etag || null;
+        // Fetch the actual content to get the count
+        const found = await blobClient.get(pathname, { access: 'public' });
+        if (found?.stream) {
+          bucket = JSON.parse(await new Response(found.stream).text());
+        } else {
+          bucket = null;
+        }
+      }
+
+      if (!bucket || !etag) {
+        // First write — no existing blob. IfMatch cannot be used on first write.
+        bucket = { count: 0, reset_at: resetAt };
+      }
+
+      bucket.count += 1;
+      bucket.reset_at = resetAt;
+
+      if (bucket.count > max) {
+        throw new ApiError(429, 'rate limit exceeded', { 'retry-after': String(retryAfter) });
+      }
+
+      try {
+        const putOpts = {
+          access: 'public',
+          addRandomSuffix: false,
+          allowOverwrite: false,
+          contentType: 'application/json',
+        };
+        if (etag) {
+          putOpts.ifMatch = etag;
+        }
+        await blobClient.put(pathname, JSON.stringify(bucket), putOpts);
+        return; // Success — written atomically.
+      } catch (err) {
+        // BlobPreconditionFailedError means another request wrote first.
+        // Retry the full read-increment-write cycle.
+        //
+        // Detection strategy (defensive across API versions and runtimes):
+        //   1. constructor.name check (works even when instanceof fails due
+        //      to cross-realm / VM-context boundaries or monkey-patched exports)
+        //   2. instanceof guard — only safe when blobClient.BlobPreconditionFailedError
+        //      is a function (avoids TypeError on `instanceof undefined`)
+        //   3. message-text fallback as a last resort
+        const isPreconditionFailure =
+          err?.constructor?.name === 'BlobPreconditionFailedError' ||
+          (typeof blobClient?.BlobPreconditionFailedError === 'function' &&
+            err instanceof blobClient.BlobPreconditionFailedError) ||
+          (typeof err?.message === 'string' && err.message.includes('Precondition failed'));
+        if (isPreconditionFailure && attempt < BLOB_RATE_LIMIT_RETRIES - 1) {
+          continue;
+        }
+        // Any other error, or retries exhausted: fail-closed.
+        throw new ApiError(429, 'rate limit conflict — try again', { 'retry-after': String(retryAfter) });
+      }
     }
-    await writeBlobRateBucket(pathname, bucket);
-    return;
+    // If we exhaust retries without success or return, fail closed.
+    throw new ApiError(429, 'rate limit conflict — try again', { 'retry-after': String(retryAfter) });
   }
 
+  // --- Local filesystem path (single-process, effectively atomic) ---
   const buckets = await readLocalRateBuckets();
   const freshBuckets = Object.fromEntries(Object.entries(buckets).filter(([, bucket]) => Number(bucket.reset_at || 0) > Math.ceil(now / 1000)));
   const bucket = freshBuckets[key] || { count: 0, reset_at: resetAt };
