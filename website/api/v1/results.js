@@ -16,7 +16,11 @@ module.exports = async function handler(req, res) {
     const result = sanitizeResult(validateSubmission(payload, req));
     await enforceRateLimit(req);
     const persisted = await persistSubmission(result);
-    return sendJson(res, 202, { run_id: result.run_id, accepted: true, persisted }, {}, req);
+    const responseBody = { run_id: result.run_id, accepted: true, persisted };
+    if (persisted.duplicate) {
+      responseBody.duplicate = true;
+    }
+    return sendJson(res, 202, responseBody, {}, req);
   } catch (error) {
     return sendJson(res, error.status || 400, { error: error.message || 'invalid submission' }, error.headers || {}, req);
   }

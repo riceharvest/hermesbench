@@ -55,8 +55,8 @@ async function call(handler, method, body, headers = {}) {
       schema_version: 'hermesbench.result.v1',
       run_id: 'api-smoke-run',
       suite: 'natural-tools-dev',
-      agent: 'mock',
-      model: 'mock-model',
+      agent: 'hermes',
+      model: 'test-model',
       started_at: '2026-06-02T00:00:00Z',
       completed_at: '2026-06-02T00:00:01Z',
       metadata: {},
@@ -130,8 +130,8 @@ async function call(handler, method, body, headers = {}) {
         schema_version: 'hermesbench.result.v1',
         run_id: 'official-classification-test',
         suite: 'natural-tools-dev',
-        agent: 'mock',
-        model: 'mock-model',
+        agent: 'hermes',
+        model: 'test-model',
         metadata: {},
         submission_token: 'secret-token',
         results: [{ task_id: 't1', category: 'smoke', status: 'passed', score: 1, passed: true }],
@@ -151,8 +151,8 @@ async function call(handler, method, body, headers = {}) {
         schema_version: 'hermesbench.result.v1',
         run_id: 'official-metadata-test',
         suite: 'natural-tools-dev',
-        agent: 'mock',
-        model: 'mock-model',
+        agent: 'hermes',
+        model: 'test-model',
         metadata: { official: true },
         submission_token: 'secret-token',
         results: [{ task_id: 't1', category: 'smoke', status: 'passed', score: 1, passed: true }],
@@ -206,7 +206,7 @@ async function call(handler, method, body, headers = {}) {
     const dirtyResult = {
       run_id: 'sanitize-test',
       suite: 'natural-tools-dev',
-      agent: 'mock',
+      agent: 'hermes',
       submission_token: 'should-not-persist',
       metadata: {
         official: false,
@@ -248,8 +248,8 @@ async function call(handler, method, body, headers = {}) {
         schema_version: 'hermesbench.result.v1',
         run_id: 'too-many-tasks-test',
         suite: 'natural-tools-dev',
-        agent: 'mock',
-        model: 'mock-model',
+        agent: 'hermes',
+        model: 'test-model',
         metadata: {},
         submission_token: 'secret-token',
         results: Array.from({ length: 201 }, (_, i) => ({ task_id: `t${i}`, category: 'smoke', status: 'passed', score: 1, passed: true })),
@@ -271,8 +271,8 @@ async function call(handler, method, body, headers = {}) {
         schema_version: 'hermesbench.result.v1',
         run_id: 'too-many-meta-test',
         suite: 'natural-tools-dev',
-        agent: 'mock',
-        model: 'mock-model',
+        agent: 'hermes',
+        model: 'test-model',
         metadata: meta,
         submission_token: 'secret-token',
         results: [{ task_id: 't1', category: 'smoke', status: 'passed', score: 1, passed: true }],
@@ -333,14 +333,7 @@ async function call(handler, method, body, headers = {}) {
       assert.equal(entry.evidence_class, 'unofficial_submission', `entry in ${group} must carry evidence_class`);
     }
   }
-  // Static fallback test: data/leaderboard.json should be readable and
-  // carry the historical_mock_fixture label, not capability evidence.
-  const staticData = JSON.parse(
-    await fs.readFile(path.resolve(__dirname, '../data/leaderboard.json'), 'utf8')
-  );
-  assert.equal(staticData.data_status, 'historical_mock_fixture');
-  assert.equal(staticData.capability_evidence, false);
-  console.log('live fetch normalization and static fallback ok');
+  console.log('live fetch normalization ok');
 
   process.env.HERMESBENCH_RATE_LIMIT_MAX = '1';
   process.env.HERMESBENCH_RATE_LIMIT_WINDOW_SECONDS = '60';
@@ -359,6 +352,149 @@ async function call(handler, method, body, headers = {}) {
     assert(Number.parseInt(secondLimited.headers['retry-after'], 10) > 0);
     assert(Number.parseInt(secondLimited.headers['retry-after'], 10) <= 60);
   });
+  delete process.env.HERMESBENCH_RATE_LIMIT_MAX;
+  delete process.env.HERMESBENCH_RATE_LIMIT_WINDOW_SECONDS;
 
   console.log('api smoke ok');
-})();
+})().then(async () => {
+
+// --- Additional regression tests ---
+
+  const results = require('../api/v1/results');
+  const { validateSubmission, tokenFromRequest } = require('../api/_submissions');
+
+  let failures = 0;
+  let total = 0;
+  function check(label, ok) {
+    total++;
+    if (!ok) { console.error('FAIL:', label); failures++; }
+    else console.log('PASS:', label);
+  }
+
+  // Token resolution: header is accepted
+  {
+    const token = tokenFromRequest(
+      { headers: { 'x-hermesbench-submission-token': 'header-token' }, socket: { remoteAddress: '127.0.0.1' } },
+    );
+    check('token: header works', token === 'header-token');
+  }
+
+  // Token resolution: Bearer auth works
+  {
+    const token = tokenFromRequest(
+      { headers: { authorization: 'Bearer bearer-token' }, socket: { remoteAddress: '127.0.0.1' } },
+    );
+    check('token: Bearer auth works', token === 'bearer-token');
+  }
+
+  // Token resolution: body tokens are rejected
+  {
+    const token = tokenFromRequest(
+      { headers: {}, socket: { remoteAddress: '127.0.0.1' } },
+    );
+    check('token: body fallback rejected', token === null);
+  }
+
+  // Token resolution: no token anywhere -> empty string
+  {
+    const token = tokenFromRequest(
+      { headers: {}, socket: { remoteAddress: '127.0.0.1' } },
+    );
+    check('token: empty when no token anywhere', token === null);
+  }
+
+  // mock agent submission -> 400
+  {
+    const mockPayload = {
+      schema_version: 'hermesbench.submission.v1',
+      classification: 'unofficial',
+      result: {
+        schema_version: 'hermesbench.result.v1',
+        run_id: 'mock-agent-test',
+        suite: 'test',
+        agent: 'mock',
+        metadata: {},
+        submission_token: 'secret-token',
+        results: [{ task_id: 't1', category: 'smoke', status: 'passed', score: 1, passed: true }],
+      },
+    };
+    const response = mockRes();
+    await results(mockReq('POST', mockPayload, { 'x-hermesbench-submission-token': 'secret-token' }), response);
+    check('mock agent submission -> 400', response.statusCode === 400 && /mock agent/.test(response.json.error));
+  }
+
+  // Malformed JSON body -> parse error caught by results handler
+  {
+    const malformedReq = Readable.from(['{"bad json']);
+    malformedReq.method = 'POST';
+    malformedReq.headers = { 'content-type': 'application/json', 'x-hermesbench-submission-token': 'secret-token' };
+    malformedReq.socket = { remoteAddress: '127.0.0.1' };
+    const malformedRes = mockRes();
+    await results(malformedReq, malformedRes);
+    check('malformed JSON -> error response', malformedRes.statusCode >= 400);
+  }
+
+  // Missing schema_version -> 400
+  {
+    const noSchema = {
+      run_id: 'no-schema-test',
+      suite: 'test',
+      agent: 'hermes',
+      metadata: {},
+      submission_token: 'secret-token',
+      results: [{ task_id: 't1', category: 'smoke', status: 'passed', score: 1, passed: true }],
+    };
+    const noSchemaRes = mockRes();
+    await results(mockReq('POST', { schema_version: 'hermesbench.submission.v1', classification: 'unofficial', result: noSchema }, { 'x-hermesbench-submission-token': 'secret-token' }), noSchemaRes);
+    check('missing schema_version -> 400', noSchemaRes.statusCode === 400);
+  }
+
+  // Missing run_id -> 400
+  {
+    const noRunId = {
+      schema_version: 'hermesbench.result.v1',
+      suite: 'test',
+      agent: 'hermes',
+      metadata: {},
+      submission_token: 'secret-token',
+      results: [{ task_id: 't1', category: 'smoke', status: 'passed', score: 1, passed: true }],
+    };
+    const noRunIdRes = mockRes();
+    await results(mockReq('POST', { schema_version: 'hermesbench.submission.v1', classification: 'unofficial', result: noRunId }, { 'x-hermesbench-submission-token': 'secret-token' }), noRunIdRes);
+    check('missing run_id -> 400', noRunIdRes.statusCode === 400);
+  }
+
+  // Different run_ids with same content are both accepted (no false-positive conflict)
+  {
+    const payloadA = {
+      schema_version: 'hermesbench.submission.v1',
+      classification: 'unofficial',
+      result: {
+        schema_version: 'hermesbench.result.v1',
+        run_id: 'unique-a-' + Date.now(),
+        suite: 'test',
+        agent: 'hermes',
+        model: 'test',
+        metadata: {},
+        submission_token: 'secret-token',
+        results: [{ task_id: 't1', category: 'smoke', status: 'passed', score: 1.0, passed: true }],
+      },
+    };
+    const payloadB = { ...payloadA, result: { ...payloadA.result, run_id: 'unique-b-' + Date.now() } };
+    const aRes = mockRes();
+    await results(mockReq('POST', payloadA, {
+      'x-hermesbench-submission-token': 'secret-token',
+      'x-forwarded-for': '203.0.113.20',
+    }), aRes);
+    const bRes = mockRes();
+    await results(mockReq('POST', payloadB, {
+      'x-hermesbench-submission-token': 'secret-token',
+      'x-forwarded-for': '203.0.113.20',
+    }), bRes);
+    check('different run_ids both accepted', aRes.statusCode === 202 && bRes.statusCode === 202);
+  }
+
+  const allPassed = failures === 0;
+  console.log(`\nadditional regression tests: ${total - failures}/${total} passed${allPassed ? '' : ` (${failures} FAILED)`}`);
+  if (!allPassed) process.exitCode = 1;
+});

@@ -8,6 +8,7 @@ const RATE_LIMIT_PREFIX = 'ratelimits/';
 const LOCAL_STORE_PATH = process.env.HERMESBENCH_STORE_PATH || path.join(process.cwd(), '.tmp', 'submissions.jsonl');
 const LOCAL_RATE_LIMIT_STORE_PATH = process.env.HERMESBENCH_RATE_LIMIT_STORE_PATH || path.join(process.cwd(), '.tmp', 'rate-limits.json');
 const SENSITIVE_LOG_KEYS = new Set(['logs', 'messages', 'transcript', 'stdout', 'stderr']);
+const SUBMISSION_BLOB_ACCESS = process.env.HERMESBENCH_SUBMISSION_BLOB_ACCESS || 'public'; // 'public' or 'private'
 
 // --- Security-hardening constants (all configurable via env) ---
 const MAX_BODY_BYTES = Number.parseInt(process.env.HERMESBENCH_MAX_BODY_BYTES || (1024 * 1024).toString(), 10); // 1 MiB default
@@ -114,12 +115,12 @@ function validateResultShape(result) {
   if (!Array.isArray(result.results)) throw new Error('missing result field: results');
 }
 
-function tokenFromRequest(req, payload, result) {
+function tokenFromRequest(req) {
   const headerToken = req?.headers?.['x-hermesbench-submission-token'];
-  const auth = req?.headers?.authorization || req?.headers?.Authorization;
   if (typeof headerToken === 'string' && headerToken) return headerToken;
+  const auth = req?.headers?.authorization || req?.headers?.Authorization;
   if (typeof auth === 'string' && auth.toLowerCase().startsWith('bearer ')) return auth.slice(7).trim();
-  return payload?.submission_token || result?.submission_token;
+  return null;
 }
 
 function timingSafeEqual(a, b) {
@@ -138,6 +139,11 @@ function validateSubmission(payload, req = null) {
     (result.metadata && result.metadata.official === true)
   ) {
     throw new ApiError(400, 'official flag is maintainer-reserved');
+  }
+
+  // Reject mock agent submissions.
+  if (result.agent === 'mock') {
+    throw new ApiError(400, 'mock agent submissions are not accepted');
   }
 
   // Enforce reasonable bounds on payload fields.
@@ -159,7 +165,7 @@ function validateSubmission(payload, req = null) {
   if (!expectedToken && process.env.VERCEL_ENV === 'production') {
     throw new ApiError(503, 'submission token is not configured');
   }
-  const token = tokenFromRequest(req, payload, result);
+  const token = tokenFromRequest(req);
   if (expectedToken && !timingSafeEqual(token, expectedToken)) {
     throw new ApiError(401, 'missing or invalid submission token');
   }
@@ -181,6 +187,7 @@ const PUBLIC_TASK_KEYS = new Set([
 function sanitizeResult(result) {
   const clean = JSON.parse(JSON.stringify(result));
   delete clean.submission_token;
+  delete clean.run_id_hash;
 
   // Strip any sensitive log/transcript keys from the top level.
   for (const key of Object.keys(clean)) {
@@ -236,7 +243,28 @@ function scorePayload(payload) {
 }
 
 function blobEnabled() {
-  return Boolean(process.env.BLOB_READ_WRITE_TOKEN && blobClient?.put && blobClient?.list);
+  return Boolean(
+    process.env.BLOB_READ_WRITE_TOKEN &&
+    blobClient?.put &&
+    blobClient?.head &&
+    blobClient?.get &&
+    blobClient?.list
+  );
+}
+
+/**
+ * Compute a content-hash-based filename for a submission blob.
+ *
+ * The path is deterministic given the same run_id + token, but only the
+ * submitter who knows the token can predict it, making the path de facto
+ * unguessable to an external observer.  This prevents enumeration and
+ * ensures identical re-submissions hit the same path (idempotent merge).
+ */
+function submissionBlobPath(result) {
+  const safeRun = String(result.run_id).replace(/[^a-zA-Z0-9_.-]+/g, '-').slice(0, 96) || 'unknown';
+  const token = process.env.HERMESBENCH_SUBMISSION_TOKEN || '';
+  const hash = crypto.createHash('sha256').update(safeRun + ':' + token).digest('hex').slice(0, 16);
+  return `${SUBMISSION_PREFIX}${hash}-${safeRun}.json`;
 }
 
 function submissionPath(result, prefix = SUBMISSION_PREFIX) {
@@ -403,30 +431,163 @@ async function enforceRateLimit(req) {
   await writeLocalRateBuckets(freshBuckets);
 }
 
-async function persistToStore(result, { prefix, localPath, storeName }) {
-  if (blobEnabled()) {
-    const pathname = submissionPath(result, prefix);
-    await blobClient.put(pathname, JSON.stringify(result, null, 2), {
-      access: 'public',
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      contentType: 'application/json',
-    });
-    return { store: 'vercel-blob', path: pathname };
+/**
+ * Persist a submission to Vercel Blob with fail-closed, idempotent semantics.
+ *
+ * Blob path is derived from `submissionBlobPath()` — deterministic for the
+ * same run_id + token hash, but unguessable without the token.
+ *
+ * Duplicate handling (same run_id, same content):
+ *   `run_id_hash` is stored inside the blob. On re-submission with identical
+ *   content (same run_id, same result body), the read-then-write cycle will
+ *   see the existing blob and compare `run_id_hash` + complete body. If the
+ *   result is byte-for-byte identical, the submission is accepted (idempotent
+ *   202).  If different, the submission is rejected with a deterministic 409
+ *   conflict error.
+ *
+ * Production enforcement:
+ *   - When `process.env.VERCEL === '1'` and Blob is NOT enabled, throws 503.
+ *   - The local-filesystem path is retained for development/testing only and
+ *     MUST NOT be used in a Vercel deployment.
+ */
+async function persistSubmission(result) {
+  // In a Vercel runtime, fail closed if Blob is not configured.
+  if (process.env.VERCEL === '1' && !blobEnabled()) {
+    throw new ApiError(503, 'submission storage (Vercel Blob) is not configured');
   }
-  await fs.mkdir(path.dirname(localPath), { recursive: true });
-  await fs.appendFile(localPath, `${JSON.stringify(result)}\n`);
-  return { store: storeName, path: localPath };
+
+  if (blobEnabled()) {
+    const pathname = submissionBlobPath(result);
+    const runIdHash = crypto.createHash('sha256').update(String(result.run_id)).digest('hex');
+    // Keep the internal identity hash in storage so duplicate checks are
+    // deterministic; sanitizeResult removes it from every public response.
+    const storedResult = { ...result, run_id_hash: runIdHash };
+    const body = JSON.stringify(storedResult, null, 2);
+
+    // Check if a blob already exists at this path (ETag-based conditional).
+    let existing;
+    try {
+      existing = await blobClient.head(pathname);
+    } catch (_) {
+      existing = null;
+    }
+
+    if (existing) {
+      // Blob exists — determine whether this is an identical re-submit or a conflict.
+      let existingBody;
+      try {
+        const found = await blobClient.get(pathname, { access: SUBMISSION_BLOB_ACCESS });
+        if (found?.stream) {
+          existingBody = await new Response(found.stream).text();
+        }
+      } catch (_) {
+        // Fall through — treat read failure as an error, not a conflict.
+      }
+
+      if (existingBody !== undefined) {
+        // Compare by extracting the stored run_id_hash.
+        let existingResult;
+        try {
+          existingResult = JSON.parse(existingBody);
+        } catch (_) {
+          existingResult = null;
+        }
+        const existingRunIdHash = existingResult?.run_id_hash || '';
+        const isIdentical = existingRunIdHash === runIdHash && existingBody === body;
+
+        if (isIdentical) {
+          return { store: 'vercel-blob', path: pathname, conflict: false, duplicate: true };
+        }
+
+        // Conflicting content — reject with a deterministic response.
+        throw new ApiError(409, `duplicate run_id '${result.run_id}' with conflicting content — submission rejected`);
+      }
+
+      // Could not read existing body (unexpected).  Fail closed rather than
+      // silently overwriting or accepting without comparison.
+      throw new ApiError(503, 'cannot verify submission uniqueness — storage read failed');
+    }
+
+    // First write — use allowOverwrite: false for safety, but with the
+    // unguessable path this would only collide via the same submitter
+    // sending a genuinely different payload for the same run_id.
+    // Catch BlobPreconditionFailedError (race: concurrent request wrote first)
+    // and re-read to check idempotency instead of crashing.
+    try {
+      await blobClient.put(pathname, body, {
+        access: SUBMISSION_BLOB_ACCESS,
+        addRandomSuffix: false,
+        allowOverwrite: false,
+        contentType: 'application/json',
+      });
+    } catch (err) {
+      const isPreconditionFailure =
+        err?.constructor?.name === 'BlobPreconditionFailedError' ||
+        (typeof blobClient?.BlobPreconditionFailedError === 'function' &&
+          err instanceof blobClient.BlobPreconditionFailedError) ||
+        (typeof err?.message === 'string' && err.message.includes('Precondition failed'));
+      if (isPreconditionFailure) {
+        // Another request just wrote this blob.  Re-read to check identity.
+        let found;
+        try {
+          found = await blobClient.get(pathname, { access: SUBMISSION_BLOB_ACCESS });
+        } catch (_) {
+          found = null;
+        }
+        if (found?.stream) {
+          const existingBody = await new Response(found.stream).text();
+          const isIdentical = existingBody === body;
+          if (isIdentical) {
+            return { store: 'vercel-blob', path: pathname, conflict: false, duplicate: true };
+          }
+        }
+        // Conflicting or unreadable — reject, don't overwrite.
+        throw new ApiError(409, `duplicate run_id '${result.run_id}' with conflicting content — submission rejected`);
+      }
+      // Non-precondition error: rethrow as a 503 fail-closed.
+      throw new ApiError(503, `submission storage write failed: ${err.message}`);
+    }
+
+    return { store: 'vercel-blob', path: pathname, conflict: false };
+  }
+
+  // --- Local filesystem path (development/testing only) ---
+  await fs.mkdir(path.dirname(LOCAL_STORE_PATH), { recursive: true });
+  // For local store, check for existing run_id and handle duplicates.
+  let existingLines = [];
+  try {
+    const text = await fs.readFile(LOCAL_STORE_PATH, 'utf8');
+    existingLines = text.split('\n').filter(Boolean).map((line) => JSON.parse(line));
+  } catch (error) {
+    if (error.code !== 'ENOENT') throw error;
+    existingLines = [];
+  }
+
+  const runId = result.run_id;
+  const existingEntry = existingLines.find((e) => e.run_id === runId);
+  if (existingEntry) {
+    const existingStr = JSON.stringify(existingEntry);
+    const newStr = JSON.stringify(result);
+    if (existingStr === newStr) {
+      return { store: 'local-jsonl', path: LOCAL_STORE_PATH, conflict: false, duplicate: true };
+    }
+    throw new ApiError(409, `duplicate run_id '${runId}' with conflicting content — submission rejected`);
+  }
+
+  await fs.appendFile(LOCAL_STORE_PATH, `${JSON.stringify(result)}\n`);
+  return { store: 'local-jsonl', path: LOCAL_STORE_PATH, conflict: false };
 }
 
-async function readStore({ prefix, localPath }) {
+async function readSubmissions() {
   if (blobEnabled()) {
-    const listed = await blobClient.list({ prefix, limit: 1000 });
+    const listed = await blobClient.list({ prefix: SUBMISSION_PREFIX, limit: 1000 });
     const rows = [];
     for (const blob of listed.blobs || []) {
       try {
-        const response = await fetch(blob.url);
-        if (response.ok) rows.push(await response.json());
+        const found = await blobClient.get(blob.url, { access: SUBMISSION_BLOB_ACCESS });
+        if (found?.stream) {
+          rows.push(JSON.parse(await new Response(found.stream).text()));
+        }
       } catch (_) {
         // Ignore a single malformed/unreachable blob; do not break leaderboard reads.
       }
@@ -434,7 +595,7 @@ async function readStore({ prefix, localPath }) {
     return rows;
   }
   try {
-    const text = await fs.readFile(localPath, 'utf8');
+    const text = await fs.readFile(LOCAL_STORE_PATH, 'utf8');
     return text.split('\n').filter(Boolean).map((line) => JSON.parse(line));
   } catch (error) {
     if (error.code === 'ENOENT') return [];
@@ -442,27 +603,18 @@ async function readStore({ prefix, localPath }) {
   }
 }
 
-async function persistSubmission(result) {
-  return persistToStore(result, {
-    prefix: SUBMISSION_PREFIX,
-    localPath: LOCAL_STORE_PATH,
-    storeName: 'local-jsonl',
-  });
-}
-
-async function readSubmissions() {
-  return readStore({ prefix: SUBMISSION_PREFIX, localPath: LOCAL_STORE_PATH });
-}
-
 module.exports = {
   API_SCHEMA_VERSION,
   readBody,
   sendJson,
   validateSubmission,
+  tokenFromRequest,
   sanitizeResult,
   enforceRateLimit,
   persistSubmission,
   readSubmissions,
   scorePayload,
   blobEnabled,
+  submissionBlobPath,
+  submissionPath,
 };

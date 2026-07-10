@@ -81,15 +81,11 @@ const state = {
 };
 
 function isCapabilityData(leaderboard = state.leaderboard) {
-  return Boolean(leaderboard?.capability_evidence) && leaderboard?.data_status !== 'historical_mock_fixture';
+  return Boolean(leaderboard?.capability_evidence) && leaderboard?.data_status !== 'no_data';
 }
 
 function isCapabilityRun(run) {
   return Boolean(run?.capability_evidence) && run?.evidence_class === 'official_evidence';
-}
-
-function historicalNotice(leaderboard = state.leaderboard) {
-  return leaderboard?.display_notice || 'Historical mock fixture: plumbing-only data, not model-capability evidence.';
 }
 
 function sourceRows(leaderboard = state.leaderboard) {
@@ -159,10 +155,9 @@ function providerLine(row) {
 }
 
 function statusLabel(row) {
-  if (row.evidence_class === 'historical_mock') return 'historical mock fixture';
-  if (!row.capability_evidence && row.data_status === 'live_api') return 'sample';
-  if (!row.capability_evidence) return 'historical mock fixture';
-  return row.official || row.classification === 'official' ? 'official' : 'sample';
+  if (!row.capability_evidence && row.data_status === 'live_api') return 'unreviewed submission';
+  if (!row.capability_evidence) return 'unreviewed submission';
+  return row.official || row.classification === 'official' ? 'official' : 'unreviewed submission';
 }
 
 function passedOf(row) {
@@ -273,14 +268,27 @@ function homePage() {
   const all = dedupe(sourceRows());
   const best = bestRow();
   const capability = isCapabilityData();
-  const summary = capability
-    ? `<section class="stat-wall" aria-label="Benchmark summary">
-        <div class="stat"><b>${fmt.num(taskStats.total)}</b><span>natural tool-use capability probes</span></div>
-        <div class="stat"><b>${fmt.num(all.length)}</b><span>public sample runs currently visible in this static site</span></div>
-        <div class="stat"><b>${fmt.pct(reliabilityOf(best))}</b><span>reliability after false-done and timeout pressure</span></div>
-        <div class="stat"><b>${fmt.compact(tokenCountOf(best))}</b><span>tokens spent by the top visible public sample</span></div>
-      </section>`
-    : `<section class="wide-callout"><h2>Historical mock fixture</h2><p>${escapeHtml(historicalNotice())}</p><p>Competitive ranking, podiums, reliability, and current-top performance claims are disabled for this data.</p></section>`;
+  if (!capability || !all.length) {
+    return `<section class="hero">
+      <div>
+        <span class="crumb">proof, not posture</span>
+        <h1>Did the agent actually do the work?</h1>
+        <p class="lede">No reviewed results are published yet. Only official archived runs appear here. Submit a run via the command builder to contribute.</p>
+        <div class="hero-actions"><a class="btn primary" href="#/leaderboard">Compare runs</a><a class="btn secondary" href="#/submit">Run it yourself</a></div>
+      </div>
+    </section>
+    <section class="wide-callout"><h2>No results yet</h2><p>${escapeHtml(state.leaderboard?.display_notice || 'Official runs must be reviewed and archived under official-runs/. Live API submissions are unreviewed and not capability evidence.')}</p></section>
+    <section class="split-section">
+      <div class="section-title"><h2>The benchmark is a receipt checker.</h2><p>Normal leaderboards reward answers. HermesBench rewards completed work with a trail you can inspect.</p></div>
+      <div class="evidence-list">
+        ${evidenceRow('01', 'Execution first', 'Tasks require reading files, changing files, running commands, inspecting output, and leaving artifacts.')}
+        ${evidenceRow('02', 'False-done pressure', 'A confident final answer is not enough. If evidence is missing, the task can fail even when the prose sounds good.')}
+        ${evidenceRow('03', 'Run-level audits', 'Every public run can expose task status, checks, tokens, tool calls, timing, and model settings like reasoning effort.')}
+        ${evidenceRow('04', 'Token-protected submissions', 'Every submission uses the configured token. No separate community lane — one endpoint for all results.')}
+      </div>
+    </section>
+    <section class="wide-callout"><h2>One screen, one question.</h2><p>The redesign splits the site into focused surfaces: overview, comparison, task catalog, scoring, run instructions, and per-run evidence. No mega-table as the default read.</p><a class="text-pill" href="#/tasks">Inspect task packs</a></section>`;
+  }
   return `<section class="hero">
     <div>
       <span class="crumb">proof, not posture</span>
@@ -288,9 +296,14 @@ function homePage() {
       <p class="lede">${escapeHtml(state.leaderboard?.display_notice || 'HermesBench records tool-use evidence with scope and provenance.')}</p>
       <div class="hero-actions"><a class="btn primary" href="#/leaderboard">Compare runs</a><a class="btn secondary" href="#/methodology">Read scoring</a></div>
     </div>
-    ${capability ? heroReceipt(best) : ''}
+    ${heroReceipt(best)}
   </section>
-  ${summary}
+  <section class="stat-wall" aria-label="Benchmark summary">
+    <div class="stat"><b>${fmt.num(taskStats.total)}</b><span>natural tool-use capability probes</span></div>
+    <div class="stat"><b>${fmt.num(all.length)}</b><span>public runs currently visible</span></div>
+    <div class="stat"><b>${fmt.pct(reliabilityOf(best))}</b><span>reliability after false-done and timeout pressure</span></div>
+    <div class="stat"><b>${fmt.compact(tokenCountOf(best))}</b><span>tokens spent by the top visible run</span></div>
+  </section>
   <section class="split-section">
     <div class="section-title"><h2>The benchmark is a receipt checker.</h2><p>Normal leaderboards reward answers. HermesBench rewards completed work with a trail you can inspect.</p></div>
     <div class="evidence-list">
@@ -348,12 +361,6 @@ function podium(rows) {
 
 function runCard(row, index) {
   const runId = runIdOf(row);
-  if (!isCapabilityRun(row) && row.data_status !== 'live_api') {
-    return `<article class="run-card historical-fixture">
-      <div class="run-title"><h2>${escapeHtml(modelTitle(row))}</h2><p>${tag('historical mock fixture', true)} Plumbing-only record / <span class="mono">${escapeHtml(runId || 'n/a')}</span></p><p class="muted">${escapeHtml(historicalNotice())}</p></div>
-      <div class="hero-actions" style="grid-column: 1 / -1; margin-top: 0"><a class="text-pill" href="#/runs/${encodeURIComponent(runId)}">Inspect fixture record</a></div>
-    </article>`;
-  }
   return `<article class="run-card">
     <div class="rank-number">${String(index + 1).padStart(2, '0')}</div>
     <div class="run-title"><h2>${escapeHtml(modelTitle(row))}</h2><p>${escapeHtml(statusLabel(row))} / ${escapeHtml(providerLine(row))} / <span class="mono">${escapeHtml(runId || 'n/a')}</span></p></div>
@@ -369,13 +376,14 @@ function runCard(row, index) {
 function leaderboardPage() {
   const rows = currentRows();
   const capability = isCapabilityData();
-  const head = capability
-    ? pageHead('leaderboard', 'Who finished the most real work?', 'Sort by score, reliability, speed, token efficiency, or value. Public samples are useful evidence, not final official rankings.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)
-    : pageHead('fixture records', 'Historical mock fixtures', historicalNotice(), `<aside class="panel">${metricRow('fixture records', fmt.num(rows.length))}${metricRow('competitive mode', 'disabled')}</aside>`);
-  return `${head}
-  ${capability ? controls(state.leaderboard) : ''}
-  ${rows.length ? `${podium(rows)}<section class="run-list" id="leaderboard-results" aria-live="polite">${rows.map(runCard).join('')}</section>` : emptyState('No matching runs', 'Try a broader model name or clear the task-set filter.', '<button class="btn secondary" type="button" data-reset>Clear filters</button>')}
-  ${capability ? fold('How should I read this?', '<p>Start with tasks passed and false-done count. Speed and token use matter after the run proves it actually completed the task.</p>') : fold('Why is competitive mode disabled?', '<p>These records were produced by mock plumbing. They preserve auditability, but they are not model runs and cannot support ranks, reliability, best-run, or current-top claims.</p>', true)}`;
+  if (!rows.length) {
+    return `${pageHead('leaderboard', 'Who finished the most real work?', 'No reviewed results are published yet. Submit a run and have it reviewed to appear here.', `<aside class="panel">${metricRow('visible runs', '0')}${metricRow('status', 'no results')}</aside>`)}
+    ${emptyState('No reviewed results yet', 'Official runs must be archived under official-runs/. Community submissions are unreviewed until promoted.', '<a class="btn primary" href="#/submit">Run the benchmark</a>')}`;
+  }
+  return `${pageHead('leaderboard', 'Who finished the most real work?', 'Sort by score, reliability, speed, token efficiency, or value. Only official archived runs appear here.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)}
+  ${controls(state.leaderboard)}
+  ${podium(rows)}<section class="run-list" id="leaderboard-results" aria-live="polite">${rows.map(runCard).join('')}</section>
+  ${fold('How should I read this?', '<p>Start with tasks passed and false-done count. Speed and token use matter after the run proves it actually completed the task.</p>')}`;
 }
 
 function tasksPage() {
@@ -491,7 +499,7 @@ function commandBuilder() {
       <h2>Pick the run settings.</h2>
       <p class="muted">Core CLI is the default. Integrations require configured services, credentials, or local tooling; unavailable integration tasks are environment skips, not model failures.</p>
       <div class="builder-grid">
-        <label class="control"><span>Runner</span><select id="cmd-agent">${optionList(['hermes', 'mock', 'shell'], c.agent)}</select></label>
+        <label class="control"><span>Runner</span><select id="cmd-agent">${optionList(['hermes', 'shell'], c.agent)}</select></label>
         <label class="control"><span>Provider</span><select id="cmd-provider">${optionList(providers, c.provider)}</select></label>
         <label class="control wide"><span>Model</span><input id="cmd-model" list="cmd-models" value="${escapeHtml(c.model)}" autocomplete="off"><datalist id="cmd-models">${modelChoices(c.provider).map((model) => `<option value="${escapeHtml(model)}"></option>`).join('')}</datalist></label>
         <label class="control"><span>Reasoning</span><select id="cmd-reasoning">${optionList(reasoningOptions, c.reasoning)}</select></label>
@@ -557,9 +565,9 @@ function taskEvidenceList(tasks, capability = true) {
   if (!tasks.length) return emptyState('No task evidence in this file', 'The summary loaded, but this public result does not include task-level checks.');
   return `<section class="task-list">${tasks.map((task) => {
     const [label, cls] = taskStatus(task);
-    return `<details><summary><span class="task-summary"><span class="status ${cls}">${escapeHtml(label)}</span><span>${escapeHtml(task.task_id || 'task')}</span>${capability ? `<span class="mono">${fmt.pct(task.score)}</span>` : '<span class="mono">plumbing-only</span>'}</span></summary><div class="fold-body">
+    return `<details><summary><span class="task-summary"><span class="status ${cls}">${escapeHtml(label)}</span><span>${escapeHtml(task.task_id || 'task')}</span>${capability ? `<span class="mono">${fmt.pct(task.score)}</span>` : '<span class="mono">unreviewed</span>'}</span></summary><div class="fold-body">
       <div class="mini-metrics">
-        ${capability ? `${miniMetric('time', fmt.seconds(task.wall_time_seconds))}${miniMetric('tool calls', fmt.num(task.tool_calls))}${miniMetric('tokens', fmt.compact(task.token_usage?.total_tokens))}` : '<p class="muted">Fixture plumbing only; score, timing, token, and tool-call metrics are suppressed.</p>'}
+        ${capability ? `${miniMetric('time', fmt.seconds(task.wall_time_seconds))}${miniMetric('tool calls', fmt.num(task.tool_calls))}${miniMetric('tokens', fmt.compact(task.token_usage?.total_tokens))}` : '<p class="muted">Unreviewed submission; score, timing, token, and tool-call metrics are not verified.</p>'}
       </div>
       ${task.category ? `<p style="margin-top:12px">Category: <span class="mono">${escapeHtml(task.category)}</span></p>` : ''}
       ${checksList(task)}
@@ -578,8 +586,7 @@ async function loadRun(runId) {
 async function runDetailPage(runId) {
   const run = await loadRun(runId);
   const capability = isCapabilityRun(run);
-  if (!capability) return `${backLink('Back to fixture records')}${pageHead('fixture record', `Run ${run.run_id}`, 'Historical fixture: not model-capability evidence. Task labels and checks are retained only to inspect benchmark plumbing.', `<aside class="panel">${metricRow('record type', 'plumbing-only')}${metricRow('competitive metrics', 'suppressed')}</aside>`)}
-  <section class="wide-callout historical-fixture"><h2>Historical fixture: not model-capability evidence.</h2><p>Fixture plumbing only; score, timing, token, and tool-call metrics are suppressed.</p></section>
+  if (!capability) return `${backLink()}${pageHead('unreviewed submission', `Run ${run.run_id}`, 'This submission has not been reviewed or promoted. It is not capability evidence.', `<aside class="panel">${metricRow('status', 'unreviewed')}${metricRow('competitive metrics', 'not available')}</aside>`)}
   <section class="run-detail"><div>${taskEvidenceList(run.tasks || [], false)}</div></section>`;
   return `${backLink()}${pageHead('task report', `Run ${run.run_id}`, `${modelLabel(run)}. This page focuses on task evidence, not leaderboard decoration.`, `<aside class="panel">${metricRow('overall score', fmt.pct(run.overall_score ?? run.score_percentage))}${metricRow('passed', `${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}`)}${metricRow('reasoning effort', escapeHtml(run.reasoning_effort || 'not labeled'))}</aside>`)}
   <section class="run-detail">
@@ -870,39 +877,31 @@ function normalizeApiToFrontendShape(apiBody) {
   return shape;
 }
 
-/**
- * Fetch live leaderboard from the submissions API, falling back
- * to the checked-in static JSON fixture if the API is unreachable.
- * The static fallback is explicitly labeled as a historical mock fixture
- * and never treated as capability evidence.
- */
 async function loadLeaderboard() {
   try {
     const response = await fetch(leaderboardEndpoint);
     if (response.ok) {
       const apiBody = await response.json();
-      const normalized = normalizeApiToFrontendShape(apiBody);
-      return normalized;
+      return normalizeApiToFrontendShape(apiBody);
     }
-    // Non-2xx: fall through to static fallback
   } catch (_) {
-    // Network error: fall through to static fallback
   }
-  // Static fallback — clearly labeled as historical mock fixture.
-  const staticData = await loadJson('data/leaderboard.json');
-  return staticData;
+  return {
+    data_status: 'no_data',
+    display_notice: 'No data loaded from API. Only reviewed official runs appear as capability evidence.',
+    capability_evidence: false,
+    entries: [],
+    official: [],
+    unofficial: [],
+    model_summaries: null,
+  };
 }
 
 async function init() {
   document.getElementById('desktop-nav').innerHTML = navHtml();
   document.getElementById('mobile-nav').innerHTML = navHtml();
   try {
-    const [leaderboard, latest] = await Promise.all([
-      loadLeaderboard(),
-      loadJson('data/latest-result.json').catch(() => null),
-    ]);
-    state.leaderboard = leaderboard;
-    state.latest = latest;
+    state.leaderboard = await loadLeaderboard();
   } catch (error) {
     document.getElementById('app').innerHTML = `<section class="error-screen"><span class="crumb">load error</span><h1>Benchmark data did not load.</h1><p class="lede">${escapeHtml(error.message)}</p></section>`;
     return;

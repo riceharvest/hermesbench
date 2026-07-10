@@ -25,15 +25,14 @@ function requireProvenance(obj, file, where, expected = null) {
   if (expected && ['data_status', 'display_notice'].some((key) => obj[key] !== expected[key])) {
     fail(file, `${where} provenance must match the top-level payload`);
   }
-  if (obj.evidence_class != null && !['historical_mock', 'official_evidence', 'unofficial_submission'].includes(obj.evidence_class)) {
+  if (obj.evidence_class != null && !['official_evidence', 'unofficial_submission'].includes(obj.evidence_class)) {
     fail(file, `${where}.evidence_class is not recognized`);
   }
-  if (obj.capability_evidence === true && obj.evidence_class === 'historical_mock') {
-    fail(file, `${where} capability data cannot contain historical_mock evidence`);
+  if (obj.capability_evidence === true && obj.evidence_class === 'unofficial_submission') {
+    fail(file, `${where} capability evidence cannot come from unofficial submissions`);
   }
 }
 function isOfficialArchiveSource(source) {
-  // Ported from scripts/archive_paths.py — pure JS, no Python needed at build time.
   if (typeof source !== 'string') return false;
   if (/%|\?|#|\\\\/.test(source)) return false;
   const parts = source.split('/');
@@ -41,17 +40,6 @@ function isOfficialArchiveSource(source) {
   if (parts[0] !== 'official-runs') return false;
   const SAFE_SEGMENT = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
   return parts.slice(1).every((part) => part !== '' && part !== '.' && part !== '..' && SAFE_SEGMENT.test(part));
-}
-function rejectHistoricalMockCapabilityFields(value, file, where = 'root', historical = false) {
-  if (Array.isArray(value)) return value.forEach((item, index) => rejectHistoricalMockCapabilityFields(item, file, `${where}[${index}]`, historical));
-  if (!isObj(value)) return;
-  const isHistorical = historical || value.evidence_class === 'historical_mock';
-  for (const [key, item] of Object.entries(value)) {
-    if (isHistorical && ['capability_pass', 'passed', 'passed_raw', 'passed_effective', 'status'].includes(key)) {
-      fail(file, `${where}.${key} is forbidden in historical_mock public data`);
-    }
-    rejectHistoricalMockCapabilityFields(item, file, `${where}.${key}`, isHistorical);
-  }
 }
 function rejectLocalSources(value, file, where = 'root') {
   if (Array.isArray(value)) return value.forEach((item, index) => rejectLocalSources(item, file, `${where}[${index}]`));
@@ -72,7 +60,7 @@ function requireScoreEntry(e, file, where, provenance) {
   requireString(e, 'evidence_class', file, where);
   for (const k of ['run_id', 'agent', 'suite']) requireString(e, k, file, where);
   const score = e.score_percentage ?? e.overall_score;
-  if (e.evidence_class !== 'historical_mock' && !num01(score)) fail(file, `${where}.score_percentage/overall_score must be a 0..1 number`);
+  if (!num01(score)) fail(file, `${where}.score_percentage/overall_score must be a 0..1 number`);
   for (const k of ['pass_at_1', 'false_done_rate', 'timeout_rate', 'raw_overall_score']) if (e[k] != null && !num01(e[k])) fail(file, `${where}.${k} must be a 0..1 number when present`);
   for (const k of ['task_count', 'total_score', 'max_score', 'total_execution_time_seconds', 'total_tokens', 'tool_call_count', 'total_cost_usd']) if (!maybeNum(e[k])) fail(file, `${where}.${k} must be numeric or null when present`);
   if (e.category_scores != null && !isObj(e.category_scores)) fail(file, `${where}.category_scores must be an object when present`);
@@ -97,16 +85,13 @@ function validateResult(file, data) {
     data.tasks.forEach((t, i) => {
       if (!isObj(t)) fail(file, `tasks[${i}] must be an object`);
       requireString(t, 'task_id', file, `tasks[${i}]`);
-      if (data.evidence_class === 'historical_mock') {
-        if (typeof t.plumbing_audit !== 'string') fail(file, `tasks[${i}].plumbing_audit must describe the neutral fixture record`);
-      } else {
-        if (!num01(t.score)) fail(file, `tasks[${i}].score must be a 0..1 number`);
-        if (typeof t.status !== 'string') fail(file, `tasks[${i}].status must be a string`);
-      }
+      if (!num01(t.score)) fail(file, `tasks[${i}].score must be a 0..1 number`);
+      if (typeof t.status !== 'string') fail(file, `tasks[${i}].status must be a string`);
     });
   }
 }
 function walkJson(dir) {
+  if (!fs.existsSync(dir)) return [];
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
     const file = path.join(dir, entry.name);
     return entry.isDirectory() ? walkJson(file) : entry.name.endsWith('.json') ? [file] : [];
@@ -115,7 +100,6 @@ function walkJson(dir) {
 function readJson(file) {
   const data = JSON.parse(fs.readFileSync(file, 'utf8'));
   rejectLocalSources(data, file);
-  rejectHistoricalMockCapabilityFields(data, file);
   if (path.basename(file) === 'leaderboard.json' || path.basename(file) === 'demo-leaderboard.json') validateLeaderboard(file, data);
   else validateResult(file, data);
   return data;
@@ -124,7 +108,10 @@ function readJson(file) {
 for (const file of walkJson('data')) readJson(file);
 fs.rmSync('dist', { recursive: true, force: true });
 fs.mkdirSync('dist', { recursive: true });
-for (const f of ['index.html', 'app.js', 'data']) cp(f, path.join('dist', f));
+for (const f of ['index.html', 'app.js']) cp(f, path.join('dist', f));
+// Official result snapshots are optional: production data is served by the
+// live API, and mock/demo snapshots must never be synthesized as a fallback.
+if (fs.existsSync('data')) cp('data', path.join('dist', 'data'));
 console.log('website built; all public JSON provenance and paths validated');
 
 module.exports = { isOfficialArchiveSource };
