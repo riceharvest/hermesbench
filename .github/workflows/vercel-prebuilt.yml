@@ -5,28 +5,34 @@ on:
     branches: ["main"]
   workflow_dispatch:
 
+# ── Concurrency ──────────────────────────────────────────────────────────
+# Self-hosted real-agent jobs share a concurrency group so only one touches
+# the local Hermes profile at a time.  Cloud-only checks, deploy, and
+# post-deploy smoke are free to run independently — they do NOT join this
+# group.
+#
+#   real-agent-validate  ── runs on self-hosted runner, joins group
+#   deploy               ── runs on ubuntu-latest, follows the same queued run
+#   post-deploy-smoke    ── runs on ubuntu-latest, no group needed
+#   cloud-checks         ── runs on ubuntu-latest, no group needed
 concurrency:
-  group: vercel-${{ github.ref }}
-  cancel-in-progress: true
+  group: hermesbench-realagent-${{ github.ref_name }}
+  cancel-in-progress: false
 
 jobs:
-  validate:
-    name: Run CI-equivalent checks
+  # ── Cloud-only checks (no local Hermes profile needed) ───────────────
+  cloud-checks:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - name: Validate task inventory
         run: uv run hermesbench validate-tasks
       - name: Run unit tests
         run: uv run pytest
       - name: Build Python distributions
         run: uv build
-      - name: Non-capability mock plumbing smoke
-        run: |
-          uv run hermesbench run --agent mock --task htu-dev-001-file-and-terminal-self-serve --output-dir /tmp/hermesbench-mock-smoke
-          uv run hermesbench score /tmp/hermesbench-mock-smoke/*.json
       - uses: pnpm/action-setup@v4
         with: {version: 9}
       - uses: actions/setup-node@v4
@@ -38,10 +44,86 @@ jobs:
       - name: Smoke website API
         run: cd website && pnpm test:api
 
+  # ── Self-hosted real-agent validate lane ────────────────────────────
+  # Targets the dedicated hermesbench-local label to prevent cloud-only
+  # jobs from landing on the shared runner.  The dedicated label must be
+  # registered on the runner before this job can be scheduled.
+  real-agent-validate:
+    needs: [cloud-checks]
+    runs-on: [self-hosted, Linux, X64, vercel, hermesbench-local]
+    timeout-minutes: 15
+    outputs:
+      smoke_output: ${{ steps.smoke.outputs.smoke_dir }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      # ── Pre-lock: record Hermes version ──────────────────────────────
+      - name: Record Hermes version pre-install
+        id: hermes-pre
+        run: |
+          if command -v hermes >/dev/null 2>&1; then
+            echo "pre_version=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo 'pre-installed')" >> "$GITHUB_OUTPUT"
+          else
+            echo "pre_version=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Lock-acquired lane ───────────────────────────────────────────
+      - name: Acquire Hermes profile lock and run smoke
+        id: smoke
+        run: |
+          LOCK_FILE="/tmp/hermesbench-profile.lock"
+          SMOKE_DIR="/tmp/hermesbench-smoke-${{ github.run_id }}-${{ github.job }}"
+          echo "smoke_dir=$SMOKE_DIR" >> "$GITHUB_OUTPUT"
+
+          flock --exclusive --timeout 300 "$LOCK_FILE" bash -c '
+            set -e
+
+            # Install Hermes CLI (idempotent)
+            command -v hermes >/dev/null 2>&1 || {
+              curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+              export PATH="$HOME/.local/bin:$PATH"
+            }
+            command -v hermes >/dev/null || {
+              echo "::error title=Hermes installation unavailable::The official Hermes installer did not provide a usable hermes executable."
+              exit 1
+            }
+
+            # Record Hermes version for job output
+            echo "hermes_version=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo '\"'\"'unknown'\"'\"')\" >> \"$GITHUB_OUTPUT\"
+
+            # Verify local Hermes benchmark profile
+            test -d "$HOME/.hermes/profiles/hermesbench" || {
+              echo "::error title=Missing local Hermes profile::Self-hosted runner requires hermesbench profile. Create it with: hermes profile create hermesbench --clone --no-alias"
+              exit 1
+            }
+
+            # Real-process smoke
+            uv run hermesbench run --agent hermes --profile hermesbench --task htu-dev-001-file-and-terminal-self-serve --output-dir "'"$SMOKE_DIR"'" || exit 1
+            uv run hermesbench score "'"$SMOKE_DIR"'"/*.json || exit 1
+          '
+
+      - name: Hermes version pin
+        run: |
+          echo "Hermes version: ${{ steps.smoke.outputs.hermes_version }} (pre-install: ${{ steps.hermes-pre.outputs.pre_version }})"
+
+      - name: Cleanup smoke artifacts
+        if: always()
+        run: |
+          SMOKE_DIR="/tmp/hermesbench-smoke-${{ github.run_id }}-${{ github.job }}"
+          if [ -d "$SMOKE_DIR" ]; then
+            rm -rf "$SMOKE_DIR"
+            echo "Cleaned up smoke directory: $SMOKE_DIR"
+          fi
+
+  # ── Deploy prebuilt to Vercel (cloud runner) ─────────────────────────
+  # This job needs nothing from the self-hosted runner except a clean CI
+  # pass — it only uses Node.js, pnpm, and the Vercel CLI.  Running on
+  # ubuntu-latest frees the self-hosted Hermes runner for real-agent work.
   deploy:
     name: Build locally and deploy prebuilt to Vercel
-    needs: [validate]
-    runs-on: [self-hosted, linux, x64, vercel]
+    needs: [real-agent-validate]
+    runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: read
@@ -49,6 +131,8 @@ jobs:
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+    outputs:
+      deployed_url: ${{ steps.deploy.outputs.deployed_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -71,7 +155,42 @@ jobs:
         run: vercel build --prod --token "$VERCEL_TOKEN"
 
       - name: Deploy prebuilt artifact
+        id: deploy
         run: |
           url=$(vercel deploy --prebuilt --prod --token "$VERCEL_TOKEN")
           echo "deployed_url=$url" >> "$GITHUB_OUTPUT"
           echo "Deployed: $url"
+
+  # ── Post-deploy smoke (cloud runner) ─────────────────────────────────
+  # Read-only health + leaderboard check against the just-deployed URL.
+  # Safe by design: no data is submitted, no production secrets exposed
+  # into CI, and no Vercel credentials are carried into this job.
+  post-deploy-smoke:
+    name: Post-deploy smoke (health + leaderboard)
+    needs: [deploy]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Health endpoint check
+        run: |
+          URL="${{ needs.deploy.outputs.deployed_url }}"
+          echo "Checking health at: ${URL}/health"
+          HEALTH=$(curl -sS --max-time 10 "$URL/health")
+          echo "Health response: $HEALTH"
+          echo "$HEALTH" | jq -e '.ok == true' >/dev/null || {
+            echo "ERROR: health check failed"; exit 1
+          }
+          echo "OK health endpoint returns ok=true"
+          STORAGE=$(echo "$HEALTH" | jq -r '.storage // "unknown"')
+          echo "  Storage backend: $STORAGE"
+
+      - name: Leaderboard endpoint check
+        run: |
+          URL="${{ needs.deploy.outputs.deployed_url }}"
+          echo "Checking leaderboard at: ${URL}/v1/leaderboard"
+          LB=$(curl -sS --max-time 10 "$URL/v1/leaderboard")
+          echo "$LB" | jq -e '.entries | type == "array"' >/dev/null || {
+            echo "ERROR: leaderboard response invalid"; exit 1
+          }
+          COUNT=$(echo "$LB" | jq '.entries | length')
+          echo "OK leaderboard returns entries (count: $COUNT)"

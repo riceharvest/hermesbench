@@ -12,6 +12,4 @@ Scoring uses execution telemetry and deterministic checks:
 - **Scope-aware interpretation:** a core-CLI result speaks only to that core scope. An integration result is interpretable only with the enabled toolset, credentials/service state, and environment disclosure. Missing integrations are environmental skips, not model failures.
 - **Scoring:** task scores report observed evidence and deterministic checks. They do not by themselves prove a general model capability claim.
 - **Official evidence:** a capability claim requires a maintainer-reviewed archive with result hash, environment metadata, declared scope, and public-safe evidence under [`official-runs/`](official-runs.md).
-- **Mock adapter:** mock runs validate parser, runner, scoring, website, and API plumbing. Their synthetic telemetry is explicitly non-capability evidence and must not appear as model performance.
-
-Until official scoped archives exist, checked-in website entries are historical/mock fixtures for UI and pipeline development, not a model leaderboard or a minimum-capable-model boundary.
+Until official scoped archives exist, the website shows no public results. Only reviewed, archived official runs appear as capability evidence.

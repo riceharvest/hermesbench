@@ -6,11 +6,25 @@ on:
       - "v*"
   workflow_dispatch:
 
+# ── Concurrency ──────────────────────────────────────────────────────────
+# Only the real-agent job is serialized.  Cloud-only packaging steps and
+# website build are free to run — they do NOT join this group.
+concurrency:
+  group: hermesbench-realagent-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
-  build-release-artifacts:
+  # ── Cloud-only build & release prep (no local Hermes profile) ────────
+  build-and-prepare:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      git_tag: ${{ steps.tag-check.outputs.git_tag }}
+      pkg_version: ${{ steps.tag-check.outputs.pkg_version }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history for git describe + tag provenance
       - uses: astral-sh/setup-uv@v5
       - uses: pnpm/action-setup@v4
         with:
@@ -22,28 +36,161 @@ jobs:
           cache-dependency-path: website/pnpm-lock.yaml
       - name: Install Python dependencies
         run: uv sync
+      - name: Assert annotated tag matches package version
+        id: tag-check
+        run: |
+          GIT_TAG="$(git describe --tags --exact-match 2>/dev/null || echo 'no-tag')"
+          echo "git_tag=$GIT_TAG" >> "$GITHUB_OUTPUT"
+          PKG_VERSION="$(uv run python -c 'from hermesbench import __version__; print(__version__)')"
+          echo "pkg_version=$PKG_VERSION" >> "$GITHUB_OUTPUT"
+          if [ "$GITHUB_REF_TYPE" = "tag" ]; then
+            EXPECTED="v${PKG_VERSION}"
+            if [ "$GITHUB_REF_NAME" != "$EXPECTED" ]; then
+              echo "::error title=Tag mismatch::Git tag '$GITHUB_REF_NAME' does not match package version 'v${PKG_VERSION}'"
+              exit 1
+            fi
+            echo "Tag $GITHUB_REF_NAME matches package version v${PKG_VERSION}"
+          fi
       - name: Validate tasks
         run: uv run hermesbench validate-tasks
       - name: Run tests
         run: uv run pytest
       - name: Build Python distributions
         run: uv build
-      - name: Non-capability mock plumbing smoke
+      - name: Run reproducibility gates (fresh-wheel install, sdist rebuild)
+        run: uv run pytest --run-slow --timeout 120 -x -v
+      - name: Upload built artifacts for downstream jobs
+        uses: actions/upload-artifact@v4
+        with:
+          name: hermesbench-build-artifacts
+          path: dist/
+          retention-days: 7
+
+  # ── Self-hosted real-agent lane ──────────────────────────────────────
+  # Targets the dedicated hermesbench-local label to prevent cloud-only
+  # jobs from landing on the shared runner.  The dedicated label must be
+  # registered on the runner before this job can be scheduled.
+  real-agent-smoke:
+    needs: [build-and-prepare]
+    runs-on: [self-hosted, Linux, X64, vercel, hermesbench-local]
+    timeout-minutes: 30
+    outputs:
+      smoke_output: ${{ steps.smoke.outputs.smoke_dir }}
+      hermes_version: ${{ steps.smoke.outputs.hermes_version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: astral-sh/setup-uv@v5
+
+      # ── Pre-lock: record Hermes version ──────────────────────────────
+      - name: Record Hermes version pre-install
+        id: hermes-pre
         run: |
-          uv run hermesbench run --agent mock --task htu-dev-001-file-and-terminal-self-serve --output-dir /tmp/hermesbench-mock-smoke
-          uv run hermesbench score /tmp/hermesbench-mock-smoke/*.json
+          if command -v hermes >/dev/null 2>&1; then
+            echo "pre_version=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo 'pre-installed')" >> "$GITHUB_OUTPUT"
+          else
+            echo "pre_version=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Lock-acquired lane ───────────────────────────────────────────
+      - name: Acquire Hermes profile lock and run smoke
+        id: smoke
+        run: |
+          LOCK_FILE="/tmp/hermesbench-profile.lock"
+          SMOKE_DIR="/tmp/hermesbench-smoke-${{ github.run_id }}-${{ github.job }}"
+          echo "smoke_dir=$SMOKE_DIR" >> "$GITHUB_OUTPUT"
+
+          flock --exclusive --timeout 300 "$LOCK_FILE" bash -c '
+            set -e
+
+            # Install Hermes CLI (idempotent)
+            command -v hermes >/dev/null 2>&1 || {
+              curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+              export PATH="$HOME/.local/bin:$PATH"
+            }
+            command -v hermes >/dev/null || {
+              echo "::error title=Hermes installation unavailable::The official Hermes installer did not provide a usable hermes executable."
+              exit 1
+            }
+
+            # Record Hermes version for job output
+            HERMES_VER=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo "unknown")
+            echo "hermes_version=$HERMES_VER" >> "$GITHUB_OUTPUT"
+
+            # Verify local Hermes benchmark profile
+            test -d "$HOME/.hermes/profiles/hermesbench" || {
+              echo "::error title=Missing local Hermes profile::Self-hosted runner requires hermesbench profile. Create it with: hermes profile create hermesbench --clone --no-alias"
+              exit 1
+            }
+
+            # Real-process smoke
+            uv run hermesbench run --agent hermes --profile hermesbench --task htu-dev-001-file-and-terminal-self-serve --output-dir "'"$SMOKE_DIR"'" || exit 1
+            uv run hermesbench score "'"$SMOKE_DIR"'"/*.json || exit 1
+          '
+
+      - name: Hermes version pin
+        run: |
+          echo "Hermes version: ${{ steps.smoke.outputs.hermes_version }} (pre-install: ${{ steps.hermes-pre.outputs.pre_version }})"
+
+      - name: Cleanup smoke artifacts
+        if: always()
+        run: |
+          SMOKE_DIR="/tmp/hermesbench-smoke-${{ github.run_id }}-${{ github.job }}"
+          if [ -d "$SMOKE_DIR" ]; then
+            rm -rf "$SMOKE_DIR"
+            echo "Cleaned up smoke directory: $SMOKE_DIR"
+          fi
+
+  # ── Post-smoke: website, packaging, artifacts ────────────────────────
+  package-and-publish:
+    needs: [build-and-prepare, real-agent-smoke]
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - uses: actions/download-artifact@v4
+        with:
+          name: hermesbench-build-artifacts
+          path: dist/
       - name: Build website
         run: cd website && pnpm install --frozen-lockfile && pnpm build
       - name: Smoke website API
         run: cd website && pnpm test:api
       - name: Export public tasks
-        run: uv run hermesbench export --format jsonl > hermesbench-public-dev-v0.1.jsonl
+        run: uv run hermesbench export --suite natural-tools-dev --format jsonl > hermesbench-public-dev-v0.1.jsonl
       - name: Package score schema docs
         run: cp docs/api.md hermesbench-score-schema.md
+      - name: Generate release artifact SHA256SUMS
+        run: |
+          cd dist
+          sha256sum *.whl *.tar.gz > SHA256SUMS
+          cd ..
+          sha256sum hermesbench-public-dev-v0.1.jsonl hermesbench-score-schema.md >> dist/SHA256SUMS
+          echo "Release artifact checksums:"
+          cat dist/SHA256SUMS
+      - name: Validate SHA256SUMS checksums match artifacts
+        run: |
+          cd dist
+          sha256sum -c SHA256SUMS
+          echo "All release artifact checksums validated successfully."
       - uses: actions/upload-artifact@v4
         with:
           name: hermesbench-release-artifacts
+          retention-days: 90
           path: |
             hermesbench-public-dev-v0.1.jsonl
             hermesbench-score-schema.md
             website/dist
+            dist/hermesbench-*.whl
+            dist/hermesbench-*.tar.gz
+            dist/SHA256SUMS

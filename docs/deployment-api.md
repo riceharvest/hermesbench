@@ -16,7 +16,23 @@ The checked-in Python HTTP server uses `wsgiref` for local development and CI sm
 
 ## Storage setup
 
-For local smoke deployments use JSONL. The live Vercel route stores submissions under `submissions/<run_id>.json`. Never persist `submission_token`; both the Python and Vercel APIs strip it before storage.
+For local smoke deployments use JSONL. The live Vercel route stores submissions under `submissions/<hash>-<run_id>.json` using a content-hash-prefixed, token-derived path that is deterministic per run_id+token but unguessable to external observers. Never persist `submission_token`; both the Python and Vercel APIs strip it before storage.
+
+### No-overwrite semantics
+
+Vercel Blob `allowOverwrite: false` is always set. If a blob already exists at the computed path, the API re-reads the blob and compares the stored `run_id_hash` and full body. Identical re-submissions are accepted (idempotent 202 with `duplicate: true`). Conflicting content for the same `run_id` is rejected with a 409 error.
+
+### Fail-closed behavior
+
+When `VERCEL=1` and `BLOB_READ_WRITE_TOKEN` is not configured (or Blob SDK is unavailable), the API returns 503. Provider credentials must never enter Vercel or GitHub — only `HERMESBENCH_SUBMISSION_TOKEN` and `BLOB_READ_WRITE_TOKEN` are set in Vercel environment secrets.
+
+### Concurrent write race
+
+The first-write `put()` with `allowOverwrite: false` catches `BlobPreconditionFailedError` thrown by concurrent requests. On collision, it re-reads the existing blob to check for idempotency (identical content → accepted as duplicate) or identifies a conflict (different content → 409). Non-precondition errors produce a fail-closed 503.
+
+### Private blob support
+
+When `HERMESBENCH_SUBMISSION_BLOB_ACCESS=private`, both submission reads (`get`) and leaderboard reads (`get`) use the SDK's authenticated path rather than raw `fetch(blob.url)`.
 
 ## Schema/versioning
 

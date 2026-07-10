@@ -4,7 +4,7 @@ A HermesBench run is official only when a maintainer operates it, reviews it, an
 
 ## Capability scope
 
-Official evidence must state whether it covers the portable **core CLI** surface or one or more optional **integrations**. Integrations such as browser automation, connected services, desktop control, and skills depend on runtime configuration, credentials, and local services. An unavailable integration is an environmental limitation to disclose, not a model failure. A mock-adapter run is deterministic plumbing evidence only and is never model-capability evidence.
+Official evidence must state whether it covers the portable **core CLI** surface or one or more optional **integrations**. Integrations such as browser automation, connected services, desktop control, and skills depend on runtime configuration, credentials, and local services. An unavailable integration is an environmental limitation to disclose, not a model failure.
 
 ## Who can run official submissions
 
@@ -28,12 +28,4 @@ Operators disclose material conflicts in manifest notes. A second maintainer sho
 
 ## Unofficial labeling
 
-Public API uploads are stored and displayed as unofficial. The public upload path rejects `metadata.official=true`. Historical mock data used by the website is labeled non-capability fixture data and is not a leaderboard result.
-
-## Website data sources
-
-The checked-in website source includes static sample data under the `website/` directory — these are **historical mock fixtures** for development and demo purposes only. They contain synthetic output from the `mock` adapter and do not represent real model capabilities or benchmark results.
-
-Three pre-pivot result files remain tracked under `results/` (committed before `/results/` was added to `.gitignore`). They are legacy `mock`-adapter output and not model-capability evidence. New exploratory output is correctly ignored.
-
-A separate live API leaderboard (hosted on Vercel or another platform) fetches submitted result data on demand. The static fixture files in this repository are never a substitute for the live leaderboard. Any description of "leaderboard" or "results" in the checked-in website frontend refers to proof-of-concept display logic; the authoritative result data lives outside this repository in the live API.
+Public API uploads are stored and displayed as unofficial. The public upload path rejects `metadata.official=true` and `agent=mock`. No static mock data exists in the repository. Only reviewed, archived official runs appear as public capability evidence.

@@ -31,6 +31,9 @@ hermesbench = "hermesbench.cli:main"
 packages = ["src/hermesbench"]
 
 [tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow (e.g. fresh-wheel install, sdist rebuild) — skipped by default unless --run-slow is passed",
+]
 pythonpath = ["src", "."]
 testpaths = ["tests"]
 addopts = "-n auto"

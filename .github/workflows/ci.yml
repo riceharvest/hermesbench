@@ -1,21 +1,105 @@
 name: CI
 on: [push, pull_request]
+
+# ── Concurrency ──────────────────────────────────────────────────────────
+# Self-hosted real-agent jobs share a concurrency group so only one touches
+# the local Hermes profile at a time.  Cloud-only jobs (website, pure
+# packaging) are free to run in parallel — they do NOT join this group.
+concurrency:
+  group: hermesbench-realagent-${{ github.ref_name }}
+  cancel-in-progress: false
+
 jobs:
+  # ── Cloud-only validation (no local Hermes profile needed) ───────────
   validate-and-test:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v4
+      - uses: astral-sh/setup-uv@v5
       - name: Validate task inventory
         run: uv run hermesbench validate-tasks
       - name: Run unit tests
         run: uv run pytest
       - name: Build Python distributions
         run: uv build
-      - name: Non-capability mock plumbing smoke
+
+  # ── Self-hosted real-agent lane ──────────────────────────────────────
+  # Targets the dedicated hermesbench-local label to prevent cloud-only
+  # jobs from landing on the shared runner.  The dedicated label must be
+  # registered on the runner before this job can be scheduled.
+  real-agent-smoke:
+    needs: [validate-and-test]
+    runs-on: [self-hosted, Linux, X64, vercel, hermesbench-local]
+    timeout-minutes: 30
+    outputs:
+      smoke_output: ${{ steps.smoke.outputs.smoke_dir }}
+      hermes_version: ${{ steps.smoke.outputs.hermes_version }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+
+      # ── Pre-lock: record Hermes version ──────────────────────────────
+      - name: Record Hermes version pre-install
+        id: hermes-pre
         run: |
-          uv run hermesbench run --agent mock --task htu-dev-001-file-and-terminal-self-serve --output-dir /tmp/hermesbench-mock-smoke
-          uv run hermesbench score /tmp/hermesbench-mock-smoke/*.json
+          if command -v hermes >/dev/null 2>&1; then
+            echo "pre_version=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo 'pre-installed')" >> "$GITHUB_OUTPUT"
+          else
+            echo "pre_version=none" >> "$GITHUB_OUTPUT"
+          fi
+
+      # ── Lock-acquired lane ───────────────────────────────────────────
+      # Use flock on a shared lockfile to serialize Hermes profile access
+      # across concurrently dispatched jobs on the same runner.
+      - name: Acquire Hermes profile lock and run smoke
+        id: smoke
+        run: |
+          LOCK_FILE="/tmp/hermesbench-profile.lock"
+          SMOKE_DIR="/tmp/hermesbench-smoke-${{ github.run_id }}-${{ github.job }}"
+          echo "smoke_dir=$SMOKE_DIR" >> "$GITHUB_OUTPUT"
+
+          flock --exclusive --timeout 300 "$LOCK_FILE" bash -c '
+            set -e
+
+            # Install Hermes CLI (idempotent)
+            command -v hermes >/dev/null 2>&1 || {
+              curl -fsSL https://hermes-agent.nousresearch.com/install.sh | bash
+              export PATH="$HOME/.local/bin:$PATH"
+            }
+            command -v hermes >/dev/null || {
+              echo "::error title=Hermes installation unavailable::The official Hermes installer did not provide a usable hermes executable."
+              exit 1
+            }
+
+            # Record Hermes version for job output
+            HERMES_VER=$(hermes --version 2>/dev/null || hermes version 2>/dev/null || echo "unknown")
+            echo "hermes_version=$HERMES_VER" >> "$GITHUB_OUTPUT"
+
+            # Verify local Hermes benchmark profile
+            test -d "$HOME/.hermes/profiles/hermesbench" || {
+              echo "::error title=Missing local Hermes profile::Self-hosted runner requires hermesbench profile. Create it with: hermes profile create hermesbench --clone --no-alias"
+              exit 1
+            }
+
+            # Real-process smoke
+            uv run hermesbench run --agent hermes --profile hermesbench --task htu-dev-001-file-and-terminal-self-serve --output-dir "'"$SMOKE_DIR"'" || exit 1
+            uv run hermesbench score "'"$SMOKE_DIR"'"/*.json || exit 1
+          '
+
+      - name: Hermes version pin
+        run: |
+          echo "Hermes version: ${{ steps.smoke.outputs.hermes_version }} (pre-install: ${{ steps.hermes-pre.outputs.pre_version }})"
+
+      - name: Cleanup smoke artifacts
+        if: always()
+        run: |
+          SMOKE_DIR="/tmp/hermesbench-smoke-${{ github.run_id }}-${{ github.job }}"
+          if [ -d "$SMOKE_DIR" ]; then
+            rm -rf "$SMOKE_DIR"
+            echo "Cleaned up smoke directory: $SMOKE_DIR"
+          fi
+
   website:
     runs-on: ubuntu-latest
     steps:

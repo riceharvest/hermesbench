@@ -18,11 +18,11 @@ Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers g
 - **False-done penalties:** agents that say “done” without verified capability usage are measured, not rewarded.
 - **Telemetry-based behavior grading:** evaluates real tool usage directly from execution telemetry instead of simple output matching.
 - **Normalized run JSON:** scores include pass@1, tool-class coverage, wall time, tool calls, timeouts, cost when available, and verification evidence.
-- **Adapter architecture:** the runner supports a mock adapter for deterministic plumbing, a Hermes CLI adapter for configured core-CLI/integration environments, and a generic shell adapter. Adapter availability is not a claim that every Hermes integration is available or benchmarked.
+- **Adapter architecture:** the runner supports a Hermes CLI adapter for configured core-CLI/integration environments and a generic shell adapter. Adapter availability is not a claim that every Hermes integration is available or benchmarked.
 
 ## Current status
 
-HermesBench is under active validation. The task inventory and mock adapter exercise only benchmark plumbing; mock output is explicitly non-capability evidence. Hermes CLI runs are preflighted against the toolsets the active runtime exposes. Core CLI and each optional integration must be reported separately; unavailable integrations are environmental skips, not model failures. The checked-in website samples are historical mock fixtures, not a public model leaderboard. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
+HermesBench is under active validation. Hermes CLI runs are preflighted against the toolsets the active runtime exposes. Core CLI and each optional integration must be reported separately; unavailable integrations are environmental skips, not model failures. Only reviewed, archived official runs appear as public capability evidence. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
 
 ## Quick start
 
@@ -30,7 +30,7 @@ HermesBench is under active validation. The task inventory and mock adapter exer
 git clone https://github.com/riceharvest/hermesbench.git
 cd hermesbench
 uv run hermesbench validate-tasks
-uv run hermesbench run --agent mock --suite core-cli --output-dir /tmp/hermesbench-results
+uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --suite core-cli --output-dir /tmp/hermesbench-results
 uv run hermesbench score /tmp/hermesbench-results/*.json
 ```
 
@@ -40,14 +40,7 @@ The default install is intentionally lightweight:
 uv sync --dev                    # development/test tools
 ```
 
-Run one task:
-
-```bash
-uv run hermesbench run --agent mock --task htu-dev-001-file-and-terminal-self-serve --output-dir /tmp/hermesbench-one
-uv run hermesbench score /tmp/hermesbench-one/*.json
-```
-
-Run with Hermes CLI against a local model to probe tool-class coverage:
+Run one task with Hermes CLI to probe tool-class coverage:
 
 ```bash
 uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite core-cli --output-dir results/hermes-core-cli
@@ -60,9 +53,8 @@ uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite integ
 ```bash
 uv run hermesbench validate-tasks
 uv run hermesbench versions
-uv run hermesbench run --agent mock --suite core-cli --jobs auto  # plumbing smoke only
 uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --suite core-cli --jobs auto
-uv run hermesbench run --agent mock --benchmark-version hermesbench-v0.1 --jobs 1
+uv run hermesbench run --agent hermes --benchmark-version hermesbench-v0.1 --jobs 1
 uv run hermesbench run --agent shell --command './my-agent-runner.sh' --suite natural-tools-dev --jobs 4
 uv run hermesbench score results/<run>.json
 uv run hermesbench export --suite natural-tools-dev --format jsonl
@@ -77,7 +69,7 @@ See [`REPOSITORY_MAP.md`](REPOSITORY_MAP.md) for a more explicit identity/proven
 
 ```text
 src/hermesbench/          Python CLI, runner, schemas, adapters, graders, API/storage
-src/hermesbench/adapters/ mock, Hermes CLI, and shell adapter implementations
+src/hermesbench/adapters/ Hermes CLI and shell adapter implementations
 src/hermesbench/graders/  deterministic artifact/test checks and telemetry-based behavior grading
 tasks/                    benchmark task markdown and manifest
 tasks/natural-tools-dev/  natural tool-use capability probes
@@ -95,7 +87,7 @@ tests/                    parser, runner, API, storage, official-run, and websit
 | `integrations` | 35 | Tasks requiring configured Hermes integrations unavailable to the CLI adapter | No |
 | `natural-tools-dev` | 38 | Combined development inventory; not a single capability claim | Some |
 
-`core-cli` and `integrations` are separate reporting scopes. Run and publish them separately: core-CLI results do not imply connected-service or desktop capability, and unavailable integrations are environmental skips rather than model failures. `natural-tools-dev` is the combined public development inventory. The `mock` adapter is a deterministic harness double for parser/runner/website development; its synthetic telemetry must not be used as model-capability evidence.
+`core-cli` and `integrations` are separate reporting scopes. Run and publish them separately: core-CLI results do not imply connected-service or desktop capability, and unavailable integrations are environmental skips rather than model failures. `natural-tools-dev` is the combined public development inventory.
 
 | Task | Required tool classes | Difficulty | Notes |
 |---|---|---:|---|
@@ -163,6 +155,28 @@ safety_notes: Credential-free local fixture.
 ```
 
 Sections include prompt, setup, expected artifacts, capability rubric, deterministic checks, hidden-check notes, and cleanup instructions. Start from [`tasks/TASK_TEMPLATE.md`](tasks/TASK_TEMPLATE.md).
+
+## Hermes profiles and model selection
+
+HermesBench runs use the isolated `hermesbench` profile by default. Create it once by cloning the active Hermes configuration:
+
+```bash
+hermes profile create hermesbench --clone --no-alias
+```
+
+Edit `~/.hermes/profiles/hermesbench/config.yaml` to choose the profile's normal local or cloud provider/model. A run may override those selections without changing the profile:
+
+```bash
+# Inherit provider/model from hermesbench
+uv run hermesbench run --agent hermes --task htu-dev-001-file-and-terminal-self-serve
+
+# Override for one local or cloud run
+uv run hermesbench run --agent hermes --provider qwen --model Qwen3.6-35B-A3B-UD-Q3_K_M.gguf --task htu-dev-001-file-and-terminal-self-serve
+```
+
+Use `--profile PROFILE` to select another explicitly configured Hermes profile. Each task receives a temporary copy with its own working directory; sessions, memories, state databases, logs, and caches from the source profile are not copied, and the source profile is never modified. The selected profile is recorded in result metadata.
+
+The GitHub real-agent checks run on the project's self-hosted Hermes runner and use the local `hermesbench` profile directly. Provider selection and credentials therefore remain local to Hermes; no provider credentials are copied into GitHub Actions. The runner must have the profile configured before a workflow is triggered.
 
 ## Result schema and scoring
 
@@ -241,9 +255,6 @@ uv run pytest tests/test_hermesbench_core.py -q
 ```bash
 uv run pytest
 uv run hermesbench validate-tasks
-rm -rf /tmp/hermesbench-results
-uv run hermesbench run --agent mock --suite core-cli --output-dir /tmp/hermesbench-results
-uv run hermesbench score /tmp/hermesbench-results/*.json
 cd website && pnpm install && pnpm build
 ```
 
