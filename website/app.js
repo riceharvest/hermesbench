@@ -294,7 +294,7 @@ function homePage() {
   <section class="dashboard-columns">
     <div class="dashboard-main">
       <div class="section-bar"><div><span class="crumb">comparison</span><h2>Model performance</h2></div><a class="text-pill" href="#/leaderboard">View all models</a></div>
-      ${visibleRows.length ? `<div class="compact-table" role="table" aria-label="Top model runs"><div class="compact-table-head" role="row"><span>#</span><span>Model / config</span><span>Score</span><span>Passed</span><span>Reliability</span><span></span></div>${visibleRows.map((row, index) => dashboardRunRow(row, index)).join('')}</div>` : `<div class="data-empty"><b>No official model runs yet.</b><span>Verified submissions will appear here after review.</span><a class="text-pill" href="#/submit">Submit a run</a></div>`}
+      ${visibleRows.length ? `<div class="compact-table" role="table" aria-label="Top model runs"><div class="compact-table-head" role="row"><span>#</span><span>Model / config</span><span>Score</span><span>Passed</span><span>Reliability</span><span></span></div>${visibleRows.map((row, index) => dashboardRunRow(row, index)).join('')}</div>` : `<div class="data-empty"><b>No reviewed results are published yet.</b><span>Verified submissions will appear here after review.</span><a class="text-pill" href="#/submit">Submit a run</a></div>`}
     </div>
     <aside class="dashboard-side">
       <div class="section-bar"><div><span class="crumb">coverage</span><h2>Task packs</h2></div><a class="text-pill" href="#/tasks">All tasks</a></div>
