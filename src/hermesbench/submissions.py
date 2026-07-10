@@ -16,7 +16,19 @@ def load_result(path: str | Path) -> dict[str, Any]:
 
 
 def sanitize_result(data: dict[str, Any], strip_logs: bool = True) -> dict[str, Any]:
+    """Return a deep copy of the result with sensitive fields removed.
+
+    Always strips ``submission_token`` and ``run_id_hash`` at the top level,
+    strips sensitive log keys (case-insensitive), and applies the explicit
+    metadata/task allowlists when ``strip_logs`` is True.
+    """
+    from hermesbench.schemas import PUBLIC_METADATA_KEYS, PUBLIC_TASK_KEYS, SENSITIVE_LOG_KEYS
     clean = json.loads(json.dumps(data))
+    clean.pop("submission_token", None)
+    clean.pop("run_id_hash", None)
+    for key in list(clean):
+        if key.lower() in SENSITIVE_LOG_KEYS:
+            clean.pop(key, None)
     if strip_logs:
         for task in clean.get("results", []):
             task.pop("logs", None)

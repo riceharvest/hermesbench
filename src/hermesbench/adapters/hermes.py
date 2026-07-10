@@ -21,8 +21,14 @@ _TOOL_COUNT_KEYS = ("tool_call_count", "tool_calls", "toolCallCount")
 _USAGE_KEYS = ("usage", "token_usage", "tokenUsage")
 _COST_KEYS = ("cost_usd", "costUSD", "cost")
 _TOKEN_KEYS = {
-    "prompt_tokens", "completion_tokens", "total_tokens", "input_tokens", "output_tokens",
-    "cache_read_input_tokens", "cache_creation_input_tokens", "reasoning_tokens",
+    "prompt_tokens",
+    "completion_tokens",
+    "total_tokens",
+    "input_tokens",
+    "output_tokens",
+    "cache_read_input_tokens",
+    "cache_creation_input_tokens",
+    "reasoning_tokens",
 }
 
 
@@ -31,10 +37,28 @@ _TOKEN_KEYS = {
 # unknown toolsets to an empty schema, which would turn an environment/setup
 # error into a bogus model failure.
 _CLI_TOOLSETS = {
-    "web", "browser", "terminal", "file", "code_execution", "vision", "video",
-    "image_gen", "video_gen", "x_search", "tts", "skills", "todo", "memory",
-    "session_search", "clarify", "delegation", "cronjob", "homeassistant",
-    "spotify", "yuanbao", "computer_use",
+    "web",
+    "browser",
+    "terminal",
+    "file",
+    "code_execution",
+    "vision",
+    "video",
+    "image_gen",
+    "video_gen",
+    "x_search",
+    "tts",
+    "skills",
+    "todo",
+    "memory",
+    "session_search",
+    "clarify",
+    "delegation",
+    "cronjob",
+    "homeassistant",
+    "spotify",
+    "yuanbao",
+    "computer_use",
 }
 
 _TOOLSET_MAP = {
@@ -197,7 +221,9 @@ def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTele
             event = str(node.get("event") or node.get("type") or "").lower()
             if "tool_call" in event or event in {"tool.call", "tool-call"}:
                 event_tool_count += 1
-            elif any(k in node for k in ("tool", "tool_name", "name")) and ("tool" in event or node.get("role") == "tool"):
+            elif any(k in node for k in ("tool", "tool_name", "name")) and (
+                "tool" in event or node.get("role") == "tool"
+            ):
                 event_tool_count += 1
             for key in _USAGE_KEYS:
                 if isinstance(node.get(key), dict):
@@ -229,21 +255,33 @@ def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTele
     # Hermes human-readable logs, e.g.:
     # API call #1: model=... in=7459 out=52 total=7511 latency=2.4s
     # agent.tool_executor: tool read_file completed (...)
-    for m in re.finditer(r"API call #\d+:.*?\bin=(\d+)\s+out=(\d+)\s+total=(\d+)", text):
+    for m in re.finditer(
+        r"API call #\d+:.*?\bin=(\d+)\s+out=(\d+)\s+total=(\d+)", text
+    ):
         usage["input_tokens"] = usage.get("input_tokens", 0) + int(m.group(1))
         usage["output_tokens"] = usage.get("output_tokens", 0) + int(m.group(2))
         usage["total_tokens"] = usage.get("total_tokens", 0) + int(m.group(3))
-    log_tool_count = len(re.findall(r"agent\.tool_executor: tool [\w.-]+ completed", text))
+    log_tool_count = len(
+        re.findall(r"agent\.tool_executor: tool [\w.-]+ completed", text)
+    )
     if log_tool_count:
         event_tool_count += log_tool_count
 
-    telemetry.tool_calls = explicit_tool_count if explicit_tool_count is not None else event_tool_count
+    telemetry.tool_calls = (
+        explicit_tool_count if explicit_tool_count is not None else event_tool_count
+    )
     telemetry.token_usage = usage or None
     telemetry.cost_usd = cost
     return telemetry
 
 
-def _recent_hermes_text(started_at: float, limit_files: int = 8, max_bytes: int = 64_000, session_id: str | None = None, profile_dir: Path | None = None) -> tuple[str, str | None]:
+def _recent_hermes_text(
+    started_at: float,
+    limit_files: int = 8,
+    max_bytes: int = 64_000,
+    session_id: str | None = None,
+    profile_dir: Path | None = None,
+) -> tuple[str, str | None]:
     """Read only bounded Hermes runtime files, never recursively scan venv/cache."""
     home = Path.home() / ".hermes"
     roots = [home / "logs", home / "sessions"]
@@ -255,12 +293,18 @@ def _recent_hermes_text(started_at: float, limit_files: int = 8, max_bytes: int 
             continue
         for path in root.glob("*"):
             try:
-                if path.is_file() and path.suffix in {".jsonl", ".json", ".log"} and path.stat().st_mtime >= started_at - 2:
+                if (
+                    path.is_file()
+                    and path.suffix in {".jsonl", ".json", ".log"}
+                    and path.stat().st_mtime >= started_at - 2
+                ):
                     candidates.append(path)
             except OSError:
                 pass
     chunks = []
-    chosen = sorted(set(candidates), key=lambda p: p.stat().st_mtime, reverse=True)[:limit_files]
+    chosen = sorted(set(candidates), key=lambda p: p.stat().st_mtime, reverse=True)[
+        :limit_files
+    ]
     for path in chosen:
         try:
             data = path.read_bytes()[-max_bytes:].decode("utf-8", errors="replace")
@@ -280,8 +324,16 @@ def _resolve_toolsets(task) -> list[str]:
     default we still keep the benchmark local-only, so we do not auto-enable
     external-only tools unless the task explicitly asks for them.
     """
-    requested = [str(t).lower().strip() for t in task.metadata.get("required_toolsets", []) or []]
-    unknown = sorted({t or "<empty>" for t in requested if t != "all" and t not in _CAPABILITY_TOOLSETS and t not in _TOOLSET_MAP})
+    requested = [
+        str(t).lower().strip() for t in task.metadata.get("required_toolsets", []) or []
+    ]
+    unknown = sorted(
+        {
+            t or "<empty>"
+            for t in requested
+            if t != "all" and t not in _CAPABILITY_TOOLSETS and t not in _TOOLSET_MAP
+        }
+    )
     if unknown:
         raise ValueError(f"Unknown task-requested toolsets: {', '.join(unknown)}")
     if "all" in requested:
@@ -313,7 +365,9 @@ class StateDBTelemetry:
     cost_usd: float | None = None
 
 
-def _extract_state_db_telemetry(db_path: Path, started_at: float, workdir: Path) -> StateDBTelemetry:
+def _extract_state_db_telemetry(
+    db_path: Path, started_at: float, workdir: Path
+) -> StateDBTelemetry:
     """Read structured telemetry from the isolated Hermes session database.
 
     The temporary profile is empty before launch, so a session selected by its
@@ -321,6 +375,7 @@ def _extract_state_db_telemetry(db_path: Path, started_at: float, workdir: Path)
     Ambiguous matches fail closed.
     """
     import sqlite3
+
     result = StateDBTelemetry(events=[])
     if not db_path.exists():
         return result
@@ -345,19 +400,33 @@ def _extract_state_db_telemetry(db_path: Path, started_at: float, workdir: Path)
                 result.events.append({"tool_name": tool_name, "timestamp": timestamp})
             elif tool_calls:
                 try:
-                    decoded = json.loads(tool_calls) if isinstance(tool_calls, str) else tool_calls
+                    decoded = (
+                        json.loads(tool_calls)
+                        if isinstance(tool_calls, str)
+                        else tool_calls
+                    )
                     calls = decoded if isinstance(decoded, list) else [decoded]
                     for call in calls:
-                        name = call.get("function", {}).get("name") if isinstance(call, dict) else None
+                        name = (
+                            call.get("function", {}).get("name")
+                            if isinstance(call, dict)
+                            else None
+                        )
                         if name:
-                            result.events.append({"tool_name": name, "timestamp": timestamp})
+                            result.events.append(
+                                {"tool_name": name, "timestamp": timestamp}
+                            )
                 except (TypeError, ValueError, json.JSONDecodeError):
                     pass
         conn.close()
         result.trusted = True
         result.session_id = session_id
         result.tool_calls = len(result.events)
-        result.token_usage = {"input_tokens": row[4], "output_tokens": row[5], "reasoning_tokens": row[6]}
+        result.token_usage = {
+            "input_tokens": row[4],
+            "output_tokens": row[5],
+            "reasoning_tokens": row[6],
+        }
         result.cost_usd = row[8] if row[8] is not None else row[7]
         return result
     except (OSError, sqlite3.Error):
@@ -379,6 +448,7 @@ def _tool_log_lines(profile_dir: Path | None, session_id: str | None = None) -> 
     if db_path.exists():
         try:
             import sqlite3
+
             conn = sqlite3.connect(str(db_path))
             if session_id:
                 rows = conn.execute(
@@ -388,7 +458,9 @@ def _tool_log_lines(profile_dir: Path | None, session_id: str | None = None) -> 
             else:
                 rows = []
             for (tool_name,) in rows:
-                logs.append(f"agent.tool_executor: tool {tool_name} completed (from_state_db)")
+                logs.append(
+                    f"agent.tool_executor: tool {tool_name} completed (from_state_db)"
+                )
             conn.close()
         except Exception:
             pass
@@ -415,8 +487,15 @@ def _profile_with_cwd(profile: str | None, workdir: Path) -> tuple[str, Path]:
     """
     home = Path.home() / ".hermes"
     profiles_dir = home / "profiles"
-    profiles_dir.mkdir(parents=True, exist_ok=True)
-    src = profiles_dir / profile if profile else None
+    name = profile or "hermesbench"
+    src = profiles_dir / name
+    if not src.is_dir():
+        raise ValueError(
+            f"Hermes profile {name!r} not found at {src}.\n"
+            f"Create it with: hermes profile create {name} --clone --no-alias\n"
+            f"Then edit {src}/config.yaml (or pass --provider/--model per run)\n"
+            "to select the local or cloud provider/model."
+        )
     tmp_name = f"hermesbench-{uuid.uuid4().hex[:12].lower()}"
     dst = profiles_dir / tmp_name
     try:
@@ -424,19 +503,26 @@ def _profile_with_cwd(profile: str | None, workdir: Path) -> tuple[str, Path]:
         # never seed a benchmark task with another agent session, memory, cache, or
         # telemetry. Apart from contaminating behavior grading, copied state can let a
         # task access unrelated user context.
-        if src is not None and src.is_dir():
-            shutil.copytree(
-                src,
-                dst,
-                ignore=shutil.ignore_patterns(
-                    "state.db*", "memory_store.db*", "verification_evidence.db*",
-                    "semantic_index.sqlite*", "projects.db*", "logs", "sessions",
-                    "runtime", "memories", "cron", "cache", "models_dev_cache.json",
-                    ".update_check", ".skills_prompt_snapshot.json",
-                ),
-            )
-        else:
-            dst.mkdir()
+        shutil.copytree(
+            src,
+            dst,
+            ignore=shutil.ignore_patterns(
+                "state.db*",
+                "memory_store.db*",
+                "verification_evidence.db*",
+                "semantic_index.sqlite*",
+                "projects.db*",
+                "logs",
+                "sessions",
+                "runtime",
+                "memories",
+                "cron",
+                "cache",
+                "models_dev_cache.json",
+                ".update_check",
+                ".skills_prompt_snapshot.json",
+            ),
+        )
         cfg = dst / "config.yaml"
         data = yaml.safe_load(cfg.read_text()) if cfg.exists() else {}
         data = data if isinstance(data, dict) else {}
@@ -453,7 +539,13 @@ def _profile_with_cwd(profile: str | None, workdir: Path) -> tuple[str, Path]:
 
 
 class HermesCLIAdapter(AgentAdapter):
-    def __init__(self, model: str | None = None, provider: str | None = None, reasoning_effort: str | None = None, profile: str | None = None):
+    def __init__(
+        self,
+        model: str | None = None,
+        provider: str | None = None,
+        reasoning_effort: str | None = None,
+        profile: str | None = None,
+    ):
         super().__init__(model, provider=provider, reasoning_effort=reasoning_effort)
         self.profile = profile
 
@@ -467,7 +559,8 @@ class HermesCLIAdapter(AgentAdapter):
         if expected:
             artifacts_hint = (
                 "\n\nREQUIRED ARTIFACTS — you must create these files with the write_file tool: "
-                + ", ".join(str(a) for a in expected) + ". "
+                + ", ".join(str(a) for a in expected)
+                + ". "
                 "Do not put the answer only in your response text; the final text response is not graded. "
                 "If the task asks for a final answer, write it into the artifact file(s) instead of (or in addition to) the response text."
             )
@@ -486,22 +579,44 @@ class HermesCLIAdapter(AgentAdapter):
             started_at = __import__("time").time()
             profile_name, tmp_profile_dir = _profile_with_cwd(self.profile, workdir)
             cmd += ["-p", profile_name]
-            cmd += ["chat", "-q", prompt, "-Q", "--toolsets", ",".join(toolsets), "--max-turns", "20"]
+            cmd += [
+                "chat",
+                "-q",
+                prompt,
+                "-Q",
+                "--toolsets",
+                ",".join(toolsets),
+                "--max-turns",
+                "20",
+            ]
             if getattr(self, "provider", None):
                 cmd += ["--provider", self.provider]
             if self.model:
                 cmd += ["--model", self.model]
-            p = subprocess.run(cmd, cwd=workdir, text=True, capture_output=True, timeout=int(task.metadata["timeout_seconds"]))
+            p = subprocess.run(
+                cmd,
+                cwd=workdir,
+                text=True,
+                capture_output=True,
+                timeout=int(task.metadata["timeout_seconds"]),
+            )
             transcript = p.stdout + p.stderr
-            telemetry = _extract_state_db_telemetry(
-                tmp_profile_dir / "state.db", started_at=started_at, workdir=workdir
-            ) if tmp_profile_dir is not None else StateDBTelemetry(events=[])
+            telemetry = (
+                _extract_state_db_telemetry(
+                    tmp_profile_dir / "state.db", started_at=started_at, workdir=workdir
+                )
+                if tmp_profile_dir is not None
+                else StateDBTelemetry(events=[])
+            )
             return AgentRun(
                 "completed" if p.returncode == 0 else "failed",
                 transcript,
                 telemetry.tool_calls,
                 telemetry.cost_usd,
-                bool(p.returncode == 0 and re.search(r"\b(done|completed|finished)\b", transcript, re.I)),
+                bool(
+                    p.returncode == 0
+                    and re.search(r"\b(done|completed|finished)\b", transcript, re.I)
+                ),
                 telemetry.token_usage,
                 "profile-state-db" if telemetry.trusted else None,
                 tool_events=telemetry.events,

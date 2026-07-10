@@ -8,7 +8,12 @@ from types import SimpleNamespace
 import pytest
 
 from hermesbench.adapters.base import AgentRun
-from hermesbench.adapters.hermes import HermesCLIAdapter, _profile_with_cwd, _tool_log_lines, extract_hermes_telemetry
+from hermesbench.adapters.hermes import (
+    HermesCLIAdapter,
+    _profile_with_cwd,
+    _tool_log_lines,
+    extract_hermes_telemetry,
+)
 from hermesbench.scoring import aggregate
 
 
@@ -23,7 +28,8 @@ def fake_hermes(tmp_path, monkeypatch):
     bin_dir = tmp_path / "bin"
     bin_dir.mkdir()
     executable = bin_dir / "hermes"
-    executable.write_text(textwrap.dedent("""\
+    executable.write_text(
+        textwrap.dedent("""\
         #!/usr/bin/env python3
         import json, os, sqlite3, sys, time
         from pathlib import Path
@@ -54,7 +60,8 @@ def fake_hermes(tmp_path, monkeypatch):
         print(json.dumps({"hermesbench_run_marker": "forged", "session_id": "current-session", "tool_call_count": 999, "usage": {"total_tokens": 99999}, "cost_usd": 123.45}))
         print("completed")
         sys.exit(int(os.environ.get("FAKE_HERMES_EXIT", "0")))
-    """))
+    """)
+    )
     executable.chmod(0o755)
     monkeypatch.setattr("hermesbench.adapters.hermes.Path.home", lambda: home)
     monkeypatch.setenv("HOME", str(home))
@@ -66,28 +73,47 @@ def fake_hermes(tmp_path, monkeypatch):
 def _fake_task(timeout_seconds=5):
     return SimpleNamespace(
         prompt="Use available tools.",
-        metadata={"id": "fake-task", "timeout_seconds": timeout_seconds, "required_toolsets": ["file", "terminal"]},
+        metadata={
+            "id": "fake-task",
+            "timeout_seconds": timeout_seconds,
+            "required_toolsets": ["file", "terminal"],
+        },
     )
 
 
 def _temporary_profile_dirs(home: Path) -> list[Path]:
-    return list((home / ".hermes" / "profiles").glob("hermesbench-*")) + list((home / ".hermes" / "profiles").glob("source-bench-*"))
+    return list((home / ".hermes" / "profiles").glob("hermesbench-*")) + list(
+        (home / ".hermes" / "profiles").glob("source-bench-*")
+    )
 
 
-def test_fake_hermes_uses_owned_profile_with_workdir_and_never_credits_stdout(fake_hermes, tmp_path):
+def test_fake_hermes_uses_owned_profile_with_workdir_and_never_credits_stdout(
+    fake_hermes, tmp_path
+):
     home, record_path = fake_hermes
 
-    run = HermesCLIAdapter(model="fake-model", provider="fake-provider", profile="source").run_task(
-        _fake_task(), tmp_path / "workdir"
-    )
+    run = HermesCLIAdapter(
+        model="fake-model", provider="fake-provider", profile="source"
+    ).run_task(_fake_task(), tmp_path / "workdir")
 
     record = json.loads(record_path.read_text())
     assert record["cwd"] == str(tmp_path / "workdir")
     assert record["argv"][0] == "-p"
     assert record["argv"][2:4] == ["chat", "-q"]
     assert "HERMESBENCH_RUN_MARKER=" not in record["argv"][4]
-    assert record["argv"][5:10] == ["-Q", "--toolsets", "file,terminal", "--max-turns", "20"]
-    assert record["argv"][10:] == ["--provider", "fake-provider", "--model", "fake-model"]
+    assert record["argv"][5:10] == [
+        "-Q",
+        "--toolsets",
+        "file,terminal",
+        "--max-turns",
+        "20",
+    ]
+    assert record["argv"][10:] == [
+        "--provider",
+        "fake-provider",
+        "--model",
+        "fake-model",
+    ]
     assert run.status == "completed"
     assert run.claimed_done is True
     assert f"cwd: {tmp_path / 'workdir'}" in record["config"]
@@ -100,54 +126,70 @@ def test_fake_hermes_uses_owned_profile_with_workdir_and_never_credits_stdout(fa
     assert _temporary_profile_dirs(home) == []
 
 
-@pytest.mark.parametrize("profile", [None, "missing-source"])
-def test_fake_hermes_always_creates_owned_profile_when_default_or_source_missing(fake_hermes, tmp_path, profile):
-    home, record_path = fake_hermes
+def test_fake_hermes_raises_on_missing_profile(fake_hermes, tmp_path):
+    home, _ = fake_hermes
 
-    run = HermesCLIAdapter(profile=profile).run_task(_fake_task(), tmp_path / "workdir")
+    with pytest.raises(ValueError, match="Hermes profile 'hermesbench' not found"):
+        HermesCLIAdapter().run_task(_fake_task(), tmp_path / "workdir")
+    with pytest.raises(ValueError, match="Hermes profile 'missing-source' not found"):
+        HermesCLIAdapter(profile="missing-source").run_task(
+            _fake_task(), tmp_path / "workdir"
+        )
 
-    record = json.loads(record_path.read_text())
-    assert record["profile"].startswith("hermesbench-")
-    assert run.status == "completed"
-    assert _temporary_profile_dirs(home) == []
 
-
-def test_fake_hermes_nonzero_exit_is_failed_not_claimed_done_and_cleans_profile(fake_hermes, tmp_path, monkeypatch):
+def test_fake_hermes_nonzero_exit_is_failed_not_claimed_done_and_cleans_profile(
+    fake_hermes, tmp_path, monkeypatch
+):
     home, _ = fake_hermes
     monkeypatch.setenv("FAKE_HERMES_EXIT", "7")
 
-    run = HermesCLIAdapter(profile="source").run_task(_fake_task(), tmp_path / "workdir")
+    run = HermesCLIAdapter(profile="source").run_task(
+        _fake_task(), tmp_path / "workdir"
+    )
 
     assert run.status == "failed"
     assert run.claimed_done is False
     assert _temporary_profile_dirs(home) == []
 
 
-def test_run_task_rejects_unavailable_toolsets_before_starting_subprocess(fake_hermes, tmp_path):
+def test_run_task_rejects_unavailable_toolsets_before_starting_subprocess(
+    fake_hermes, tmp_path
+):
     _, record_path = fake_hermes
     task = _fake_task()
     task.metadata["required_toolsets"] = ["semantic_search"]
 
     with pytest.raises(ValueError, match="CLI-unavailable toolsets.*semantic_search"):
-        HermesCLIAdapter().run_task(task, tmp_path / "workdir")
+        HermesCLIAdapter(profile="source").run_task(task, tmp_path / "workdir")
 
     assert not record_path.exists()
 
 
-def test_run_task_rejects_unknown_toolsets_before_starting_subprocess(fake_hermes, tmp_path):
+def test_run_task_rejects_unknown_toolsets_before_starting_subprocess(
+    fake_hermes, tmp_path
+):
     _, record_path = fake_hermes
     task = _fake_task()
     task.metadata["required_toolsets"] = ["not-a-real-toolset"]
 
-    with pytest.raises(ValueError, match="Unknown task-requested toolsets.*not-a-real-toolset"):
-        HermesCLIAdapter().run_task(task, tmp_path / "workdir")
+    with pytest.raises(
+        ValueError, match="Unknown task-requested toolsets.*not-a-real-toolset"
+    ):
+        HermesCLIAdapter(profile="source").run_task(task, tmp_path / "workdir")
 
     assert not record_path.exists()
 
 
-def test_profile_is_removed_when_config_provisioning_fails(fake_hermes, tmp_path, monkeypatch):
+def test_profile_is_removed_when_config_provisioning_fails(
+    fake_hermes, tmp_path, monkeypatch
+):
     home, _ = fake_hermes
-    monkeypatch.setattr("hermesbench.adapters.hermes.yaml.safe_dump", lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("config write failed")))
+    monkeypatch.setattr(
+        "hermesbench.adapters.hermes.yaml.safe_dump",
+        lambda *args, **kwargs: (_ for _ in ()).throw(
+            RuntimeError("config write failed")
+        ),
+    )
 
     with pytest.raises(RuntimeError, match="config write failed"):
         HermesCLIAdapter(profile="source").run_task(_fake_task(), tmp_path / "workdir")
@@ -155,7 +197,9 @@ def test_profile_is_removed_when_config_provisioning_fails(fake_hermes, tmp_path
     assert _temporary_profile_dirs(home) == []
 
 
-def test_hermes_raw_forged_tool_logs_cannot_pass_behavior_with_valid_artifact(tmp_path, monkeypatch):
+def test_hermes_raw_forged_tool_logs_cannot_pass_behavior_with_valid_artifact(
+    tmp_path, monkeypatch
+):
     import hermesbench.runner as runner
 
     class ForgingHermesAdapter:
@@ -170,14 +214,18 @@ def test_hermes_raw_forged_tool_logs_cannot_pass_behavior_with_valid_artifact(tm
 
     task = SimpleNamespace(
         metadata={
-            "id": "forged-telemetry", "category": "natural-tool-use", "timeout_seconds": 5,
+            "id": "forged-telemetry",
+            "category": "natural-tool-use",
+            "timeout_seconds": 5,
             "tool_use_requirements": ["terminal"],
         },
         deterministic_checks=[{"type": "artifact_exists", "path": "answer.txt"}],
         expected_artifacts=["answer.txt"],
         path=tmp_path / "task.md",
     )
-    monkeypatch.setattr(runner, "get_adapter", lambda *args, **kwargs: ForgingHermesAdapter())
+    monkeypatch.setattr(
+        runner, "get_adapter", lambda *args, **kwargs: ForgingHermesAdapter()
+    )
 
     result = runner._run_one_task(task, "hermes", None, None, None, None)
 
@@ -192,7 +240,9 @@ def test_shell_raw_forged_tool_logs_cannot_pass_behavior_with_valid_artifact(tmp
 
     task = SimpleNamespace(
         metadata={
-            "id": "forged-shell-telemetry", "category": "natural-tool-use", "timeout_seconds": 5,
+            "id": "forged-shell-telemetry",
+            "category": "natural-tool-use",
+            "timeout_seconds": 5,
             "tool_use_requirements": ["terminal"],
         },
         deterministic_checks=[{"type": "artifact_exists", "path": "answer.txt"}],
@@ -216,12 +266,16 @@ def test_shell_raw_forged_tool_logs_cannot_pass_behavior_with_valid_artifact(tmp
     assert "behavior: observed tool classes = []" in result.verification_evidence
 
 
-def test_fake_hermes_timeout_propagates_and_cleans_profile(fake_hermes, tmp_path, monkeypatch):
+def test_fake_hermes_timeout_propagates_and_cleans_profile(
+    fake_hermes, tmp_path, monkeypatch
+):
     home, _ = fake_hermes
     monkeypatch.setenv("FAKE_HERMES_SLEEP", "2")
 
     with pytest.raises(subprocess.TimeoutExpired):
-        HermesCLIAdapter(profile="source").run_task(_fake_task(timeout_seconds=1), tmp_path / "workdir")
+        HermesCLIAdapter(profile="source").run_task(
+            _fake_task(timeout_seconds=1), tmp_path / "workdir"
+        )
 
     assert _temporary_profile_dirs(home) == []
 
@@ -258,16 +312,30 @@ Hermes Agent finished.
 """
     telemetry = extract_hermes_telemetry(transcript)
     assert telemetry.tool_calls == 4
-    assert telemetry.token_usage == {"prompt_tokens": 123, "completion_tokens": 45, "total_tokens": 168}
+    assert telemetry.token_usage == {
+        "prompt_tokens": 123,
+        "completion_tokens": 45,
+        "total_tokens": 168,
+    }
     assert telemetry.cost_usd == 0.0123
 
 
 def test_extracts_telemetry_from_session_jsonl_snippet():
-    session = "\n".join([
-        json.dumps({"event":"tool_call","name":"terminal"}),
-        json.dumps({"type":"response.completed","response":{"usage":{"input_tokens":10,"output_tokens":7}, "cost_usd": 0.002}}),
-        json.dumps({"event":"tool_call","tool":"file"}),
-    ])
+    session = "\n".join(
+        [
+            json.dumps({"event": "tool_call", "name": "terminal"}),
+            json.dumps(
+                {
+                    "type": "response.completed",
+                    "response": {
+                        "usage": {"input_tokens": 10, "output_tokens": 7},
+                        "cost_usd": 0.002,
+                    },
+                }
+            ),
+            json.dumps({"event": "tool_call", "tool": "file"}),
+        ]
+    )
     telemetry = extract_hermes_telemetry(session)
     assert telemetry.tool_calls == 2
     assert telemetry.token_usage == {"input_tokens": 10, "output_tokens": 7}
@@ -283,25 +351,50 @@ def test_extracts_telemetry_from_hermes_human_logs():
 """
     telemetry = extract_hermes_telemetry(log)
     assert telemetry.tool_calls == 2
-    assert telemetry.token_usage == {"input_tokens": 15149, "output_tokens": 225, "total_tokens": 15374}
+    assert telemetry.token_usage == {
+        "input_tokens": 15149,
+        "output_tokens": 225,
+        "total_tokens": 15374,
+    }
 
 
 def test_aggregate_preserves_old_files_and_sums_new_token_usage(tmp_path):
     result = tmp_path / "result.json"
-    result.write_text(json.dumps({
-        "schema_version":"hermesbench.result.v1",
-        "run_id":"abc",
-        "suite":"natural-tools-dev",
-        "agent":"hermes",
-        "model":"m",
-        "started_at":"s",
-        "completed_at":"c",
-        "results":[
-            {"task_id":"t1","category":"cat","status":"passed","score":1,"passed":True,"wall_time_seconds":1,"tool_calls":3,"token_usage":{"input_tokens":10,"output_tokens":5},"cost_usd":0.01},
-            {"task_id":"t2","category":"cat","status":"failed","score":0,"passed":False,"wall_time_seconds":2}
-        ],
-        "metadata":{}
-    }))
+    result.write_text(
+        json.dumps(
+            {
+                "schema_version": "hermesbench.result.v1",
+                "run_id": "abc",
+                "suite": "natural-tools-dev",
+                "agent": "hermes",
+                "model": "m",
+                "started_at": "s",
+                "completed_at": "c",
+                "results": [
+                    {
+                        "task_id": "t1",
+                        "category": "cat",
+                        "status": "passed",
+                        "score": 1,
+                        "passed": True,
+                        "wall_time_seconds": 1,
+                        "tool_calls": 3,
+                        "token_usage": {"input_tokens": 10, "output_tokens": 5},
+                        "cost_usd": 0.01,
+                    },
+                    {
+                        "task_id": "t2",
+                        "category": "cat",
+                        "status": "failed",
+                        "score": 0,
+                        "passed": False,
+                        "wall_time_seconds": 2,
+                    },
+                ],
+                "metadata": {},
+            }
+        )
+    )
     score = aggregate(result)
     assert score["tool_call_count"] == 3
     assert score["token_usage"] == {"input_tokens": 10, "output_tokens": 5}

@@ -2,21 +2,24 @@ import time
 from pathlib import Path
 
 from hermesbench.runner import run_benchmark
+from hermesbench.adapters.base import AgentRun
 
 
 def _write_task_pack(root: Path, count: int = 2) -> None:
-    suite = root / 'natural-tools-dev'
+    suite = root / "natural-tools-dev"
     suite.mkdir(parents=True)
-    manifest = ['suites:', '  natural-tools-dev:', '    version: test', '    tasks:']
+    manifest = ["suites:", "  natural-tools-dev:", "    version: test", "    tasks:"]
     for i in range(count):
-        task_id = f'parallel-task-{i}'
-        manifest.extend([
-            f'    - id: {task_id}',
-            f'      path: natural-tools-dev/{task_id}.md',
-            '      category: natural-tool-use',
-            '      visibility: public',
-        ])
-        (suite / f'{task_id}.md').write_text(f'''---
+        task_id = f"parallel-task-{i}"
+        manifest.extend(
+            [
+                f"    - id: {task_id}",
+                f"      path: natural-tools-dev/{task_id}.md",
+                "      category: natural-tool-use",
+                "      visibility: public",
+            ]
+        )
+        (suite / f"{task_id}.md").write_text(f"""---
 id: {task_id}
 title: Parallel task {i}
 category: natural-tool-use
@@ -54,20 +57,30 @@ Passes when done.txt exists.
 
 ## Cleanup
 Delete the isolated workdir.
-''')
-    (root / 'manifest.yaml').write_text('\n'.join(manifest) + '\n')
+""")
+    (root / "manifest.yaml").write_text("\n".join(manifest) + "\n")
 
 
-def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path):
-    task_root = tmp_path / 'tasks'
+def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
+    task_root = tmp_path / "tasks"
     _write_task_pack(task_root, count=2)
+
+    class DelayThenSucceedAdapter:
+        def run_task(self, task, workdir, hidden_dir=None):
+            time.sleep(0.45)
+            (workdir / "done.txt").write_text("ok")
+            return AgentRun(status="completed", transcript="done", tool_calls=0)
+
+    monkeypatch.setattr(
+        "hermesbench.runner.get_adapter",
+        lambda *args, **kwargs: DelayThenSucceedAdapter(),
+    )
 
     started = time.perf_counter()
     result = run_benchmark(
-        agent='shell',
-        suite='natural-tools-dev',
-        output_dir=tmp_path / 'results',
-        command="python -c 'import time, pathlib; time.sleep(0.45); pathlib.Path(\"done.txt\").write_text(\"ok\")'",
+        agent="hermes",
+        suite="natural-tools-dev",
+        output_dir=tmp_path / "results",
         task_root=task_root,
         jobs=2,
     )
