@@ -39,11 +39,11 @@ const apiEndpoint = 'https://www.benchcut.info/v1/results';
 const leaderboardEndpoint = 'https://www.benchcut.info/v1/leaderboard';
 
 const routes = [
-  ['/', 'Overview'],
-  ['/leaderboard', 'Leaderboard'],
+  ['/', 'Dashboard'],
+  ['/leaderboard', 'Models'],
   ['/tasks', 'Tasks'],
-  ['/methodology', 'Scoring'],
-  ['/submit', 'Run it'],
+  ['/methodology', 'Method'],
+  ['/submit', 'Submit'],
 ];
 
 const taskStats = {
@@ -219,7 +219,7 @@ function bestRow() {
 }
 
 function pageHead(kicker, title, body, aside = '') {
-  document.title = `${title} | HermesBench`;
+  document.title = `${title} | BenchCut`;
   return `<section class="page-head${aside ? '' : ' full'}">
     <div><span class="crumb">${escapeHtml(kicker)}</span><h1>${escapeHtml(title)}</h1><p class="lede">${escapeHtml(body)}</p></div>
     ${aside}
@@ -265,55 +265,53 @@ function heroReceipt(row) {
 }
 
 function homePage() {
+  const rows = currentRows();
   const all = dedupe(sourceRows());
   const best = bestRow();
-  const capability = isCapabilityData();
-  if (!capability || !all.length) {
-    return `<section class="hero">
-      <div>
-        <span class="crumb">proof, not posture</span>
-        <h1>Did the agent actually do the work?</h1>
-        <p class="lede">No reviewed results are published yet. Only official archived runs appear here. Submit a run via the command builder to contribute.</p>
-        <div class="hero-actions"><a class="btn primary" href="#/leaderboard">Compare runs</a><a class="btn secondary" href="#/submit">Run it yourself</a></div>
-      </div>
-    </section>
-    <section class="wide-callout"><h2>No results yet</h2><p>${escapeHtml(state.leaderboard?.display_notice || 'Official runs must be reviewed and archived under official-runs/. Live API submissions are unreviewed and not capability evidence.')}</p></section>
-    <section class="split-section">
-      <div class="section-title"><h2>The benchmark is a receipt checker.</h2><p>Normal leaderboards reward answers. HermesBench rewards completed work with a trail you can inspect.</p></div>
-      <div class="evidence-list">
-        ${evidenceRow('01', 'Execution first', 'Tasks require reading files, changing files, running commands, inspecting output, and leaving artifacts.')}
-        ${evidenceRow('02', 'False-done pressure', 'A confident final answer is not enough. If evidence is missing, the task can fail even when the prose sounds good.')}
-        ${evidenceRow('03', 'Run-level audits', 'Every public run can expose task status, checks, tokens, tool calls, timing, and model settings like reasoning effort.')}
-        ${evidenceRow('04', 'Token-protected submissions', 'Every submission uses the configured token. No separate community lane — one endpoint for all results.')}
-      </div>
-    </section>
-    <section class="wide-callout"><h2>One screen, one question.</h2><p>The redesign splits the site into focused surfaces: overview, comparison, task catalog, scoring, run instructions, and per-run evidence. No mega-table as the default read.</p><a class="text-pill" href="#/tasks">Inspect task packs</a></section>`;
-  }
-  return `<section class="hero">
-    <div>
-      <span class="crumb">proof, not posture</span>
-      <h1>Did the agent actually do the work?</h1>
-      <p class="lede">${escapeHtml(state.leaderboard?.display_notice || 'HermesBench records tool-use evidence with scope and provenance.')}</p>
-      <div class="hero-actions"><a class="btn primary" href="#/leaderboard">Compare runs</a><a class="btn secondary" href="#/methodology">Read scoring</a></div>
+  const official = all.filter(isCapabilityRun);
+  const suites = [...new Set(all.map((row) => row.suite).filter(Boolean))];
+  const officialRuns = official.length;
+  const visibleRows = rows.slice(0, 6);
+  document.title = 'Dashboard | BenchCut';
+  return `<section class="data-header">
+    <div><span class="crumb">benchcut / benchmark index</span><h1>Agent benchmark dashboard</h1></div>
+    <div class="data-header-meta"><span class="live-dot"></span><b>${officialRuns ? 'official data' : 'awaiting official data'}</b><span>updated on request</span></div>
+  </section>
+  <section class="dashboard-toolbar" aria-label="Dashboard controls">
+    <span class="dashboard-label">BenchCut / capability probes</span>
+    <span class="toolbar-status">${fmt.num(taskStats.total)} tasks</span>
+    <span class="toolbar-status">${fmt.num(suites.length)} suites</span>
+    <a class="text-pill" href="#/submit">Run benchmark</a>
+  </section>
+  <section class="data-grid metrics-grid" aria-label="Benchmark metrics">
+    ${dashboardMetric('Published runs', fmt.num(officialRuns), 'official evidence')}
+    ${dashboardMetric('Task coverage', fmt.num(taskStats.total), 'capability probes')}
+    ${dashboardMetric('Best score', officialRuns ? fmt.pct(scoreOf(best)) : 'n/a', 'verified only')}
+    ${dashboardMetric('Reliability', officialRuns ? fmt.pct(reliabilityOf(best)) : 'n/a', 'false done + timeout')}
+    ${dashboardMetric('Median time', officialRuns ? fmt.seconds(medianTimeOf(best)) : 'n/a', 'best visible run')}
+    ${dashboardMetric('Data status', officialRuns ? 'ready' : 'staging', officialRuns ? 'reviewed sample' : 'no public sample')}
+  </section>
+  <section class="dashboard-columns">
+    <div class="dashboard-main">
+      <div class="section-bar"><div><span class="crumb">comparison</span><h2>Model performance</h2></div><a class="text-pill" href="#/leaderboard">View all models</a></div>
+      ${visibleRows.length ? `<div class="compact-table" role="table" aria-label="Top model runs"><div class="compact-table-head" role="row"><span>#</span><span>Model / config</span><span>Score</span><span>Passed</span><span>Reliability</span><span></span></div>${visibleRows.map((row, index) => dashboardRunRow(row, index)).join('')}</div>` : `<div class="data-empty"><b>No official model runs yet.</b><span>Verified submissions will appear here after review.</span><a class="text-pill" href="#/submit">Submit a run</a></div>`}
     </div>
-    ${heroReceipt(best)}
+    <aside class="dashboard-side">
+      <div class="section-bar"><div><span class="crumb">coverage</span><h2>Task packs</h2></div><a class="text-pill" href="#/tasks">All tasks</a></div>
+      <div class="pack-list">${taskStats.packs.map(([name, id, count]) => `<a class="pack-row" href="#/tasks"><span><b>${escapeHtml(name)}</b><small>${escapeHtml(id)}</small></span><strong>${escapeHtml(count)}</strong></a>`).join('')}</div>
+      <div class="side-note"><b>Evidence class</b><span>Only reviewed capability evidence contributes to model ranking.</span></div>
+    </aside>
   </section>
-  <section class="stat-wall" aria-label="Benchmark summary">
-    <div class="stat"><b>${fmt.num(taskStats.total)}</b><span>natural tool-use capability probes</span></div>
-    <div class="stat"><b>${fmt.num(all.length)}</b><span>public runs currently visible</span></div>
-    <div class="stat"><b>${fmt.pct(reliabilityOf(best))}</b><span>reliability after false-done and timeout pressure</span></div>
-    <div class="stat"><b>${fmt.compact(tokenCountOf(best))}</b><span>tokens spent by the top visible run</span></div>
-  </section>
-  <section class="split-section">
-    <div class="section-title"><h2>The benchmark is a receipt checker.</h2><p>Normal leaderboards reward answers. HermesBench rewards completed work with a trail you can inspect.</p></div>
-    <div class="evidence-list">
-      ${evidenceRow('01', 'Execution first', 'Tasks require reading files, changing files, running commands, inspecting output, and leaving artifacts.')}
-      ${evidenceRow('02', 'False-done pressure', 'A confident final answer is not enough. If evidence is missing, the task can fail even when the prose sounds good.')}
-      ${evidenceRow('03', 'Run-level audits', 'Every public run can expose task status, checks, tokens, tool calls, timing, and model settings like reasoning effort.')}
-      ${evidenceRow('04', 'Token-protected submissions', 'Every submission uses the configured token. No separate community lane — one endpoint for all results.')}
-    </div>
-  </section>
-  <section class="wide-callout"><h2>One screen, one question.</h2><p>The redesign splits the site into focused surfaces: overview, comparison, task catalog, scoring, run instructions, and per-run evidence. No mega-table as the default read.</p><a class="text-pill" href="#/tasks">Inspect task packs</a></section>`;
+  <section class="dashboard-foot"><span>Sources: official archived runs / task manifests</span><a href="#/methodology">Scoring methodology →</a></section>`;
+}
+
+function dashboardMetric(label, value, sub) {
+  return `<div class="dashboard-metric"><span>${escapeHtml(label)}</span><b>${escapeHtml(value)}</b><small>${escapeHtml(sub)}</small></div>`;
+}
+
+function dashboardRunRow(row, index) {
+  const runId = runIdOf(row);
+  return `<a class="compact-table-row" role="row" href="#/runs/${encodeURIComponent(runId)}"><span class="table-rank">${String(index + 1).padStart(2, '0')}</span><span class="table-model"><b>${escapeHtml(modelTitle(row))}</b><small>${escapeHtml(providerLine(row))}</small></span><strong>${fmt.pct(scoreOf(row))}</strong><span>${fmt.num(passedOf(row))}/${fmt.num(taskCountOf(row))}</span><span>${fmt.pct(reliabilityOf(row))}</span><span class="row-arrow">→</span></a>`;
 }
 
 function evidenceRow(number, title, body) {
@@ -377,17 +375,17 @@ function leaderboardPage() {
   const rows = currentRows();
   const capability = isCapabilityData();
   if (!rows.length) {
-    return `${pageHead('leaderboard', 'Who finished the most real work?', 'No reviewed results are published yet. Submit a run and have it reviewed to appear here.', `<aside class="panel">${metricRow('visible runs', '0')}${metricRow('status', 'no results')}</aside>`)}
-    ${emptyState('No reviewed results yet', 'Official runs must be archived under official-runs/. Community submissions are unreviewed until promoted.', '<a class="btn primary" href="#/submit">Run the benchmark</a>')}`;
+    return `${pageHead('leaderboard', 'Runs', 'Sort verified work by score, reliability, speed, efficiency, or value.', `<aside class="panel">${metricRow('visible runs', '0')}${metricRow('status', 'awaiting data')}</aside>`)}
+    ${emptyState('No published runs', 'Upload a result for review or run the benchmark locally.', '<a class="btn primary" href="#/submit">Run it</a>')}`;
   }
-  return `${pageHead('leaderboard', 'Who finished the most real work?', 'Sort by score, reliability, speed, token efficiency, or value. Only official archived runs appear here.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)}
+  return `${pageHead('leaderboard', 'Runs', 'Verified work, ranked by the metric you choose.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)}
   ${controls(state.leaderboard)}
   ${podium(rows)}<section class="run-list" id="leaderboard-results" aria-live="polite">${rows.map(runCard).join('')}</section>
   ${fold('How should I read this?', '<p>Start with tasks passed and false-done count. Speed and token use matter after the run proves it actually completed the task.</p>')}`;
 }
 
 function tasksPage() {
-  return `${pageHead('task catalog', 'What work does HermesBench ask agents to do?', 'The task catalog is built around concrete agent failure modes: skipping files, claiming success too early, losing context, timing out, or failing to verify output.')}
+  return `${pageHead('task catalog', 'What work does BenchCut ask agents to do?', 'The task catalog is built around concrete agent failure modes: skipping files, claiming success too early, losing context, timing out, or failing to verify output.')}
   <section class="task-grid">
     ${taskStats.packs.map(([name, id, count, body]) => `<article class="task-pack"><div>${tag(id, id === 'public-dev')}<h2>${escapeHtml(name)}</h2><p>${escapeHtml(body)}</p></div><b class="score-figure" style="margin:0"><span class="accent">${escapeHtml(count)}</span><span>tasks</span></b></article>`).join('')}
   </section>
@@ -493,7 +491,7 @@ function commandText(command = state.command) {
 function commandBuilder() {
   const c = state.command;
   const providers = [...new Set([...Object.keys(providerModels), ...sourceRows().map((row) => row.provider).filter(Boolean)])];
-  return `<section class="command-builder" aria-label="HermesBench command builder">
+  return `<section class="command-builder" aria-label="BenchCut command builder">
     <div class="panel">
       <span class="crumb">command builder</span>
       <h2>Pick the run settings.</h2>
@@ -612,7 +610,7 @@ function modelPage(provider, encodedModel) {
 }
 
 function privacyPage() {
-  return `${pageHead('privacy', 'Privacy', 'HermesBench is a static benchmark site. It reads local JSON files from this deployment and does not need account data to view public samples.')}
+  return `${pageHead('privacy', 'Privacy', 'BenchCut is a static benchmark site. It reads local JSON files from this deployment and does not need account data to view public samples.')}
   <section class="method-list">
     ${methodItem('Public run data', 'Visible JSON files may include task summaries, transcripts, tool counts, timing, and verifier output for published benchmark runs.')}
     ${methodItem('No private credentials', 'Public tasks are intended to run without private accounts. Official private packs, if used, should not publish hidden task content.')}
@@ -628,8 +626,8 @@ function termsPage() {
 }
 
 function notFoundPage(path) {
-  document.title = 'Page not found | HermesBench';
-  return emptyState('Page not found', `No HermesBench page exists for ${path}.`, '<a class="btn primary" href="#/">Go home</a>');
+  document.title = 'Page not found | BenchCut';
+  return emptyState('Page not found', `No BenchCut page exists for ${path}.`, '<a class="btn primary" href="#/">Go home</a>');
 }
 
 function navHtml() {
@@ -775,7 +773,7 @@ function bindBrowserUpload() {
       }
       // Safety: validate basic shape before sending — must contain result.run_id or run_id
       if (!payload?.result?.run_id && !payload?.run_id) {
-        statusEl.textContent = 'Payload does not look like a HermesBench result (missing run_id).';
+        statusEl.textContent = 'Payload does not look like a BenchCut result (missing run_id).';
         submitBtn.disabled = false;
         return;
       }
@@ -835,7 +833,7 @@ async function render(shouldScroll = true) {
   try {
     app.innerHTML = await routeContent(path);
   } catch (error) {
-    document.title = 'Error | HermesBench';
+    document.title = 'Error | BenchCut';
     app.innerHTML = `<section class="error-screen"><span class="crumb">load error</span><h1>Evidence did not load.</h1><p class="lede">${escapeHtml(error.message)}</p><p><button class="btn primary" type="button" onclick="location.reload()">Reload</button></p></section>`;
   }
   setActive(path);
