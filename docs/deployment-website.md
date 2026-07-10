@@ -50,7 +50,7 @@ Only `real-agent-validate` joins the `hermesbench-realagent-*` concurrency group
 - `BLOB_READ_WRITE_TOKEN` is implicitly present in any Vercel project with a connected Blob store; it is automatically available at runtime. Do not copy it to GitHub or local `.env` files.
 
 ## Configuration
-The leaderboard is served live from the API. No static mock data exists in the repository. Only reviewed, archived official runs appear as capability evidence. Authenticated submissions use `https://hermesbench.site/v1/results`, persist sanitized uploads to Vercel Blob, and feed the API leaderboard.
+The leaderboard is served live from the API. No static mock data exists in the repository. Only reviewed, archived official runs appear as capability evidence. Authenticated submissions use `https://www.benchcut.info/v1/results`, persist sanitized uploads to Vercel Blob, and feed the API leaderboard.
 
 ## Smoke checklist
 - Landing page loads with no-result state when no data exists.
@@ -58,5 +58,5 @@ The leaderboard is served live from the API. No static mock data exists in the r
 - Result detail page shows task evidence and status badge.
 - Methodology, tasks, and run instructions are reachable.
 - Browser upload form on /submit page lets maintainers select a scored JSON file, enter a submission token, and POST to `/v1/results` without the token being stored or logged.
-- `HERMESBENCH_SUBMISSION_TOKEN=UPLOAD_SECRET uv run hermesbench upload <result.json> --endpoint https://hermesbench.site/v1/results` returns `202` and the run appears in `GET /v1/leaderboard`.
+- `HERMESBENCH_SUBMISSION_TOKEN=UPLOAD_SECRET uv run hermesbench upload <result.json> --endpoint https://www.benchcut.info/v1/results` returns `202` and the run appears in `GET /v1/leaderboard`.
 - No private task data or local paths appear in the deployed bundle.

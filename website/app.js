@@ -35,8 +35,8 @@ const fmt = {
   },
 };
 const DATA_BASE = 'data';
-const apiEndpoint = 'https://hermesbench.site/v1/results';
-const leaderboardEndpoint = 'https://hermesbench.site/v1/leaderboard';
+const apiEndpoint = 'https://www.benchcut.info/v1/results';
+const leaderboardEndpoint = 'https://www.benchcut.info/v1/leaderboard';
 
 const routes = [
   ['/', 'Overview'],
@@ -507,7 +507,7 @@ function commandBuilder() {
         <label class="control"><span>Jobs</span><select id="cmd-jobs">${optionList(['auto', '1', '2', '4', '8'], c.jobs)}</select></label>
         <label class="control"><span>Specific task optional</span><input id="cmd-task" placeholder="hbo-dev-001-project-board-recovery" value="${escapeHtml(c.task)}"></label>
         <label class="control wide"><span>Output directory</span><input id="cmd-output" value="${escapeHtml(c.outputDir)}"></label>
-        <label class="control wide"><span>API endpoint</span><input id="cmd-endpoint" placeholder="https://hermesbench.site/v1/results" value="${escapeHtml(c.endpoint || apiEndpoint)}"></label>
+        <label class="control wide"><span>API endpoint</span><input id="cmd-endpoint" placeholder="https://www.benchcut.info/v1/results" value="${escapeHtml(c.endpoint || apiEndpoint)}"></label>
       </div>
       <p class="builder-note" id="cmd-note">The generated command scores the raw result, then posts the sanitized submission to the single leaderboard endpoint using the configured submission token.</p>
     </div>

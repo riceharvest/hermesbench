@@ -106,13 +106,13 @@ async function call(handler, method, body, headers = {}) {
     // Non-allowlisted origin falls back to default
     const corsRes = await call(leaderboard, 'GET', null, { Origin: 'http://evil.example.com' });
     assert.equal(corsRes.statusCode, 200);
-    assert.equal(corsRes.headers['access-control-allow-origin'], 'https://hermesbench.site');
+    assert.equal(corsRes.headers['access-control-allow-origin'], 'https://www.benchcut.info');
   }
   {
     // No Origin header -> default
     const corsRes = await call(leaderboard, 'GET');
     assert.equal(corsRes.statusCode, 200);
-    assert.equal(corsRes.headers['access-control-allow-origin'], 'https://hermesbench.site');
+    assert.equal(corsRes.headers['access-control-allow-origin'], 'https://www.benchcut.info');
   }
   {
     // CORS on POST (results endpoint)

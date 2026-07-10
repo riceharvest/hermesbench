@@ -54,11 +54,11 @@ function sendJson(res, status, body, extraHeaders = {}, req = null) {
  * for different origins.  Never emits a wildcard.
  */
 function corsHeaders(req) {
-  const allowed = (process.env.HERMESBENCH_CORS_ORIGINS || 'https://hermesbench.site,http://localhost:4173,http://localhost:4177')
+  const allowed = (process.env.HERMESBENCH_CORS_ORIGINS || 'https://www.benchcut.info,http://localhost:4173,http://localhost:4177')
     .split(',')
     .map((origin) => origin.trim())
     .filter(Boolean);
-  const defaultOrigin = allowed[0] || 'https://hermesbench.site';
+  const defaultOrigin = allowed[0] || 'https://www.benchcut.info';
   const reqOrigin = req?.headers?.origin || req?.headers?.Origin || null;
   const matchedOrigin = reqOrigin && allowed.includes(reqOrigin) ? reqOrigin : null;
   return {

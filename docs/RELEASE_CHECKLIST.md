@@ -83,8 +83,8 @@ Follow these steps for every release candidate.
 
 ## Post-deploy smoke (live API)
 
-- [ ] `GET https://hermesbench.site/health` returns `200 {"ok": true}`
-- [ ] `GET https://hermesbench.site/v1/leaderboard` returns a valid leaderboard (may be empty).
+- [ ] `GET https://www.benchcut.info/health` returns `200 {"ok": true}`
+- [ ] `GET https://www.benchcut.info/v1/leaderboard` returns a valid leaderboard (may be empty).
 - [ ] Invalid submissions are rejected with appropriate error codes.
 
 ## Post-release

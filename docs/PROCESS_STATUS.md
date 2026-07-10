@@ -9,12 +9,12 @@
 |---|---|---|
 | **Local build-ready** | All repository-level gates pass on the developer workstation. | Any contributor |
 | **Release candidate** | Build, test, website, packaging, and self-hosted real-agent smoke gates all pass; release artifacts are publishable. | Maintainer (after RC checklist) |
-| **Live deployment** | `https://hermesbench.site` serves live submissions and leaderboard from Vercel with Blob storage. | Maintainer (after live checklist) |
+| **Live deployment** | `https://www.benchcut.info` serves live submissions and leaderboard from Vercel with Blob storage. | Maintainer (after live checklist) |
 
-**Current stage: RELEASE CANDIDATE — canonical domain blocked**. Repository,
-self-hosted real-agent, and Vercel production-alias gates pass; the required
-`hermesbench.site` hostname remains unavailable because the registrar reports
-`serverHold` and Vercel reports missing current nameservers.
+**Current stage: LIVE DEPLOYMENT — new domain verified**. Repository,
+self-hosted real-agent, Vercel deployment, and `www.benchcut.info` API gates
+pass. The apex `benchcut.info` still needs DNS configuration and redirects to
+the working `www` hostname once configured.
 
 ---
 
@@ -55,22 +55,21 @@ gh api repos/riceharvest/hermesbench/actions/runners \
 
 ### Live Vercel environment and Blob
 
-The production deployment is verified through the public Vercel alias
-`https://website-wine-ten-u3uov98uc1.vercel.app`. The canonical
-`https://hermesbench.site` hostname remains **NOT reachable** because its DNS
-is under registrar `serverHold`.
+The production deployment is verified through `https://www.benchcut.info`.
+The Vercel alias `https://website-wine-ten-u3uov98uc1.vercel.app` remains
+available as a deployment-level fallback.
 
 | Requirement | Status | Verifier |
 |---|---|---|
 | `HERMESBENCH_SUBMISSION_TOKEN` set in Vercel project | ✅ Verified indirectly | Production `/health` returned `ok: true` |
 | `BLOB_READ_WRITE_TOKEN` auto-provisioned by connected Blob store | ✅ Verified | Production `/health` returned `storage: vercel-blob` |
-| CORS origins configured for `https://hermesbench.site` | ✅ Configured | Production response includes the canonical origin allowlist |
+| CORS origins configured for `https://www.benchcut.info` | ✅ Verified | Production response includes the new canonical origin |
 | Rate-limit settings (`MAX`, `WINDOW_SECONDS`) | ❓ Not verified | Vercel environment variables |
 | No `HERMESBENCH_SUBMISSION_TOKEN` in GitHub secrets or Actions | ✅ Verified | `gh secret list` contains only Vercel deployment secrets; workflow audit has no provider token |
 
 ### Real self-hosted smoke (Hermes agent run)
 
-The workflows contain the step definition for real-agent smoke (`uv run hermesbench run --agent hermes --profile hermesbench …`) but a **real Hermes agent run on the self-hosted runner has NOT been executed** against this repository state:
+The workflows contain the step definition for real-agent smoke (`uv run hermesbench run --agent hermes --profile hermesbench …`) and the real Hermes agent run has passed on the self-hosted runner.
 
 | Sub-gate | Status | Verifier |
 |---|---|---|
@@ -83,19 +82,18 @@ The workflows contain the step definition for real-agent smoke (`uv run hermesbe
 
 ### Post-deploy smoke (live API)
 
-The post-deploy smoke passed against the public Vercel production alias. The
-canonical hostname could not be tested because DNS is blocked by `serverHold`:
+The post-deploy smoke passed against `https://www.benchcut.info`:
 
 ```bash
 # Health check
-curl https://hermesbench.site/health
+curl https://www.benchcut.info/health
 # Expected: {"ok": true}
 
 # Leaderboard (may be empty)
-curl https://hermesbench.site/v1/leaderboard
+curl https://www.benchcut.info/v1/leaderboard
 
 # Invalid submissions rejected
-curl -X POST https://hermesbench.site/v1/results -H 'Content-Type: application/json' -d '{"garbage": true}'
+curl -X POST https://www.benchcut.info/v1/results -H 'Content-Type: application/json' -d '{"garbage": true}'
 # Expected: 4xx
 ```
 
@@ -105,11 +103,11 @@ curl -X POST https://hermesbench.site/v1/results -H 'Content-Type: application/j
 
 1. **Clean up the working tree** — ✅ Complete. The pivot is split into reviewable commits and `main` is clean.
 2. **Verify `hermesbench-local` runner label** — Confirmed through the GitHub Actions runner API; `fedora-hermesbench` is online with the label.
-3. **Verify live Vercel environment** — Set `HERMESBENCH_SUBMISSION_TOKEN` (if not already), confirm Blob is connected and `BLOB_READ_WRITE_TOKEN` is present, review CORS and rate-limit config.
+3. **Verify live Vercel environment** — ✅ Blob and health verified on `www.benchcut.info`; rate-limit configuration remains a dashboard check.
 4. **Execute real self-hosted smoke** — ✅ Complete on CI run `29096581117` and Vercel run `29096581192`.
-5. **Run post-deploy smoke** — ✅ Complete against `https://website-wine-ten-u3uov98uc1.vercel.app`; canonical hostname remains blocked by DNS.
-6. **Resolve canonical DNS** — Set `A hermesbench.site 76.76.21.21` or switch nameservers to `ns1.vercel-dns.com` and `ns2.vercel-dns.com`, then clear the registrar `serverHold`.
-7. **Execute the full RELEASE_CHECKLIST** — Tag only after the canonical domain resolves and its health/leaderboard/invalid-submission checks pass.
+5. **Run post-deploy smoke** — ✅ Complete against `https://www.benchcut.info`.
+6. **Configure apex DNS** — Add `A benchcut.info 76.76.21.21` at the registrar, or delegate to Vercel nameservers, so the apex can redirect to `www`.
+7. **Execute the full RELEASE_CHECKLIST** — Health and leaderboard pass; invalid-submission check remains to be run against the new domain.
 
 ---
 
@@ -140,7 +138,7 @@ pass when invoked with `--run-slow`.
 
 ## Production ground truth
 
-- The **only** HermesBench website/production domain is **`https://hermesbench.site`**.
+- The HermesBench website/production domain is **`https://www.benchcut.info`**.
 - The **only** live API is served by Vercel functions under `website/api/`.
 - The Python HTTP server (`src/hermesbench/http_api.py`) is for **local dev and CI smoke only** — never exposed to the public internet (documented in `docs/deployment-api.md`).
 - Official results are **never** accepted through public upload. They are created by maintainer-only offline promotion.

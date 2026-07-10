@@ -58,7 +58,7 @@ uv run hermesbench run --agent hermes --benchmark-version hermesbench-v0.1 --job
 uv run hermesbench run --agent shell --command './my-agent-runner.sh' --suite natural-tools-dev --jobs 4
 uv run hermesbench score results/<run>.json
 uv run hermesbench export --suite natural-tools-dev --format jsonl
-uv run hermesbench upload results/<run>.json --endpoint https://hermesbench.site/v1/results
+uv run hermesbench upload results/<run>.json --endpoint https://www.benchcut.info/v1/results
 uv run hermesbench serve-api --host 127.0.0.1 --port 8787
 uv run hermesbench archive-official --result results/run.json --manifest official-runs/run.yaml --output official-runs/archive/run
 ```
@@ -213,7 +213,7 @@ Uploaded runs are unofficial until maintainers promote them. `metadata.official=
 
 ## Website
 
-Live site: **https://hermesbench.site**
+Live site: **https://www.benchcut.info**
 
 The static website lives in [`website/`](website/) and is deployable to GitHub Pages, Vercel, or any static host:
 

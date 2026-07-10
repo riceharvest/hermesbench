@@ -2,7 +2,7 @@
 
 ## Status
 
-The checked-in Python HTTP server uses `wsgiref` for local development and CI smoke tests. Do **not** expose it directly to the public internet. The live `https://hermesbench.site` API is served by Vercel functions in `website/api/` and persists sanitized submissions to Vercel Blob.
+The checked-in Python HTTP server uses `wsgiref` for local development and CI smoke tests. Do **not** expose it directly to the public internet. The live `https://www.benchcut.info` API is served by Vercel functions in `website/api/` and persists sanitized submissions to Vercel Blob.
 
 ## Required environment
 
