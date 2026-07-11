@@ -510,8 +510,10 @@ def test_end_to_end_python_data_gen_to_js_build(tmp_path):
     website = tmp_path / "website"
     results_dir = tmp_path / "results"
     out_dir = tmp_path / "out"
+    manifest_tasks = discover_tasks("hermes-core")
+    manifest_task_ids = {task.metadata["id"] for task in manifest_tasks}
 
-    # ── Create dummy result files that satisfy validate_result_schema ──────
+    # ── Create result files using real manifest task records ───────────────
     def _make_result(subdir, run_id, suite, agent, official=False):
         path = results_dir / subdir / f"hermesbench-{run_id}.json"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -530,27 +532,17 @@ def test_end_to_end_python_data_gen_to_js_build(tmp_path):
             },
             "results": [
                 {
-                    "task_id": f"{run_id}-t1",
-                    "category": "natural-tool-use",
+                    "task_id": task.metadata["id"],
+                    "category": task.metadata["category"],
                     "status": "passed",
                     "score": 1.0,
                     "passed": True,
-                    "wall_time_seconds": 5.0,
+                    "wall_time_seconds": 1.0,
                     "tool_calls": 3,
                     "false_done": False,
                     "timeout": False,
-                },
-                {
-                    "task_id": f"{run_id}-t2",
-                    "category": "code",
-                    "status": "failed",
-                    "score": 0.0,
-                    "passed": False,
-                    "wall_time_seconds": 2.0,
-                    "tool_calls": 1,
-                    "false_done": False,
-                    "timeout": False,
-                },
+                }
+                for task in manifest_tasks
             ],
         }
         path.write_text(json.dumps(data))
@@ -573,6 +565,8 @@ def test_end_to_end_python_data_gen_to_js_build(tmp_path):
     assert len(lb_data["official"]) >= 1
     assert len(lb_data["unofficial"]) >= 1
     assert len(lb_data["entries"]) == 3
+    generated_run = json.loads((out_dir / "runs/o1.json").read_text())
+    assert {task["task_id"] for task in generated_run["tasks"]} == manifest_task_ids
 
     # ── Step 2: Set up website fixture directory ──────────────────────────
     (website / "data").mkdir(parents=True)
@@ -624,6 +618,8 @@ def test_end_to_end_python_data_gen_to_js_build(tmp_path):
     dist_lb = json.loads((dist / "data/leaderboard.json").read_text())
     assert dist_lb["schema_version"] == "hermesbench.website.leaderboard.v3"
     assert len(dist_lb["entries"]) == 3
+    dist_run = json.loads((dist / "data/o1.json").read_text())
+    assert {task["task_id"] for task in dist_run["tasks"]} == manifest_task_ids
 
 
 # ── Parameterized parse_task_markdown coverage ──────────────────────────────

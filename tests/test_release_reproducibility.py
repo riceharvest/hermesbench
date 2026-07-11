@@ -51,6 +51,15 @@ def _pyproject_version() -> str:
     return m.group(1)
 
 
+def _ensure_dist_artifacts() -> Path:
+    """Build release artifacts when the slow suite starts from a clean tree."""
+    root = _repo_root()
+    dist = root / "dist"
+    if not list(dist.glob("*.whl")) or not list(dist.glob("*.tar.gz")):
+        subprocess.run(["uv", "build"], check=True, cwd=root, capture_output=True, text=True)
+    return dist
+
+
 # ── version provenance ────────────────────────────────────────────────────────
 
 
@@ -134,9 +143,7 @@ def test_fresh_wheel_install(tmp_path):
     run inside the development venv would miss.
     """
     root = _repo_root()
-    dist = root / "dist"
-    if not dist.exists() or not list(dist.glob("*.whl")):
-        pytest.skip("no pre-built wheel in dist/ — run 'uv build' first")
+    dist = _ensure_dist_artifacts()
 
     # Create a clean virtualenv
     venv = tmp_path / "venv"
@@ -207,9 +214,7 @@ def test_sdist_rebuilds_identical_wheel(tmp_path):
     pyproject.toml.
     """
     root = _repo_root()
-    dist = root / "dist"
-    if not dist.exists() or not list(dist.glob("*.tar.gz")):
-        pytest.skip("no pre-built sdist in dist/")
+    dist = _ensure_dist_artifacts()
 
     sdists = sorted(dist.glob("*.tar.gz"))
     sdist = sdists[-1]

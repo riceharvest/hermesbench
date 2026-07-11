@@ -64,6 +64,7 @@ Delete the isolated workdir.
 def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
     task_root = tmp_path / "tasks"
     _write_task_pack(task_root, count=2)
+    barrier = threading.Barrier(2, timeout=5)
 
     class DelayThenSucceedAdapter:
         barrier = threading.Barrier(2)
@@ -83,6 +84,7 @@ def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
             finally:
                 with type(self).lock:
                     type(self).active -= 1
+
 
     monkeypatch.setattr(
         "hermesbench.runner.get_adapter",
