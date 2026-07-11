@@ -101,7 +101,16 @@ def test_task_markdown_parser_extracts_checks():
     assert parsed.deterministic_checks
 
 
-def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path):
+def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(
+    tmp_path, monkeypatch
+):
+    from hermesbench.adapters import hermes as hermes_adapter
+
+    monkeypatch.setattr(
+        hermes_adapter,
+        "unsupported_cli_toolsets",
+        lambda task, check_runtime: ["x_search"],
+    )
     result = run_benchmark(
         agent="hermes",
         suite="hermes-extended",
