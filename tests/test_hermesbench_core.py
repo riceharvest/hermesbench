@@ -95,10 +95,14 @@ Do it.
 
 
 def test_task_markdown_parser_extracts_checks():
-    task = discover_tasks("hermes-core")[0]
-    parsed = parse_task_markdown(task.path)
-    assert parsed.metadata["id"].startswith("htu-dev-")
-    assert parsed.deterministic_checks
+    tasks = discover_tasks("hermes-core")
+    assert tasks, "hermes-core must contain parser fixtures"
+
+    for task in tasks:
+        parsed = parse_task_markdown(task.path)
+        assert parsed.metadata["id"] == task.metadata["id"]
+        assert parsed.metadata["id"].startswith("htu-dev-")
+        assert parsed.deterministic_checks, parsed.metadata["id"]
 
 
 def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path):
