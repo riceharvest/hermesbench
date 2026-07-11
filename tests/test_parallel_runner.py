@@ -85,7 +85,6 @@ def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
                 with type(self).lock:
                     type(self).active -= 1
 
-
     monkeypatch.setattr(
         "hermesbench.runner.get_adapter",
         lambda *args, **kwargs: DelayThenSucceedAdapter(),

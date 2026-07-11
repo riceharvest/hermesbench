@@ -22,7 +22,7 @@ jobs:
       - name: Verify published suite counts
         run: uv run python scripts/sync_suite_counts.py --check
       - name: Run unit tests
-        run: uv run pytest
+        run: uv run pytest -n auto
       - name: Build Python distributions
         run: uv build
 

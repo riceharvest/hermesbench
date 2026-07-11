@@ -54,11 +54,11 @@ jobs:
       - name: Validate tasks
         run: uv run hermesbench validate-tasks
       - name: Run tests
-        run: uv run pytest
+        run: uv run pytest -n auto
       - name: Build Python distributions
         run: uv build
       - name: Run reproducibility gates (fresh-wheel install, sdist rebuild)
-        run: uv run pytest --run-slow --timeout 120 -x -v
+        run: uv run pytest -n auto --run-slow --timeout 120 -x -v
       - name: Upload built artifacts for downstream jobs
         uses: actions/upload-artifact@v4
         with:
