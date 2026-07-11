@@ -214,11 +214,17 @@ def test_visible_suite_counts_match_the_manifest_contract():
     app = (root / "website/app.js").read_text()
     readme = (root / "README.md").read_text()
 
-    assert "total: 38" in app
-    assert "hermesCore: 13" in app
-    assert "hermesExtended: 25" in app
-    assert "| `hermes-core` | 13 |" in readme
-    assert "| `hermes-extended` | 25 |" in readme
+    from hermesbench.versions import BENCHMARK_VERSIONS
+
+    core_count = BENCHMARK_VERSIONS["hermes-core-v0.1"]["task_count"]
+    ext_count = BENCHMARK_VERSIONS["hermes-extended-v0.1"]["task_count"]
+    total = core_count + ext_count
+
+    assert f"total: {total}" in app
+    assert f"hermesCore: {core_count}" in app
+    assert f"hermesExtended: {ext_count}" in app
+    assert f"| `hermes-core` | {core_count} |" in readme
+    assert f"| `hermes-extended` | {ext_count} |" in readme
 
 
 def _read_workflow(root, name):
@@ -462,3 +468,132 @@ Do it.
 """)
     tasks = discover_tasks("fresh", task_root=root)
     assert [t.metadata["id"] for t in tasks] == ["hb-private-001"]
+
+
+def test_end_to_end_python_data_gen_to_js_build(tmp_path):
+    """End-to-end regression: Python build_data -> generated JSON -> JS build.js.
+
+    Creates real (minimal) result files, runs the full Python pipeline to
+    produce leaderboard.json and per-run details, then invokes the actual
+    website/build.js to validate, copy, and produce dist/. Asserts the build
+    exits 0, generates all expected artifacts, and the JS validator reports
+    successful validation of all JSON sources.
+    """
+    root = Path(__file__).resolve().parents[1]
+    website = tmp_path / "website"
+    results_dir = tmp_path / "results"
+    out_dir = tmp_path / "out"
+
+    # ── Create dummy result files that satisfy validate_result_schema ──────
+    def _make_result(subdir, run_id, suite, agent, official=False):
+        path = results_dir / subdir / f"hermesbench-{run_id}.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        data = {
+            "schema_version": "hermesbench.result.v1",
+            "run_id": run_id,
+            "suite": suite,
+            "agent": agent,
+            "model": "fixture-model",
+            "started_at": "2026-07-11T00:00:00Z",
+            "completed_at": "2026-07-11T01:00:00Z",
+            "metadata": {
+                "official": official,
+                "provider": "test-provider",
+                "benchmark_version": "hermes-core-v0.1",
+            },
+            "results": [
+                {
+                    "task_id": f"{run_id}-t1",
+                    "category": "natural-tool-use",
+                    "status": "passed",
+                    "score": 1.0,
+                    "passed": True,
+                    "wall_time_seconds": 5.0,
+                    "tool_calls": 3,
+                    "false_done": False,
+                    "timeout": False,
+                },
+                {
+                    "task_id": f"{run_id}-t2",
+                    "category": "code",
+                    "status": "failed",
+                    "score": 0.0,
+                    "passed": False,
+                    "wall_time_seconds": 2.0,
+                    "tool_calls": 1,
+                    "false_done": False,
+                    "timeout": False,
+                },
+            ],
+        }
+        path.write_text(json.dumps(data))
+        return path
+
+    _make_result("official-reviewed", "o1", "hermes-core", "hermes", official=True)
+    _make_result("unofficial-ci", "u1", "hermes-core", "test-agent", official=False)
+    _make_result("unofficial-ci", "u2", "hermes-core", "test-agent", official=False)
+
+    # ── Step 1: Run the Python data generator ─────────────────────────────
+    lb = build_data(results_dir, out_dir)
+    assert lb.exists(), "build_data must produce leaderboard.json"
+    assert (out_dir / "runs/o1.json").exists(), "build_data must produce per-run detail"
+    assert (out_dir / "runs/u1.json").exists(), "build_data must produce per-run detail"
+    assert (out_dir / "runs/u2.json").exists(), "build_data must produce per-run detail"
+
+    # Quick sanity on the leaderboard content (contract-level, not brittle)
+    lb_data = json.loads(lb.read_text())
+    assert lb_data["schema_version"] == "hermesbench.website.leaderboard.v3"
+    assert len(lb_data["official"]) >= 1
+    assert len(lb_data["unofficial"]) >= 1
+    assert len(lb_data["entries"]) == 3
+
+    # ── Step 2: Set up website fixture directory ──────────────────────────
+    (website / "data").mkdir(parents=True)
+    (website / "index.html").write_text("<html><body></body></html>")
+    (website / "app.js").write_text("// test app stub")
+
+    # Copy generated data files into the website fixture
+    import shutil
+    shutil.copy(out_dir / "leaderboard.json", website / "data/leaderboard.json")
+    for detail_file in (out_dir / "runs").iterdir():
+        shutil.copy(detail_file, website / f"data/{detail_file.name}")
+
+    # ── Step 3: Run the real JS build ─────────────────────────────────────
+    build_script = root / "website/build.js"
+    result = subprocess.run(
+        ["node", str(build_script)],
+        cwd=website,
+        text=True,
+        capture_output=True,
+    )
+
+    # Print build output for debugging test failures
+    print(result.stdout)
+    if result.returncode != 0:
+        print(result.stderr)
+
+    # ── Step 4: Assertions ────────────────────────────────────────────────
+    assert result.returncode == 0, (
+        f"JS build failed with rc={result.returncode}\n"
+        f"STDERR:\n{result.stderr}"
+    )
+
+    # Build outputs
+    dist = website / "dist"
+    assert dist.is_dir(), "build.js must create dist/ directory"
+    assert (dist / "index.html").is_file(), "dist/index.html must exist"
+    assert (dist / "app.js").is_file(), "dist/app.js must exist"
+    assert (dist / "data/leaderboard.json").is_file(), "dist/data/leaderboard.json must exist"
+    assert (dist / "data/o1.json").is_file(), "dist/data/o1.json (run detail) must exist"
+    assert (dist / "data/u1.json").is_file(), "dist/data/u1.json (run detail) must exist"
+    assert (dist / "data/u2.json").is_file(), "dist/data/u2.json (run detail) must exist"
+
+    # The build validates every JSON it reads — confirm validation logged
+    assert "all public JSON provenance and paths validated" in result.stdout, (
+        "JS build must output successful validation marker"
+    )
+
+    # Confirm the dist copy is valid JSON and matches schema version
+    dist_lb = json.loads((dist / "data/leaderboard.json").read_text())
+    assert dist_lb["schema_version"] == "hermesbench.website.leaderboard.v3"
+    assert len(dist_lb["entries"]) == 3

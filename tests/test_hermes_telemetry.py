@@ -99,22 +99,22 @@ def test_fake_hermes_uses_owned_profile_with_workdir_and_never_credits_stdout(
 
     record = json.loads(record_path.read_text())
     assert record["cwd"] == str(tmp_path / "workdir")
-    assert record["argv"][0] == "-p"
-    assert record["argv"][2:4] == ["chat", "-q"]
-    assert "HERMESBENCH_RUN_MARKER=" not in record["argv"][4]
-    assert record["argv"][5:10] == [
-        "-Q",
-        "--toolsets",
-        "file,terminal",
-        "--max-turns",
-        "20",
-    ]
-    assert record["argv"][10:] == [
-        "--provider",
-        "fake-provider",
-        "--model",
-        "fake-model",
-    ]
+    # Behavior-oriented flag-lookup assertions: find each flag by name and
+    # verify its associated value, rather than relying on positional slices
+    # that break when flags are reordered or extended.
+    assert "-p" in record["argv"]
+    p_idx = record["argv"].index("-p")
+    assert p_idx + 1 < len(record["argv"])
+    assert record["argv"][p_idx + 1].startswith("hermesbench-")
+    assert "chat" in record["argv"]
+    chat_idx = record["argv"].index("chat")
+    assert record["argv"][chat_idx + 1] == "-q"
+    assert "HERMESBENCH_RUN_MARKER=" not in record["argv"][chat_idx + 2]
+    assert "-Q" in record["argv"]
+    assert record["argv"][record["argv"].index("--toolsets") + 1] == "file,terminal"
+    assert record["argv"][record["argv"].index("--max-turns") + 1] == "20"
+    assert record["argv"][record["argv"].index("--provider") + 1] == "fake-provider"
+    assert record["argv"][record["argv"].index("--model") + 1] == "fake-model"
     assert run.status == "completed"
     assert run.claimed_done is True
     assert f"cwd: {tmp_path / 'workdir'}" in record["config"]
@@ -321,6 +321,28 @@ def test_temporary_profile_overrides_reasoning_effort(tmp_path, monkeypatch):
 
     config = yaml.safe_load((destination / "config.yaml").read_text())
     assert config["agent"]["reasoning_effort"] == "max"
+
+
+def test_reasoning_effort_propagates_through_cli_adapter(
+    fake_hermes, tmp_path
+):
+    """reasoning_effort set on HermesCLIAdapter reaches the temporary profile's config.yaml
+    via _profile_with_cwd. This is the end-to-end propagation path: constructor →
+    run_task → _profile_with_cwd(reasoning_effort=...) → config.yaml write."""
+    home, record_path = fake_hermes
+    run = HermesCLIAdapter(
+        model="fake-model",
+        provider="fake-provider",
+        profile="source",
+        reasoning_effort="max",
+    ).run_task(_fake_task(), tmp_path / "workdir")
+
+    record = json.loads(record_path.read_text())
+    config = yaml.safe_load(record["config"])
+    assert config["agent"]["reasoning_effort"] == "max"
+    assert run.status == "completed"
+    assert run.telemetry_source == "profile-state-db"
+    assert run.behavior_evidence_trusted is True
 
 
 def test_extracts_telemetry_from_stdout_json_summary():

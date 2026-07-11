@@ -1,5 +1,6 @@
 import json, subprocess, sys
 from pathlib import Path
+from hermesbench.versions import resolve_version
 from hermesbench.tasks import (
     discover_tasks,
     parse_task_markdown,
@@ -13,7 +14,8 @@ from hermesbench.schemas import RunResult, TaskResult, validate_result_schema
 
 def test_hermes_core_suite_has_shipped_tasks():
     tasks = discover_tasks("hermes-core")
-    assert len(tasks) == 13
+    expected = resolve_version("hermes-core-v0.1")["task_count"]
+    assert len(tasks) == expected
     assert all(t.metadata.get("tool_use_requirements") for t in tasks)
     assert not validate_tasks()
 

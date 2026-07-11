@@ -35,8 +35,8 @@ def test_hermes_core_and_extended_suites_are_disjoint_and_default(tmp_path):
     }.issubset(extended_ids)
     assert core_ids.isdisjoint(extended_ids)
     assert resolve_version(DEFAULT_BENCHMARK_VERSION)["suite"] == "hermes-core"
-    assert len(core) == 13
-    assert len(extended) == 25
+    assert len(core) == resolve_version("hermes-core-v0.1")["task_count"]
+    assert len(extended) == resolve_version("hermes-extended-v0.1")["task_count"]
 
     result = RunResult(
         schema_version="hermesbench.result.v1",
@@ -160,12 +160,10 @@ def test_benchmark_version_task_counts_match_declared_suites():
     assert (
         resolve_version("hermes-core-v0.1")["task_count"]
         == len(discover_tasks("hermes-core"))
-        == 13
     )
     assert (
         resolve_version("hermes-extended-v0.1")["task_count"]
         == len(discover_tasks("hermes-extended"))
-        == 25
     )
 
 

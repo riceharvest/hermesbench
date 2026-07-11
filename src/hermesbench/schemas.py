@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hmac
+import math
 from dataclasses import dataclass, asdict, field
 from typing import Any
 
@@ -238,16 +239,20 @@ def validate_result_schema(data: dict[str, Any]) -> None:
             if not isinstance(val, str) or not val:
                 raise ValueError(f"missing or non-empty-string task result field: {field}")
         score = r.get("score")
-        if not isinstance(score, (int, float)):
+        if isinstance(score, bool) or not isinstance(score, (int, float)):
             raise ValueError("task result score must be a number")
+        if math.isnan(score):
+            raise ValueError(f"task result score is NaN")
         if score < 0.0 or score > 1.0:
             raise ValueError(f"task result score {score!r} out of range [0, 1]")
         passed = r.get("passed")
         if not isinstance(passed, bool):
             raise ValueError("task result passed must be a boolean")
         wt = r.get("wall_time_seconds")
-        if not isinstance(wt, (int, float)):
+        if isinstance(wt, bool) or not isinstance(wt, (int, float)):
             raise ValueError("task result wall_time_seconds must be a number")
+        if math.isnan(wt):
+            raise ValueError(f"task result wall_time_seconds is NaN")
 
 
 # ── Explicit public allowlists (identical in JS tokenFromRequest counterpart) ──

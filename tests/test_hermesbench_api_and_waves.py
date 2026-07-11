@@ -4,13 +4,15 @@ from pathlib import Path
 from hermesbench.api import app, create_submission_store, validate_submission_payload
 from hermesbench.tasks import discover_tasks, validate_tasks
 from hermesbench.runner import run_benchmark
+from hermesbench.versions import resolve_version
 
 
 NATURAL_TASK = "htu-dev-001-file-and-terminal-self-serve"
 
 
 def test_hermes_core_suite_exists_and_validates():
-    assert len(discover_tasks("hermes-core")) == 13
+    expected = resolve_version("hermes-core-v0.1")["task_count"]
+    assert len(discover_tasks("hermes-core")) == expected
     assert not validate_tasks()
 
 

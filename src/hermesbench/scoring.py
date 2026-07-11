@@ -1,6 +1,6 @@
 from __future__ import annotations
 import json, statistics
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from .schemas import validate_result_schema
 
@@ -14,9 +14,17 @@ def _percentile(values: list[float], pct: float) -> float | None:
 
 
 def _parse_iso_timestamp(s: str) -> datetime | None:
-    """Try to parse an ISO-8601 timestamp string; return None on failure."""
+    """Try to parse an ISO-8601 timestamp string; return None on failure.
+
+    Z-suffixed timestamps (e.g. ``2026-07-10T00:00:00Z``) are returned as
+    timezone-aware UTC datetimes.  This ensures they can be safely subtracted
+    from other aware datetimes (e.g. timestamps with ``+00:00`` offsets) in
+    :func:`_run_duration_seconds` without raising ``TypeError``.
+    """
     if not s or not isinstance(s, str):
         return None
+    had_z = s.endswith("Z")
+    stripped = s.rstrip("Z")
     for fmt in (
         "%Y-%m-%dT%H:%M:%S.%f%z",
         "%Y-%m-%dT%H:%M:%S%z",
@@ -25,7 +33,10 @@ def _parse_iso_timestamp(s: str) -> datetime | None:
         "%Y-%m-%d %H:%M:%S",
     ):
         try:
-            return datetime.strptime(s.rstrip("Z"), fmt)
+            dt = datetime.strptime(stripped, fmt)
+            if had_z:
+                dt = dt.replace(tzinfo=timezone.utc)
+            return dt
         except ValueError:
             continue
     return None

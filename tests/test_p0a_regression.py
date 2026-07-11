@@ -63,6 +63,20 @@ def _valid_result(**overrides) -> dict:
     return data
 
 
+def _task(**overrides) -> dict:
+    """Return a minimally valid task result dict."""
+    d = {
+        "task_id": "t1",
+        "category": "natural-tool-use",
+        "status": "passed",
+        "score": 1.0,
+        "passed": True,
+        "wall_time_seconds": 1.0,
+    }
+    d.update(overrides)
+    return d
+
+
 # ── Exact schema version ─────────────────────────────────────────────────────
 
 
@@ -189,6 +203,218 @@ class TestHardLimits:
     def test_rejects_none_metadata(self):
         with pytest.raises(ValueError, match="metadata must be a dict"):
             validate_result_schema(_valid_result(metadata=None))
+
+
+# ── NaN / bool-as-number regression (proven schema gaps) ──────────────────
+
+
+class TestNanAndBoolRegression:
+    """Regression: scores and wall_time must be true numbers, not NaN or bool.
+
+    Python's ``isinstance(float('nan'), float)`` is True and
+    ``isinstance(True, int)`` is True (bool is a subclass of int),
+    so we must check explicitly.
+    """
+
+    def test_rejects_nan_score(self):
+        with pytest.raises(ValueError, match="score is NaN"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=float("nan"))]
+            ))
+
+    def test_rejects_nan_wall_time(self):
+        with pytest.raises(ValueError, match="wall_time_seconds is NaN"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=float("nan"))]
+            ))
+
+    def test_rejects_nan_score_in_second_result(self):
+        """Multiple results: NaN in any position must be caught."""
+        with pytest.raises(ValueError, match="score is NaN"):
+            validate_result_schema(_valid_result(
+                results=[
+                    _task(task_id="t1", score=0.3),
+                    _task(task_id="t2", score=float("nan")),
+                ]
+            ))
+
+    def test_rejects_bool_score(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=True)]
+            ))
+
+    def test_rejects_bool_score_false(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=False)]
+            ))
+
+    def test_rejects_bool_wall_time(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=True)]
+            ))
+
+    def test_rejects_bool_wall_time_false(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=False)]
+            ))
+
+    def test_accepts_int_score_zero(self):
+        """0 (int) is a valid score — Python int is fine."""
+        validate_result_schema(_valid_result(
+            results=[_task(score=0)]
+        ))
+
+    def test_accepts_zero_wall_time(self):
+        """0.0 wall_time is valid."""
+        validate_result_schema(_valid_result(
+            results=[_task(wall_time_seconds=0.0)]
+        ))
+
+
+# ── None / partial / malformed result entries ─────────────────────────────
+
+
+class TestNonePartialMalformed:
+    """Edge cases: None values, missing keys, partial task results."""
+
+    # ── None values on required result fields ────────────────────────────
+
+    def test_rejects_none_task_id(self):
+        with pytest.raises(ValueError, match="task_id"):
+            validate_result_schema(_valid_result(
+                results=[_task(task_id=None)]
+            ))
+
+    def test_rejects_none_category(self):
+        with pytest.raises(ValueError, match="category"):
+            validate_result_schema(_valid_result(
+                results=[_task(category=None)]
+            ))
+
+    def test_rejects_none_status(self):
+        with pytest.raises(ValueError, match="status"):
+            validate_result_schema(_valid_result(
+                results=[_task(status=None)]
+            ))
+
+    def test_rejects_none_score(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=None)]
+            ))
+
+    def test_rejects_none_passed(self):
+        with pytest.raises(ValueError, match="passed must be a boolean"):
+            validate_result_schema(_valid_result(
+                results=[_task(passed=None)]
+            ))
+
+    def test_rejects_none_wall_time(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=None)]
+            ))
+
+    # ── Missing keys at the result-entry level ───────────────────────────
+
+    def test_rejects_missing_score_key(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[{"task_id": "t1", "category": "x", "status": "passed",
+                          "passed": True, "wall_time_seconds": 1.0}]
+            ))
+
+    def test_rejects_missing_passed_key(self):
+        with pytest.raises(ValueError, match="passed must be a boolean"):
+            validate_result_schema(_valid_result(
+                results=[{"task_id": "t1", "category": "x", "status": "passed",
+                          "score": 0.5, "wall_time_seconds": 1.0}]
+            ))
+
+    def test_rejects_missing_wall_time_key(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[{"task_id": "t1", "category": "x", "status": "passed",
+                          "score": 0.5, "passed": True}]
+            ))
+
+    def test_rejects_missing_task_id_key(self):
+        with pytest.raises(ValueError, match="task_id"):
+            validate_result_schema(_valid_result(
+                results=[{"category": "x", "status": "passed",
+                          "score": 0.5, "passed": True, "wall_time_seconds": 1.0}]
+            ))
+
+    # ── Missing top-level keys ───────────────────────────────────────────
+
+    def test_rejects_missing_results_key(self):
+        payload = _valid_result()
+        del payload["results"]
+        with pytest.raises(ValueError, match="results must be a list"):
+            validate_result_schema(payload)
+
+    def test_rejects_missing_metadata_key(self):
+        payload = _valid_result()
+        del payload["metadata"]
+        with pytest.raises(ValueError, match="metadata must be a dict"):
+            validate_result_schema(payload)
+
+    def test_rejects_results_as_none(self):
+        with pytest.raises(ValueError, match="results must be a list"):
+            validate_result_schema(_valid_result(results=None))
+
+    # ── Boundary: empty / minimal valid ──────────────────────────────────
+
+    def test_accepts_empty_results_list(self):
+        """Zero tasks is valid (empty run)."""
+        validate_result_schema(_valid_result(results=[]))
+
+    def test_accepts_empty_metadata_dict(self):
+        validate_result_schema(_valid_result(metadata={}))
+
+    def test_accepts_minimal_task_entry(self):
+        """Only the 6 required fields, nothing extra."""
+        validate_result_schema(_valid_result(
+            results=[{
+                "task_id": "min",
+                "category": "x",
+                "status": "passed",
+                "score": 0.0,
+                "passed": True,
+                "wall_time_seconds": 0.0,
+            }]
+        ))
+
+    # ── Partial: extra fields SHOULD NOT cause validation to reject ──────
+
+    def test_accepts_extra_fields_in_result(self):
+        """Extra fields at the result level are not flagged by schema validation.
+        (The allowlist stripping happens later during sanitize_for_storage.)"""
+        validate_result_schema(_valid_result(
+            results=[{
+                "task_id": "t1",
+                "category": "x",
+                "status": "passed",
+                "score": 0.5,
+                "passed": True,
+                "wall_time_seconds": 1.0,
+                "extra_field": "should-not-cause-rejection",
+                "raw_task_score": 0.55,
+            }]
+        ))
+
+    # ── Negative wall_time is technically valid (no bound in schema) ─────
+
+    def test_negative_wall_time_not_rejected(self):
+        """wall_time has no lower-bound check in validate_result_schema —
+        negative values are accepted by the current contract."""
+        validate_result_schema(_valid_result(
+            results=[_task(wall_time_seconds=-1.0)]
+        ))
 
 
 # ── Token extraction (header-only contract) ──────────────────────────────────
