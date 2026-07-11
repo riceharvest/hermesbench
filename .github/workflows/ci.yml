@@ -20,7 +20,7 @@ jobs:
       - name: Validate task inventory
         run: uv run hermesbench validate-tasks
       - name: Run unit tests
-        run: uv run pytest
+        run: uv run pytest -n auto
       - name: Build Python distributions
         run: uv build
 
