@@ -1038,7 +1038,8 @@
       .split-section { padding: 16px 0; }
     }
 
-    /* Material Design light theme */
+    @media (prefers-color-scheme: light) {
+/* Material Design light theme */
     :root {
       color-scheme: light;
       --bg: #eceff1;
@@ -1115,7 +1116,8 @@
     .mobile-nav a { border-color: #b0bec5; color: #546e7a; }
     .mobile-nav a.active { background: #1976d2; color: #fff; border-color: #1976d2; }
 
- /* Data-first dashboard surfaces */
+ }
+/* Data-first dashboard surfaces */
  .data-header { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 10px 0 18px; border-bottom: 1px solid #cfd8dc; }
  .data-header h1 { margin: 0; font-size: clamp(28px, 4vw, 42px); letter-spacing: -.04em; }
  .data-header-meta { display: flex; align-items: center; gap: 8px; color: var(--muted); font-family: var(--mono); font-size: 10px; text-transform: uppercase; white-space: nowrap; }
