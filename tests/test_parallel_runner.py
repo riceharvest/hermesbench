@@ -1,4 +1,4 @@
-import time
+import threading
 from pathlib import Path
 
 from hermesbench.runner import run_benchmark
@@ -66,17 +66,29 @@ def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
     _write_task_pack(task_root, count=2)
 
     class DelayThenSucceedAdapter:
+        barrier = threading.Barrier(2)
+        lock = threading.Lock()
+        active = 0
+        max_active = 0
+
         def run_task(self, task, workdir, hidden_dir=None):
-            time.sleep(0.45)
-            (workdir / "done.txt").write_text("ok")
-            return AgentRun(status="completed", transcript="done", tool_calls=0)
+            type(self).lock.acquire()
+            type(self).active += 1
+            type(self).max_active = max(type(self).max_active, type(self).active)
+            type(self).lock.release()
+            try:
+                type(self).barrier.wait(timeout=5)
+                (workdir / "done.txt").write_text("ok")
+                return AgentRun(status="completed", transcript="done", tool_calls=0)
+            finally:
+                with type(self).lock:
+                    type(self).active -= 1
 
     monkeypatch.setattr(
         "hermesbench.runner.get_adapter",
         lambda *args, **kwargs: DelayThenSucceedAdapter(),
     )
 
-    started = time.perf_counter()
     result = run_benchmark(
         agent="hermes",
         suite="natural-tools-dev",
@@ -84,7 +96,6 @@ def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
         task_root=task_root,
         jobs=2,
     )
-    elapsed = time.perf_counter() - started
 
     assert result.exists()
-    assert elapsed < 0.85
+    assert DelayThenSucceedAdapter.max_active == 2
