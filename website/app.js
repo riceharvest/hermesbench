@@ -43,7 +43,6 @@ const routes = [
   ['/leaderboard', 'Models'],
   ['/tasks', 'Tasks'],
   ['/methodology', 'Method'],
-  ['/submit', 'Submit'],
 ];
 
 const taskStats = {
@@ -474,13 +473,10 @@ function commandLines(command = state.command) {
   run.push('--output-dir', shellArg(command.outputDir));
 
   const resultGlob = `${shellArg(command.outputDir)}/hermesbench-*.json`;
-  const upload = ['uv run hermesbench upload', resultGlob, '--endpoint', shellArg(command.endpoint.trim() || apiEndpoint)];
-
   return [
     'uv run hermesbench validate-tasks',
     run.join(' '),
     `uv run hermesbench score ${resultGlob}`,
-    upload.join(' '),
   ];
 }
 
@@ -505,9 +501,8 @@ function commandBuilder() {
         <label class="control"><span>Jobs</span><select id="cmd-jobs">${optionList(['auto', '1', '2', '4', '8'], c.jobs)}</select></label>
         <label class="control"><span>Specific task optional</span><input id="cmd-task" placeholder="hbo-dev-001-project-board-recovery" value="${escapeHtml(c.task)}"></label>
         <label class="control wide"><span>Output directory</span><input id="cmd-output" value="${escapeHtml(c.outputDir)}"></label>
-        <label class="control wide"><span>API endpoint</span><input id="cmd-endpoint" placeholder="https://www.benchcut.info/v1/results" value="${escapeHtml(c.endpoint || apiEndpoint)}"></label>
       </div>
-      <p class="builder-note" id="cmd-note">The generated command scores the raw result, then posts the sanitized submission to the single leaderboard endpoint using the configured submission token.</p>
+      <p class="builder-note" id="cmd-note">The generated command validates, runs, and scores the benchmark locally. Public submissions are currently paused.</p>
     </div>
     <aside class="command-preview">
       <div class="code-panel"><pre><code id="built-command">${escapeHtml(commandText(c))}</code></pre></div>
@@ -535,14 +530,13 @@ function browserUploadForm() {
 }
 
 function submitPage() {
-  return `${pageHead('run locally', 'Build and submit an agent run.', 'Pick provider, model, reasoning effort, task set, and output path. The builder gives the exact run, score, and submission commands.')}
+  return `${pageHead('run locally', 'Build and score an agent run.', 'Pick provider, model, reasoning effort, task set, and output path. Public submissions are currently paused.')}
   ${commandBuilder()}
-  ${browserUploadForm()}
-  <section class="split-section"><div class="section-title"><h2>Before submitting, prove the run.</h2><p>A useful submission includes exact model, provider, reasoning effort, tool access, suite, costs where available, and task-level evidence files.</p></div><div class="evidence-list">
+  <section class="split-section"><div class="section-title"><h2>Submissions are paused.</h2><p>You can still run the benchmark locally and keep the scored result for maintainer review. Uploads will reopen when the leaderboard intake is ready.</p></div><div class="evidence-list">
     ${evidenceRow('A', 'Validate tasks', 'Task definitions should pass schema checks before a run starts.')}
     ${evidenceRow('B', 'Keep artifacts', 'Do not delete logs, generated files, transcripts, or verifier output needed for review.')}
-    ${evidenceRow('C', 'Token-protected submission', 'Uploads use the single submission endpoint authenticated by the submission token.')}
-    ${evidenceRow('D', 'Leaderboard promotion', 'A valid result is added to the leaderboard automatically on successful upload.')}
+    ${evidenceRow('C', 'Keep artifacts', 'Retain the result JSON and task-level evidence for later review.')}
+    ${evidenceRow('D', 'Official evidence', 'Only maintainer-reviewed archives appear as capability evidence on the public site.')}
   </div></section>`;
 }
 
@@ -651,7 +645,6 @@ function bindCommandBuilder() {
     task: 'cmd-task',
     jobs: 'cmd-jobs',
     outputDir: 'cmd-output',
-    endpoint: 'cmd-endpoint',
   };
   const get = (key) => document.getElementById(ids[key]);
   const preview = document.getElementById('built-command');
@@ -679,12 +672,11 @@ function bindCommandBuilder() {
       const runnerNote = state.command.agent === 'hermes'
         ? 'Hermes uses provider, model, and reasoning effort exactly as shown.'
         : `${state.command.agent} ignores provider/model/reasoning; only runner, suite/task, jobs, and output path matter.`;
-      const submitNote = 'Upload posts to the single leaderboard endpoint using the configured submission token.';
-      note.textContent = `${runnerNote} ${submitNote}`;
+      note.textContent = `${runnerNote} Public submissions are currently paused.`;
     }
   }
 
-  ['agent', 'model', 'reasoning', 'suite', 'task', 'jobs', 'endpoint'].forEach((key) => {
+  ['agent', 'model', 'reasoning', 'suite', 'task', 'jobs'].forEach((key) => {
     const el = get(key);
     if (el) el.addEventListener('input', () => sync({ resetOutput: ['agent', 'model', 'reasoning', 'suite', 'task'].includes(key) }));
   });
@@ -876,12 +868,19 @@ function normalizeApiToFrontendShape(apiBody) {
 }
 
 async function loadLeaderboard() {
+  // The committed archive is the homepage's canonical source. The API is for
+  // live submissions and may legitimately be empty while intake is paused.
+  try {
+    const response = await fetch('/data/leaderboard.json', { cache: 'no-store' });
+    if (response.ok) {
+      return await response.json();
+    }
+  } catch (_) {
+  }
+  // Keep a live-API fallback for local/development builds without generated data.
   try {
     const response = await fetch(leaderboardEndpoint);
-    if (response.ok) {
-      const apiBody = await response.json();
-      return normalizeApiToFrontendShape(apiBody);
-    }
+    if (response.ok) return normalizeApiToFrontendShape(await response.json());
   } catch (_) {
   }
   return {

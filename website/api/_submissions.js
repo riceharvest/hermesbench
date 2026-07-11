@@ -19,6 +19,12 @@ const MAX_METADATA_KEYS = Number.parseInt(process.env.HERMESBENCH_MAX_METADATA_K
 // Fields allowed in public leaderboard responses (explicit allowlist).
 const PUBLIC_SCORE_FIELDS = new Set(['run_id', 'agent', 'provider', 'model', 'suite', 'overall_score', 'pass_at_1', 'task_count', 'official', 'submitted_at']);
 
+// Public intake is paused by default. Re-enable deliberately with an explicit
+// deployment environment variable after a reviewed change.
+function submissionsEnabled() {
+  return process.env.HERMESBENCH_SUBMISSIONS_ENABLED === 'true';
+}
+
 class ApiError extends Error {
   constructor(status, message, headers = {}) {
     super(message);
@@ -625,4 +631,5 @@ module.exports = {
   blobEnabled,
   submissionBlobPath,
   submissionPath,
+  submissionsEnabled,
 };

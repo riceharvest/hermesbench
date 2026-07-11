@@ -12,6 +12,7 @@ delete process.env.HERMESBENCH_SUBMISSION_TOKEN;
 delete process.env.HERMESBENCH_RATE_LIMIT_MAX;
 delete process.env.HERMESBENCH_RATE_LIMIT_WINDOW_SECONDS;
 delete process.env.VERCEL_ENV;
+process.env.HERMESBENCH_SUBMISSIONS_ENABLED = 'true';
 
 function mockReq(method, body, headers = {}) {
   const req = Readable.from(body ? [JSON.stringify(body)] : []);
@@ -82,6 +83,12 @@ async function call(handler, method, body, headers = {}) {
   assert.equal(uploadRes.statusCode, 202);
   assert.equal(uploadRes.json.accepted, true);
   assert.equal(uploadRes.json.run_id, 'api-smoke-run');
+
+  process.env.HERMESBENCH_SUBMISSIONS_ENABLED = 'false';
+  const pausedRes = await call(results, 'POST', payload, { 'x-hermesbench-submission-token': 'secret-token' });
+  assert.equal(pausedRes.statusCode, 403);
+  assert.match(pausedRes.json.error, /submissions are currently paused/);
+  process.env.HERMESBENCH_SUBMISSIONS_ENABLED = 'true';
 
   const persisted = await fs.readFile(process.env.HERMESBENCH_STORE_PATH, 'utf8');
   assert(!persisted.includes('do-not-persist'));

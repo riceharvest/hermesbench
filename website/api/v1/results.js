@@ -5,11 +5,13 @@ const {
   sanitizeResult,
   enforceRateLimit,
   persistSubmission,
+  submissionsEnabled,
 } = require('../_submissions');
 
 module.exports = async function handler(req, res) {
   if (req.method === 'OPTIONS') return sendJson(res, 204, {}, {}, req);
   if (req.method !== 'POST') return sendJson(res, 405, { error: 'method not allowed' }, {}, req);
+  if (!submissionsEnabled()) return sendJson(res, 403, { error: 'public submissions are currently paused' }, {}, req);
 
   try {
     const payload = await readBody(req);
