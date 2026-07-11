@@ -128,7 +128,7 @@ def _suite_entries(manifest: dict, suite: str) -> list[dict]:
 
     For legacy manifests, the top-level `suite` field is also honored when the
     requested suite matches (or when no suite name was provided and the fallback
-    default `natural-tools-dev` is requested).
+    default `hermes-core` is requested).
     """
     suites_meta = manifest.get('suites', {})
     raw_tasks = manifest.get('tasks', [])
@@ -142,7 +142,7 @@ def _suite_entries(manifest: dict, suite: str) -> list[dict]:
     return []
 
 
-def discover_tasks(suite='core-cli', root: Path = ROOT, task_root: str | Path | None = None) -> list[Task]:
+def discover_tasks(suite='hermes-core', root: Path = ROOT, task_root: str | Path | None = None) -> list[Task]:
     base=_task_base(root, task_root)
     manifest_path=base/'manifest.yaml'
     if not manifest_path.exists():

@@ -23,7 +23,7 @@ The CLI posts a `hermesbench.submission.v1` wrapper. The API also accepts a lega
   "result": {
     "schema_version": "hermesbench.result.v1",
     "run_id": "abc123",
-    "suite": "natural-tools-dev",
+    "suite": "hermes-core",
     "agent": "hermes",
     "model": "openai-codex/gpt-5.5",
     "results": []

@@ -192,7 +192,7 @@ def test_fresh_wheel_install(tmp_path):
         cwd=root,
     )
     assert versions_result.returncode == 0
-    assert "core-cli" in versions_result.stdout
+    assert "hermes-core" in versions_result.stdout
 
 
 # ── sdist → wheel build reproducibility ────────────────────────────────────────
@@ -284,7 +284,7 @@ def test_sdist_rebuilds_identical_wheel(tmp_path):
         cwd=root,
     )
     assert versions_result.returncode == 0
-    assert "core-cli" in versions_result.stdout
+    assert "hermes-core" in versions_result.stdout
 
 
 # ── release artifact SHA256SUMS formatting ────────────────────────────────────

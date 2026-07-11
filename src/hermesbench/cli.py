@@ -41,10 +41,10 @@ def main(argv=None):
     )
     r.add_argument(
         "--reasoning-effort",
-        choices=["none", "minimal", "low", "medium", "high", "xhigh"],
+        choices=["none", "minimal", "low", "medium", "high", "xhigh", "max"],
     )
     r.add_argument(
-        "--suite", default="core-cli", help="suite to run (default: core-cli)"
+        "--suite", default="hermes-core", help="suite to run (default: hermes-core)"
     )
     r.add_argument("--task")
     r.add_argument("--output-dir", default="results")
@@ -85,7 +85,7 @@ def main(argv=None):
     e = sub.add_parser("export", help="export task prompts as JSONL")
     e.add_argument("--format", choices=["jsonl"], default="jsonl")
     e.add_argument(
-        "--suite", default="core-cli", help="suite to export (default: core-cli)"
+        "--suite", default="hermes-core", help="suite to export (default: hermes-core)"
     )
     e.add_argument("--task-root")
     u = sub.add_parser("upload")
@@ -138,7 +138,7 @@ def main(argv=None):
         )
         if a.model_size is not None:
             score = aggregate(result_path)
-            passed = is_capability_pass(score)
+            passed = score["capability_pass"]
             print(f"\n[model-size] {_format_size(a.model_size)} total parameters")
             print(f"[capability-pass] {passed}")
             if not passed:

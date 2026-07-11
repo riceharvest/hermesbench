@@ -512,3 +512,96 @@ class TestValidateSubmissionPayload:
         )
         assert "submission_token" not in stored
         assert "submission_token" not in stored.get("metadata", {})
+
+    # ── Run-ledger metadata allowlist parity ──────────────────────────
+
+    def test_all_new_run_ledger_fields_survive_sanitization(self):
+        """All new PUBLIC_METADATA_KEYS fields survive sanitize_for_storage."""
+        run_ledger_meta = {
+            "provider": "deepseek",
+            "model": "deepseek-chat",
+            "reasoning_effort": "high",
+            "quantization": "Q4_K_M",
+            "backend": "llama.cpp",
+            "profile": "hermesbench",
+            "benchmark_version": "core-cli-v0.1",
+            "jobs": 2,
+            "run_wall_time_seconds": 42.5,
+            "engine_version": "1.2.3",
+            "hermes_version": "0.5.0",
+            "git_commit": "abc1234",
+            "command": "hermesbench run --suite core",
+            "config_summary": {"max_tokens": 4096},
+            "os_platform": "Linux-7.1.3-x86_64",
+            "python_version": "3.11.14",
+            "cpu_info": "AMD EPYC; 8 cores",
+            "gpu_info": "1x NVIDIA A100",
+            "metadata_available": {"model_identity": True, "runtime": True},
+        }
+        payload = _valid_result(metadata=run_ledger_meta)
+        stored = sanitize_for_storage(payload)
+        meta = stored["metadata"]
+        for field in run_ledger_meta:
+            assert field in meta, f"{field!r} missing from sanitized metadata"
+            assert meta[field] == run_ledger_meta[field]
+        assert meta["sanitized"] is True
+
+    def test_secret_fields_stripped_from_metadata(self):
+        """Secret-like fields not in PUBLIC_METADATA_KEYS are stripped."""
+        payload = _valid_result(
+            metadata={
+                "official": True,
+                "provider": "deepseek",
+                "api_key": "sk-12345",
+                "password": "hunter2",
+                "aws_secret": "AKIA123",
+                "internal_notes": "sensitive",
+                "db_url": "postgresql://user:pass@host/db",
+            }
+        )
+        stored = sanitize_for_storage(payload)
+        meta = stored["metadata"]
+        # Allowed fields survive
+        assert meta.get("official") is True
+        assert meta.get("provider") == "deepseek"
+        # Secrets are stripped
+        assert "api_key" not in meta
+        assert "password" not in meta
+        assert "aws_secret" not in meta
+        assert "internal_notes" not in meta
+        assert "db_url" not in meta
+        assert meta["sanitized"] is True
+
+    def test_run_ledger_fields_stripped_when_old_allowlist(self):
+        """Previously, fields like 'provider', 'model' were already allowed;
+        verify config_summary (dict) and metadata_available (dict) survive."""
+        payload = _valid_result(
+            metadata={
+                "config_summary": {"max_tokens": 8192, "temperature": 0.7},
+                "metadata_available": {"hardware": True},
+            }
+        )
+        stored = sanitize_for_storage(payload)
+        meta = stored["metadata"]
+        assert meta.get("config_summary") == {"max_tokens": 8192, "temperature": 0.7}
+        assert meta.get("metadata_available") == {"hardware": True}
+
+    def test_js_public_metadata_keys_match_python(self):
+        """Verify the set of PUBLIC_METADATA_KEYS in Python matches the JS
+        allowlist.  Parses quoted strings from the JS Set literal."""
+        import re
+        js_path = Path(__file__).resolve().parent.parent / "website/api/_submissions.js"
+        js_src = js_path.read_text()
+        marker = "const PUBLIC_METADATA_KEYS = new Set(["
+        start = js_src.index(marker)
+        bracket = js_src.index("[", start)
+        end = js_src.index("]);", bracket)
+        body = js_src[bracket + 1 : end]
+        # Extract all single-quoted strings (the JS uses single quotes)
+        js_keys = set(re.findall(r"'([^']+)'", body))
+        py_keys = PUBLIC_METADATA_KEYS
+        assert js_keys == py_keys, (
+            f"JS/PY mismatch\n"
+            f"  JS-only:  {sorted(js_keys - py_keys)}\n"
+            f"  PY-only:  {sorted(py_keys - js_keys)}"
+        )

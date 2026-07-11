@@ -215,10 +215,10 @@ def test_visible_suite_counts_match_the_manifest_contract():
     readme = (root / "README.md").read_text()
 
     assert "total: 38" in app
-    assert "coreCli: 3" in app
-    assert "integrations: 35" in app
-    assert "| `core-cli` | 3 |" in readme
-    assert "| `integrations` | 35 |" in readme
+    assert "hermesCore: 13" in app
+    assert "hermesExtended: 25" in app
+    assert "| `hermes-core` | 13 |" in readme
+    assert "| `hermes-extended` | 25 |" in readme
 
 
 def _read_workflow(root, name):

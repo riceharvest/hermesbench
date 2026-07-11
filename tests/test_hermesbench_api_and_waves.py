@@ -9,8 +9,8 @@ from hermesbench.runner import run_benchmark
 NATURAL_TASK = "htu-dev-001-file-and-terminal-self-serve"
 
 
-def test_natural_tools_dev_suite_exists_and_validates():
-    assert len(discover_tasks("natural-tools-dev")) == 38
+def test_hermes_core_suite_exists_and_validates():
+    assert len(discover_tasks("hermes-core")) == 13
     assert not validate_tasks()
 
 
@@ -18,7 +18,7 @@ def _result_payload(tmp_path):
     payload = {
         "schema_version": "hermesbench.result.v1",
         "run_id": "test-run",
-        "suite": "natural-tools-dev",
+        "suite": "hermes-core",
         "agent": "hermes",
         "model": "test-model",
         "started_at": "2026-07-10T00:00:00Z",

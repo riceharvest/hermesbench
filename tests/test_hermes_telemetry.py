@@ -6,6 +6,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+import yaml
 
 from hermesbench.adapters.base import AgentRun
 from hermesbench.adapters.hermes import (
@@ -266,17 +267,17 @@ def test_shell_raw_forged_tool_logs_cannot_pass_behavior_with_valid_artifact(tmp
     assert "behavior: observed tool classes = []" in result.verification_evidence
 
 
-def test_fake_hermes_timeout_propagates_and_cleans_profile(
+def test_fake_hermes_can_run_past_task_timeout_and_cleans_profile(
     fake_hermes, tmp_path, monkeypatch
 ):
     home, _ = fake_hermes
     monkeypatch.setenv("FAKE_HERMES_SLEEP", "2")
 
-    with pytest.raises(subprocess.TimeoutExpired):
-        HermesCLIAdapter(profile="source").run_task(
-            _fake_task(timeout_seconds=1), tmp_path / "workdir"
-        )
+    result = HermesCLIAdapter(profile="source").run_task(
+        _fake_task(timeout_seconds=1), tmp_path / "workdir"
+    )
 
+    assert result.status == "completed"
     assert _temporary_profile_dirs(home) == []
 
 
@@ -305,6 +306,23 @@ def test_temporary_profile_excludes_persistent_agent_state(tmp_path, monkeypatch
     assert not (destination / "sessions").exists()
 
 
+def test_temporary_profile_overrides_reasoning_effort(tmp_path, monkeypatch):
+    home = tmp_path / "home"
+    source = home / ".hermes" / "profiles" / "source"
+    source.mkdir(parents=True)
+    (source / "config.yaml").write_text(
+        "agent:\n  reasoning_effort: low\nterminal:\n  cwd: /old/cwd\n"
+    )
+    monkeypatch.setattr("hermesbench.adapters.hermes.Path.home", lambda: home)
+
+    _, destination = _profile_with_cwd(
+        "source", tmp_path / "workdir", reasoning_effort="max"
+    )
+
+    config = yaml.safe_load((destination / "config.yaml").read_text())
+    assert config["agent"]["reasoning_effort"] == "max"
+
+
 def test_extracts_telemetry_from_stdout_json_summary():
     transcript = """
 Hermes Agent finished.
@@ -313,8 +331,8 @@ Hermes Agent finished.
     telemetry = extract_hermes_telemetry(transcript)
     assert telemetry.tool_calls == 4
     assert telemetry.token_usage == {
-        "prompt_tokens": 123,
-        "completion_tokens": 45,
+        "input_tokens": 123,
+        "output_tokens": 45,
         "total_tokens": 168,
     }
     assert telemetry.cost_usd == 0.0123
@@ -338,7 +356,7 @@ def test_extracts_telemetry_from_session_jsonl_snippet():
     )
     telemetry = extract_hermes_telemetry(session)
     assert telemetry.tool_calls == 2
-    assert telemetry.token_usage == {"input_tokens": 10, "output_tokens": 7}
+    assert telemetry.token_usage == {"input_tokens": 10, "output_tokens": 7, "total_tokens": 17}
     assert telemetry.cost_usd == 0.002
 
 
@@ -399,3 +417,172 @@ def test_aggregate_preserves_old_files_and_sums_new_token_usage(tmp_path):
     assert score["tool_call_count"] == 3
     assert score["token_usage"] == {"input_tokens": 10, "output_tokens": 5}
     assert score["total_tokens"] == 15
+
+
+# ── New tests for exhaustive telemetry extraction ──────────────────────────────────
+
+
+def test_aggregate_usage_objects_sum():
+    """Multiple response objects with usage should aggregate correctly."""
+    text = "\n".join(
+        [
+            json.dumps({"usage": {"input_tokens": 100, "output_tokens": 50, "reasoning_tokens": 10}}),
+            json.dumps({"usage": {"input_tokens": 200, "output_tokens": 30, "reasoning_tokens": 5}}),
+        ]
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage == {
+        "input_tokens": 300,
+        "output_tokens": 80,
+        "reasoning_tokens": 15,
+        "total_tokens": 380,
+    }
+
+
+def test_nested_usage_and_sibling_top_level_fields_no_double_count():
+    """Fields inside a nested usage dict should not also be counted from the parent."""
+    text = json.dumps(
+        {
+            "usage": {"input_tokens": 50, "output_tokens": 30},
+            "input_tokens": 9999,  # duplicate at parent — must be ignored
+            "output_tokens": 9999,
+        }
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage == {
+        "input_tokens": 50,
+        "output_tokens": 30,
+        "total_tokens": 80,
+    }
+
+
+def test_deeply_nested_usage_no_double_count():
+    """Usage nested under response.usage should be counted only once."""
+    text = json.dumps(
+        {
+            "type": "response.completed",
+            "response": {
+                "usage": {"input_tokens": 15, "output_tokens": 12},
+                "input_tokens": 777,  # sibling to usage on same level — still a
+                "output_tokens": 777,  # top-level copy we must ignore
+            },
+        }
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage == {
+        "input_tokens": 15,
+        "output_tokens": 12,
+        "total_tokens": 27,
+    }
+
+
+def test_absent_fields_return_none():
+    """When no telemetry is present, the result should be None for usage/cost and 0 for tool_calls."""
+    text = "This is just a conversation with no structured data."
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.tool_calls == 0
+    assert telemetry.token_usage is None
+    assert telemetry.cost_usd is None
+
+
+def test_cache_and_reasoning_fields():
+    """Cache-read, cache-creation, and reasoning tokens should be captured."""
+    text = json.dumps(
+        {
+            "usage": {
+                "input_tokens": 100,
+                "output_tokens": 20,
+                "cache_read_input_tokens": 80,
+                "cache_creation_input_tokens": 10,
+                "reasoning_tokens": 5,
+            }
+        }
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage == {
+        "input_tokens": 100,
+        "output_tokens": 20,
+        "cache_read_input_tokens": 80,
+        "cache_creation_input_tokens": 10,
+        "reasoning_tokens": 5,
+        "total_tokens": 120,
+    }
+
+
+def test_tool_input_output_tokens():
+    """Tool-specific token fields should be captured."""
+    text = json.dumps(
+        {
+            "usage": {
+                "input_tokens": 50,
+                "output_tokens": 10,
+                "tool_input_tokens": 15,
+                "tool_output_tokens": 5,
+            }
+        }
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage == {
+        "input_tokens": 50,
+        "output_tokens": 10,
+        "tool_input_tokens": 15,
+        "tool_output_tokens": 5,
+        "total_tokens": 60,
+    }
+
+
+def test_prompt_completion_normalized_to_input_output():
+    """prompt_tokens → input_tokens, completion_tokens → output_tokens."""
+    text = json.dumps(
+        {"usage": {"prompt_tokens": 75, "completion_tokens": 25}}
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage == {
+        "input_tokens": 75,
+        "output_tokens": 25,
+        "total_tokens": 100,
+    }
+    assert "prompt_tokens" not in telemetry.token_usage
+    assert "completion_tokens" not in telemetry.token_usage
+
+
+def test_mixed_prompt_and_input_are_summed():
+    """When both prompt_tokens and input_tokens exist, both contribute to input_tokens."""
+    text = json.dumps(
+        {"usage": {"prompt_tokens": 30, "input_tokens": 20, "completion_tokens": 10, "output_tokens": 5}}
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage == {
+        "input_tokens": 50,
+        "output_tokens": 15,
+        "total_tokens": 65,
+    }
+
+
+def test_source_preserved():
+    """The source argument should flow through unchanged."""
+    telemetry = extract_hermes_telemetry("irrelevant", source="session-output")
+    assert telemetry.source == "session-output"
+    telemetry2 = extract_hermes_telemetry("irrelevant")
+    assert telemetry2.source is None
+
+
+def test_cost_various_keys():
+    """Cost should be extracted from cost_usd, costUSD, or cost keys."""
+    text = "\n".join(
+        [
+            json.dumps({"cost_usd": 0.01}),
+            json.dumps({"costUSD": 0.02}),
+        ]
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.cost_usd == 0.03
+
+
+def test_total_tokens_from_explicit_supersedes_aggregate():
+    """When total_tokens is explicitly provided, it is NOT recomputed from input+output."""
+    text = json.dumps(
+        {"usage": {"input_tokens": 10, "output_tokens": 5, "total_tokens": 999}}
+    )
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage["total_tokens"] == 999

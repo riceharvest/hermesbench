@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json, statistics
+from datetime import datetime
 from pathlib import Path
 from .schemas import validate_result_schema
 
@@ -12,9 +13,122 @@ def _percentile(values: list[float], pct: float) -> float | None:
     return ordered[idx]
 
 
+def _parse_iso_timestamp(s: str) -> datetime | None:
+    """Try to parse an ISO-8601 timestamp string; return None on failure."""
+    if not s or not isinstance(s, str):
+        return None
+    for fmt in (
+        "%Y-%m-%dT%H:%M:%S.%f%z",
+        "%Y-%m-%dT%H:%M:%S%z",
+        "%Y-%m-%dT%H:%M:%S.%f",
+        "%Y-%m-%dT%H:%M:%S",
+        "%Y-%m-%d %H:%M:%S",
+    ):
+        try:
+            return datetime.strptime(s.rstrip("Z"), fmt)
+        except ValueError:
+            continue
+    return None
+
+
+def _run_duration_seconds(started_at: str, completed_at: str) -> float | None:
+    """Wall-clock duration of the whole run, or None if timestamps aren't parseable."""
+    start = _parse_iso_timestamp(started_at)
+    end = _parse_iso_timestamp(completed_at)
+    if start is not None and end is not None:
+        return (end - start).total_seconds()
+    return None
+
+
+# ── Canonical token-usage field names ────────────────────────────────────────
+# These are the explicit, well-known token categories we try to aggregate.
+# Each maps to one or more possible keys found in token_usage dicts.
+_TOKEN_KEYS: dict[str, tuple[str, ...]] = {
+    "prompt_tokens": ("prompt_tokens", "input_tokens"),
+    "cached_prompt_tokens": ("cached_prompt_tokens", "cached_input_tokens", "prompt_tokens_cached"),
+    "completion_tokens": ("completion_tokens", "output_tokens"),
+    "reasoning_tokens": ("reasoning_tokens", "reasoning_output_tokens"),
+    "tool_call_tokens": ("tool_call_tokens", "tool_use_tokens"),
+    "total_tokens": ("total_tokens",),
+}
+
+# Token-availability / source fields we aggregate when present.
+_TOKEN_META_KEYS: tuple[str, ...] = (
+    "input_tokens_cache_read",
+    "input_tokens_cache_write",
+    "token_source",
+)
+
+
+def _aggregate_token_field(rs: list[dict], canonical_name: str, aliases: tuple[str, ...]) -> float | None:
+    """Sum a token field across all results, trying aliases in order.
+
+    Returns None if *no* result has any of the aliases (missing data stays null).
+    Returns 0 if results have the field but all values are zero.
+    """
+    total = 0
+    found = False
+    for r in rs:
+        usage = r.get("token_usage") or {}
+        if not isinstance(usage, dict):
+            continue
+        val = None
+        for alias in aliases:
+            v = usage.get(alias)
+            if v is not None and isinstance(v, (int, float)):
+                val = v
+                break
+        if val is not None:
+            total += val
+            found = True
+    return total if found else None
+
+
+def _aggregate_token_meta(rs: list[dict], key: str) -> float | None:
+    """Sum a token-meta field across results; None if entirely absent."""
+    total = 0
+    found = False
+    for r in rs:
+        usage = r.get("token_usage") or {}
+        if not isinstance(usage, dict):
+            continue
+        v = usage.get(key)
+        if v is not None and isinstance(v, (int, float)):
+            total += v
+            found = True
+    return total if found else None
+
+
+def _aggregate_token_source(rs: list[dict]) -> list[str] | None:
+    """Collect unique token_source string values across results.
+
+    Returns a sorted list of unique string sources, or None if *no* result
+    has a ``token_source`` field with a non-empty string or list value.
+    Supports both individual string values and lists of strings (in case a
+    task uses multiple tokenisation back-ends).
+    """
+    seen: set[str] = set()
+    for r in rs:
+        usage = r.get("token_usage") or {}
+        if not isinstance(usage, dict):
+            continue
+        raw = usage.get("token_source")
+        if raw is None:
+            continue
+        if isinstance(raw, str) and raw:
+            seen.add(raw)
+        elif isinstance(raw, list):
+            for item in raw:
+                if isinstance(item, str) and item:
+                    seen.add(item)
+    return sorted(seen) if seen else None
+
+
 def aggregate(path: str | Path) -> dict:
     data=json.loads(Path(path).read_text()); validate_result_schema(data)
-    rs=data['results']; n=len(rs) or 1
+    all_results=data['results']
+    rs=[r for r in all_results if not r.get('environment_skip')]
+    n=len(rs) or 1
     cats={}
     tiers={}
     for r in rs:
@@ -31,6 +145,8 @@ def aggregate(path: str | Path) -> dict:
     success_costs=[r.get('cost_usd') for r in successes if r.get('cost_usd') is not None]
     total_cost=sum(costs) if costs else None
     cost_success=sum(success_costs)/len(successes) if success_costs and successes else None
+
+    # ── Full token aggregation ───────────────────────────────────────────
     token_usage={}
     for r in rs:
         usage=r.get('token_usage') or {}
@@ -38,12 +154,39 @@ def aggregate(path: str | Path) -> dict:
             for k,v in usage.items():
                 if isinstance(v, (int, float)):
                     token_usage[k]=token_usage.get(k,0)+v
+
+    # Backward-compat total_tokens, input_tokens, output_tokens
     total_tokens=token_usage.get('total_tokens')
     if total_tokens is None:
         total_tokens=sum(v for k,v in token_usage.items() if isinstance(v, (int, float)) and 'token' in k and k != 'total_tokens') or None
     input_tokens=token_usage.get('input_tokens') or token_usage.get('prompt_tokens')
     output_tokens=token_usage.get('output_tokens') or token_usage.get('completion_tokens')
+
+    # Explicit field-by-field aggregation (null-safe)
+    prompt_tokens = _aggregate_token_field(rs, "prompt_tokens", _TOKEN_KEYS["prompt_tokens"])
+    cached_prompt_tokens = _aggregate_token_field(rs, "cached_prompt_tokens", _TOKEN_KEYS["cached_prompt_tokens"])
+    completion_tokens = _aggregate_token_field(rs, "completion_tokens", _TOKEN_KEYS["completion_tokens"])
+    reasoning_tokens = _aggregate_token_field(rs, "reasoning_tokens", _TOKEN_KEYS["reasoning_tokens"])
+    tool_call_tokens = _aggregate_token_field(rs, "tool_call_tokens", _TOKEN_KEYS["tool_call_tokens"])
+    explicit_total_tokens = _aggregate_token_field(rs, "total_tokens", _TOKEN_KEYS["total_tokens"])
+
+    # Token availability/source
+    input_tokens_cache_read = _aggregate_token_meta(rs, "input_tokens_cache_read")
+    input_tokens_cache_write = _aggregate_token_meta(rs, "input_tokens_cache_write")
+    token_source = _aggregate_token_source(rs)
+
+    # ── Run duration ─────────────────────────────────────────────────────
+    run_duration = _run_duration_seconds(data.get("started_at", ""), data.get("completed_at", ""))
+
+    # ── Wall time stats (preserve existing, add sum) ─────────────────────
     wall_times=[float(r['wall_time_seconds']) for r in rs]
+
+    # ── Throughput ───────────────────────────────────────────────────────
+    # tasks_per_second: only when run_duration is available
+    tasks_per_second = n / run_duration if run_duration is not None and run_duration > 0 else None
+    # tokens_per_second: only when both run_duration and total_tokens are available
+    tokens_per_second = total_tokens / run_duration if run_duration is not None and run_duration > 0 and total_tokens is not None else None
+
     tool_call_count=sum(r.get('tool_calls', r.get('tool_call_count',0)) for r in rs)
     total_score=total(rs)
     raw_total_score=raw_total(rs)
@@ -64,7 +207,9 @@ def aggregate(path: str | Path) -> dict:
       'quality_tier_scores':{k:avg(v) for k,v in sorted(tiers.items())},
       'raw_quality_tier_scores':{k:raw_avg(v) for k,v in sorted(tiers.items())},
       'quality_tier_counts':{k:len(v) for k,v in sorted(tiers.items())},
-      'task_count':len(rs), 'passed_task_count':len(successes), 'failed_task_count':sum(1 for r in rs if not r.get('passed')),
+      'task_count':len(all_results), 'scored_task_count':len(rs),
+      'environment_skip_count':sum(1 for r in all_results if r.get('environment_skip')),
+      'passed_task_count':len(successes), 'failed_task_count':sum(1 for r in rs if not r.get('passed')),
       'cost_per_successful_task_usd':cost_success,
       'cost_per_task_usd': total_cost/len(rs) if total_cost is not None and rs else None,
       'cost_usd':total_cost, 'total_cost_usd': total_cost,
@@ -72,14 +217,36 @@ def aggregate(path: str | Path) -> dict:
       'token_usage':token_usage or None,
       'input_tokens': input_tokens, 'output_tokens': output_tokens,
       'total_tokens':total_tokens,
-      'tokens_per_task': total_tokens/len(rs) if total_tokens and rs else None,
-      'tokens_per_successful_task': total_tokens/len(successes) if total_tokens and successes else None,
+      # ── Explicit per-field token aggregates ────────────────────────────
+      'prompt_tokens': prompt_tokens,
+      'cached_prompt_tokens': cached_prompt_tokens,
+      'completion_tokens': completion_tokens,
+      'reasoning_tokens': reasoning_tokens,
+      'tool_call_tokens': tool_call_tokens,
+      'explicit_total_tokens': explicit_total_tokens,
+      'input_tokens_cache_read': input_tokens_cache_read,
+      'input_tokens_cache_write': input_tokens_cache_write,
+      'token_source': token_source,
+      # ── Per-task token averages ────────────────────────────────────────
+      'tokens_per_task': total_tokens/len(rs) if total_tokens is not None and rs else None,
+      'tokens_per_successful_task': total_tokens/len(successes) if total_tokens is not None and successes else None,
+      'prompt_tokens_per_task': prompt_tokens/len(rs) if prompt_tokens is not None and rs else None,
+      'completion_tokens_per_task': completion_tokens/len(rs) if completion_tokens is not None and rs else None,
+      'reasoning_tokens_per_task': reasoning_tokens/len(rs) if reasoning_tokens is not None and rs else None,
+      'tool_call_tokens_per_task': tool_call_tokens/len(rs) if tool_call_tokens is not None and rs else None,
+      # ── Wall-clock run duration ────────────────────────────────────────
+      'run_duration_seconds': run_duration,
       'total_execution_time_seconds': sum(wall_times),
-      'median_wall_time_seconds':statistics.median(wall_times) if wall_times else 0,
-      'mean_wall_time_seconds':statistics.mean(wall_times) if wall_times else 0,
-      'min_wall_time_seconds':min(wall_times) if wall_times else 0,
-      'max_wall_time_seconds':max(wall_times) if wall_times else 0,
-      'p95_wall_time_seconds':_percentile(wall_times, 95) or 0,
+      'sum_wall_time_seconds': sum(wall_times),
+      'median_wall_time_seconds': statistics.median(wall_times) if wall_times else None,
+      'mean_wall_time_seconds': statistics.mean(wall_times) if wall_times else None,
+      'min_wall_time_seconds': min(wall_times) if wall_times else None,
+      'max_wall_time_seconds': max(wall_times) if wall_times else None,
+      'p95_wall_time_seconds': _percentile(wall_times, 95),
+      # ── Throughput ─────────────────────────────────────────────────────
+      'tasks_per_second': tasks_per_second,
+      'tokens_per_second': tokens_per_second,
+      # ── Tool calls ─────────────────────────────────────────────────────
       'tool_call_count':tool_call_count,
       'avg_tool_calls_per_task': tool_call_count/len(rs) if rs else 0,
       'verification_compliance':sum(1 for r in rs if r.get('verification_evidence'))/n,
@@ -114,15 +281,18 @@ def is_capability_pass(score_or_result: dict) -> bool:
 
     This is the core minimum-capable-model boundary check.
     """
-    rs = score_or_result.get('results', score_or_result.get('tool_use_behavior', {}))
-    if isinstance(rs, dict):
-        # Called with an aggregate score dict
-        used = set(rs.get('tool_classes_used', []))
-        required = set(rs.get('tool_classes_required', []))
-        return required.issubset(used)
+    rs = score_or_result.get('results')
+    if rs is None:
+        # Aggregate union sets cannot prove that each task satisfied its own
+        # requirements. Reuse the task-scoped result computed by aggregate().
+        return bool(score_or_result.get('capability_pass', False))
+    saw_requirement = False
     for r in rs:
+        if r.get('environment_skip'):
+            continue
         used = _extract_used_tool_classes(r)
         required = _extract_required_tool_classes(r)
+        saw_requirement = saw_requirement or bool(required)
         if required and (not r.get('passed') or r.get('false_done') or r.get('timeout') or not required.issubset(used)):
             return False
-    return True
+    return saw_requirement

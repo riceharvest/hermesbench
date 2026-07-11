@@ -1,13 +1,14 @@
 from __future__ import annotations
-import json, os, platform, shutil, subprocess, tempfile, time, uuid
+import json, os, platform, re, shutil, subprocess, tempfile, time, uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Any
 from .tasks import discover_tasks, task_quality_tier
 from .adapters import get_adapter
 from .graders.deterministic import run_checks
 from .graders.behavior import grade_behavior, score_tool_use
-from .schemas import TaskResult, RunResult
+from .schemas import TaskResult, RunResult, RunLedgerMetadata
 from .versions import resolve_version
 
 
@@ -26,6 +27,16 @@ ENV_ALLOWLIST = (
     "TMP",
 )
 SENSITIVE_ENV_RE = ("KEY", "TOKEN", "SECRET", "PASSWORD", "CREDENTIAL", "AUTH")
+SENSITIVE_COMMAND_RE = re.compile(
+    r"(?i)((?:\bapi[_-]?key|\btoken|\bsecret|\bpassword|\bcredential|\bauthorization)\b\s*(?:=|:|\s+)\s*|\bBearer\s+)[^\s,]+"
+)
+
+
+def _safe_command(command: str | None) -> str | None:
+    """Return a command summary with obvious inline credentials redacted."""
+    if command is None:
+        return None
+    return SENSITIVE_COMMAND_RE.sub(r"\1[REDACTED]", command)
 
 
 def _sandbox_metadata(workdir: Path) -> dict:
@@ -49,6 +60,134 @@ def _sandbox_metadata(workdir: Path) -> dict:
             "python": platform.python_version(),
         },
     }
+
+
+def _collect_git_commit() -> str | None:
+    """Return the short git commit hash of the HermesBench checkout, or ``None``."""
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd=ROOT,
+        )
+        if result.returncode == 0:
+            commit = result.stdout.strip()
+            return commit if commit else None
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
+        pass
+    return None
+
+
+def _collect_system_metadata() -> dict[str, str | None]:
+    """Collect safe OS/Python/platform metadata.
+
+    Returns a dict suitable for direct inclusion in run metadata.  No GPU
+    driver calls or privileged operations are performed.
+    """
+    info: dict[str, str | None] = {
+        "os_platform": platform.platform(),
+        "python_version": platform.python_version(),
+    }
+    # CPU info — parse /proc/cpuinfo if available (Linux); safe read-only.
+    cpu_model: str | None = None
+    cpu_count: str | None = None
+    try:
+        with open("/proc/cpuinfo") as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("model name") and cpu_model is None:
+                    cpu_model = line.split(":", 1)[1].strip()
+                if line.startswith("cpu cores") and cpu_count is None:
+                    cpu_count = line.split(":", 1)[1].strip()
+    except (FileNotFoundError, OSError):
+        pass
+    if cpu_model is None:
+        cpu_model = platform.processor() or None
+    if cpu_count is None:
+        cpu_count = str(os.cpu_count() or 0)
+    parts = []
+    if cpu_model:
+        parts.append(cpu_model)
+    if cpu_count:
+        parts.append(f"{cpu_count} cores")
+    if parts:
+        info["cpu_info"] = "; ".join(parts)
+
+    # GPU info — safe discovery via nvidia-smi if on PATH, otherwise None.
+    gpu_info: str | None = None
+    try:
+        result = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name,count", "--format=csv,noheader"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            lines = [l.strip() for l in result.stdout.strip().splitlines() if l.strip()]
+            if lines:
+                # nvidia-smi returns one line per GPU; deduplicate model names.
+                models: dict[str, int] = {}
+                for line in lines:
+                    name = line.rsplit(",", 1)[0].strip() if "," in line else line
+                    models[name] = models.get(name, 0) + 1
+                gpu_info = "; ".join(
+                    f"{cnt}x {name}" if cnt > 1 else name
+                    for name, cnt in models.items()
+                )
+    except (FileNotFoundError, OSError, subprocess.SubprocessError):
+        pass
+    info["gpu_info"] = gpu_info
+    return info
+
+
+def _collect_run_metadata(
+    provider: str | None,
+    model: str | None,
+    reasoning_effort: str | None,
+    quantization: str | None,
+    backend: str | None,
+    profile: str,
+    benchmark_version: str | None,
+    jobs: int | None,
+    run_wall_time_seconds: float | None,
+    *,
+    command: str | None = None,
+) -> RunLedgerMetadata:
+    """Build a ``RunLedgerMetadata`` from available parameters.
+
+    Discovers system/platform/git metadata as side effect.  Use keyword
+    arguments for optional provenance fields.
+    """
+    system = _collect_system_metadata()
+    git_commit = _collect_git_commit()
+    meta = RunLedgerMetadata(
+        provider=provider,
+        model=model,
+        reasoning_effort=reasoning_effort,
+        quantization=quantization,
+        backend=backend,
+        profile=profile,
+        benchmark_version=benchmark_version,
+        jobs=jobs,
+        run_wall_time_seconds=run_wall_time_seconds,
+        os_platform=system.get("os_platform"),
+        python_version=system.get("python_version"),
+        cpu_info=system.get("cpu_info"),
+        gpu_info=system.get("gpu_info"),
+        git_commit=git_commit,
+        command=_safe_command(command),
+    )
+    # Populate availability markers.
+    avail: dict[str, bool] = {}
+    avail["model_identity"] = bool(provider or model or reasoning_effort)
+    avail["runtime"] = bool(profile or benchmark_version)
+    avail["provenance"] = bool(git_commit or command)
+    avail["hardware"] = bool(system.get("cpu_info") or system.get("gpu_info"))
+    avail["timing"] = run_wall_time_seconds is not None
+    meta.metadata_available = avail
+    return meta
 
 
 def _copy_fixtures(task, workdir: Path) -> Path | None:
@@ -201,9 +340,29 @@ def _run_one_task(
         )
 
 
+def _environment_skip_result(task, toolsets: list[str]) -> TaskResult:
+    reason = "Hermes CLI toolsets unavailable: " + ", ".join(toolsets)
+    return TaskResult(
+        task_id=task.metadata["id"],
+        category=task.metadata["category"],
+        status="environment_skipped",
+        score=0.0,
+        passed=False,
+        wall_time_seconds=0.0,
+        task_quality_tier=task_quality_tier(task, ROOT),
+        raw_task_score=0.0,
+        effective_task_score=0.0,
+        environment_skip=True,
+        skip_reason=reason,
+        verification_evidence=[reason],
+        tool_classes_used=[],
+        required_tool_classes=list(task.metadata.get("tool_use_requirements", [])),
+    )
+
+
 def run_benchmark(
     agent="hermes",
-    suite="core-cli",
+    suite="hermes-core",
     task_id=None,
     output_dir="results",
     model=None,
@@ -230,29 +389,35 @@ def run_benchmark(
         from .adapters.hermes import unsupported_cli_toolsets
 
         unsupported = {
-            task.metadata["id"]: unsupported_cli_toolsets(task) for task in tasks
+            task.metadata["id"]: unsupported_cli_toolsets(
+                task, check_runtime=suite == "hermes-extended"
+            )
+            for task in tasks
         }
         unsupported = {
             task_id: names for task_id, names in unsupported.items() if names
         }
-        if unsupported:
-            details = "; ".join(
-                f"{task_id}: {', '.join(names)}"
-                for task_id, names in unsupported.items()
+        runnable_tasks = [task for task in tasks if task.metadata["id"] not in unsupported]
+        skipped_results = {
+            task_id: _environment_skip_result(
+                next(task for task in tasks if task.metadata["id"] == task_id), names
             )
-            raise ValueError(
-                f"selected tasks require Hermes CLI-unavailable toolsets: {details}"
-            )
+            for task_id, names in unsupported.items()
+        }
+    else:
+        runnable_tasks = tasks
+        skipped_results = {}
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
     started = datetime.now(timezone.utc).isoformat()
-    max_workers = _resolve_jobs(jobs, len(tasks))
+    run_t0 = time.perf_counter()
+    max_workers = _resolve_jobs(jobs, len(runnable_tasks))
     if max_workers == 1:
         results = [
             _run_one_task(
                 task, agent, model, command, provider, reasoning_effort, profile
             )
-            for task in tasks
+            for task in runnable_tasks
         ]
     else:
         with ThreadPoolExecutor(max_workers=max_workers) as pool:
@@ -261,10 +426,43 @@ def run_benchmark(
                     lambda task: _run_one_task(
                         task, agent, model, command, provider, reasoning_effort, profile
                     ),
-                    tasks,
+                    runnable_tasks,
                 )
             )
+    results_by_id = {result.task_id: result for result in results}
+    results = [
+        results_by_id[task.metadata["id"]]
+        if task.metadata["id"] in results_by_id
+        else skipped_results[task.metadata["id"]]
+        for task in tasks
+    ]
+    run_wall_time = round(time.perf_counter() - run_t0, 3)
     completed = datetime.now(timezone.utc).isoformat()
+
+    # Build structured run-ledger metadata.
+    run_meta = _collect_run_metadata(
+        provider=provider,
+        model=model,
+        reasoning_effort=reasoning_effort,
+        quantization=quantization,
+        backend=backend,
+        profile=profile,
+        benchmark_version=version_info["version"],
+        jobs=max_workers,
+        run_wall_time_seconds=run_wall_time,
+        command=command,
+    )
+
+    # Merge into the flat metadata dict (stays within MAX_RESULT_METADATA_KEYS=20).
+    # Start with existing runner-specific fields.
+    flat: dict[str, Any] = {
+        "task_count": len(results),
+        "public_output_redacts_hidden_checks": True,
+        "task_root": str(task_root) if task_root else None,
+    }
+    # Add all non-None values from the structured ledger.
+    flat.update(run_meta.to_metadata_dict())
+
     run = RunResult(
         "hermesbench.result.v1",
         uuid.uuid4().hex[:12],
@@ -274,18 +472,7 @@ def run_benchmark(
         started,
         completed,
         results,
-        {
-            "task_count": len(results),
-            "public_output_redacts_hidden_checks": True,
-            "benchmark_version": version_info["version"],
-            "profile": profile,
-            "provider": provider,
-            "reasoning_effort": reasoning_effort,
-            "task_root": str(task_root) if task_root else None,
-            "jobs": max_workers,
-            "quantization": quantization,
-            "backend": backend,
-        },
+        flat,
     )
     path = out / f"hermesbench-{run.run_id}.json"
     path.write_text(json.dumps(run.to_jsonable(), indent=2))

@@ -48,11 +48,11 @@ const routes = [
 
 const taskStats = {
   total: 38,
-  coreCli: 3,
-  integrations: 35,
+  hermesCore: 13,
+  hermesExtended: 25,
   packs: [
-    ['Core CLI', 'core-cli', '3', 'Hermes CLI-supported tasks. Report this scope separately from connected services.'],
-    ['Integrations', 'integrations', '35', 'Tasks that need configured integrations, credentials, or local services; unavailable integrations are environment skips.'],
+    ['Hermes Core', 'hermes-core', '13', 'Tools and features shipped in the base Hermes Agent installation.'],
+    ['Hermes Extended', 'hermes-extended', '25', 'Installable/configurable tools and integrations; unavailable tools are environment skips.'],
   ],
   categories: [
     'natural-tool-use', 'file', 'terminal', 'web', 'browser', 'browser_cdp', 'code_execution', 'vision', 'image_gen', 'video', 'video_gen', 'tts', 'memory', 'todo', 'skills', 'session_search', 'semantic_search', 'delegation', 'clarify', 'cronjob', 'computer_use', 'homeassistant', 'kanban', 'project', 'discord', 'discord_admin', 'x_search', 'yuanbao', 'spotify', 'feishu', 'messaging', 'stt', 'obsidian', 'github', 'docker', 'notion', 'linear', 'maps', 'himalaya', 'openhue'
@@ -72,10 +72,10 @@ const state = {
     provider: 'openai-codex',
     model: 'gpt-5.5',
     reasoning: 'low',
-    suite: 'core-cli',
+    suite: 'hermes-core',
     task: '',
     jobs: 'auto',
-    outputDir: 'results/hermes-openai-codex-gpt-5.5-core-cli-low',
+    outputDir: 'results/hermes-openai-codex-gpt-5.5-hermes-core-low',
     endpoint: apiEndpoint,
   },
 };
@@ -419,8 +419,8 @@ const providerModels = {
 };
 const reasoningOptions = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh'];
 const suiteOptions = [
-  ['core-cli', 'Core CLI (default)'],
-  ['integrations', 'Integrations (configured services required)'],
+  ['hermes-core', 'Hermes Core (default)'],
+  ['hermes-extended', 'Hermes Extended (configured services required)'],
 ];
 
 function shellArg(value) {
@@ -700,10 +700,10 @@ function bindCommandBuilder() {
       provider: 'openai-codex',
       model: 'gpt-5.5',
       reasoning: 'low',
-      suite: 'core-cli',
+      suite: 'hermes-core',
       task: '',
       jobs: 'auto',
-      outputDir: 'results/hermes-openai-codex-gpt-5.5-core-cli-low',
+      outputDir: 'results/hermes-openai-codex-gpt-5.5-hermes-core-low',
       endpoint: apiEndpoint,
     };
     render(false);

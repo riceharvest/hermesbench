@@ -9,25 +9,39 @@ from hermesbench.schemas import RunResult, TaskResult
 from hermesbench.versions import DEFAULT_BENCHMARK_VERSION, resolve_version
 
 
-def test_core_cli_suite_contains_only_cli_supported_tasks_and_is_default(tmp_path):
-    core = discover_tasks("core-cli")
-    integrations = discover_tasks("integrations")
-    assert {task.metadata["id"] for task in core} == {
+def test_hermes_core_and_extended_suites_are_disjoint_and_default(tmp_path):
+    core = discover_tasks("hermes-core")
+    extended = discover_tasks("hermes-extended")
+    core_ids = {task.metadata["id"] for task in core}
+    extended_ids = {task.metadata["id"] for task in extended}
+    assert {
         "htu-dev-001-file-and-terminal-self-serve",
+        "htu-dev-002-web-search-required",
+        "htu-dev-003-use-a-skill",
         "htu-dev-007-code-execution",
         "htu-dev-013-vision-image",
-    }
-    assert {task.metadata["id"] for task in core}.isdisjoint(
-        {task.metadata["id"] for task in integrations}
-    )
-    assert resolve_version(DEFAULT_BENCHMARK_VERSION)["suite"] == "core-cli"
-    assert len(core) == 3
-    assert len(integrations) == 35
+    }.issubset(core_ids)
+    assert {
+        "htu-dev-015-messaging",
+        "htu-dev-020-homeassistant",
+        "htu-dev-032-github",
+        "htu-dev-038-openhue",
+        "htu-dev-014-image-gen",
+        "htu-dev-016-x-search",
+        "htu-dev-017-video",
+        "htu-dev-018-video-gen",
+        "htu-dev-019-tts",
+        "htu-dev-022-browser-cdp",
+    }.issubset(extended_ids)
+    assert core_ids.isdisjoint(extended_ids)
+    assert resolve_version(DEFAULT_BENCHMARK_VERSION)["suite"] == "hermes-core"
+    assert len(core) == 13
+    assert len(extended) == 25
 
     result = RunResult(
         schema_version="hermesbench.result.v1",
         run_id="test",
-        suite="core-cli",
+        suite="hermes-core",
         agent="hermes",
         model=None,
         started_at="s",
@@ -37,7 +51,7 @@ def test_core_cli_suite_contains_only_cli_supported_tasks_and_is_default(tmp_pat
     )
     out = tmp_path / "out.json"
     out.write_text(json.dumps(result.to_jsonable()))
-    assert '"suite": "core-cli"' in out.read_text()
+    assert '"suite": "hermes-core"' in out.read_text()
 
 
 def test_fixture_contract_rejects_missing_declared_input_and_unsafe_artifact_path(
@@ -96,14 +110,15 @@ Do work.
     assert any("unsafe artifact path" in finding for finding in findings)
 
 
-def test_core_cli_tasks_declare_every_prompt_fixture_and_have_local_files():
+def test_hermes_core_tasks_declare_every_prompt_fixture_and_have_local_files():
     expected_inputs = {
         "htu-dev-001-file-and-terminal-self-serve": ["data/records.txt"],
         "htu-dev-007-code-execution": ["case/numbers.txt"],
         "htu-dev-013-vision-image": ["case/image.png"],
     }
-    for task in discover_tasks("core-cli"):
-        assert task.metadata.get("fixtures") == expected_inputs[task.metadata["id"]]
+    for task in discover_tasks("hermes-core"):
+        if task.metadata["id"] in expected_inputs:
+            assert task.metadata.get("fixtures") == expected_inputs[task.metadata["id"]]
     assert not validate_tasks()
 
 
@@ -143,14 +158,14 @@ Do work.
 
 def test_benchmark_version_task_counts_match_declared_suites():
     assert (
-        resolve_version("core-cli-v0.1")["task_count"]
-        == len(discover_tasks("core-cli"))
-        == 3
+        resolve_version("hermes-core-v0.1")["task_count"]
+        == len(discover_tasks("hermes-core"))
+        == 13
     )
     assert (
-        resolve_version("natural-tools-dev-v0.1")["task_count"]
-        == len(discover_tasks("natural-tools-dev"))
-        == 38
+        resolve_version("hermes-extended-v0.1")["task_count"]
+        == len(discover_tasks("hermes-extended"))
+        == 25
     )
 
 

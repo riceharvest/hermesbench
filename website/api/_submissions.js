@@ -175,8 +175,16 @@ function validateSubmission(payload, req = null) {
 // Fields allowed in sanitized public-safe result payloads (metadata + task-level).
 // Only fields listed here are retained — everything else is stripped.
 const PUBLIC_METADATA_KEYS = new Set([
-  'sanitized', 'official', 'reasoning_effort', 'agent_version', 'runner',
-  'environment', 'ci_run', 'provider', 'model', 'suite',
+  'sanitized', 'official',
+  // Run-ledger metadata (non-secret identity, runtime, provenance, hardware)
+  'provider', 'model', 'reasoning_effort', 'quantization', 'backend',
+  'profile', 'benchmark_version', 'jobs', 'run_wall_time_seconds',
+  'engine_version', 'hermes_version', 'git_commit', 'command',
+  'config_summary',
+  'os_platform', 'python_version', 'cpu_info', 'gpu_info',
+  'metadata_available',
+  // Legacy fields kept for backward compatibility
+  'agent_version', 'runner', 'environment', 'ci_run', 'suite',
 ]);
 const PUBLIC_TASK_KEYS = new Set([
   'task_id', 'category', 'status', 'score', 'passed',

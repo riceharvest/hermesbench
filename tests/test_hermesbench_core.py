@@ -11,15 +11,15 @@ from hermesbench.scoring import aggregate
 from hermesbench.schemas import RunResult, TaskResult, validate_result_schema
 
 
-def test_task_suite_has_natural_tools_dev_tasks():
-    tasks = discover_tasks("natural-tools-dev")
-    assert len(tasks) == 38
+def test_hermes_core_suite_has_shipped_tasks():
+    tasks = discover_tasks("hermes-core")
+    assert len(tasks) == 13
     assert all(t.metadata.get("tool_use_requirements") for t in tasks)
     assert not validate_tasks()
 
 
-def test_natural_tools_dev_tasks_are_open_ended():
-    tasks = discover_tasks("natural-tools-dev")
+def test_hermes_core_tasks_are_open_ended():
+    tasks = discover_tasks("hermes-core")
     for task in tasks:
         assert task.metadata.get("grading_type") in ("deterministic", "behavior")
         assert task.metadata.get("tool_use_requirements")
@@ -27,7 +27,7 @@ def test_natural_tools_dev_tasks_are_open_ended():
 
 def test_quality_lint_flags_shallow_marker_only_tasks(tmp_path):
     tasks_dir = tmp_path / "tasks"
-    suite = tasks_dir / "natural-tools-dev"
+    suite = tasks_dir / "hermes-core"
     suite.mkdir(parents=True)
     md = """---
 id: shallow
@@ -55,11 +55,11 @@ Do it.
     (suite / "shallow.md").write_text(md)
     (tasks_dir / "manifest.yaml").write_text(
         "suites:\n"
-        "  natural-tools-dev:\n"
+        "  hermes-core:\n"
         "    version: test\n"
         "    tasks:\n"
         "    - id: shallow\n"
-        "      path: natural-tools-dev/shallow.md\n"
+        "      path: hermes-core/shallow.md\n"
         "      category: natural-tool-use\n"
         "      visibility: public\n"
     )
@@ -71,7 +71,7 @@ Do it.
     assert any("no semantic validation" in e for e in quality)
     assert (
         task_quality_tier(
-            discover_tasks("natural-tools-dev", task_root=tasks_dir)[0], tmp_path
+            discover_tasks("hermes-core", task_root=tasks_dir)[0], tmp_path
         )
         == "needs-review"
     )
@@ -93,22 +93,22 @@ Do it.
 
 
 def test_task_markdown_parser_extracts_checks():
-    task = discover_tasks("natural-tools-dev")[0]
+    task = discover_tasks("hermes-core")[0]
     parsed = parse_task_markdown(task.path)
     assert parsed.metadata["id"].startswith("htu-dev-")
     assert parsed.deterministic_checks
 
 
-def test_hermes_run_rejects_unavailable_cli_toolsets(tmp_path):
-    import pytest
-
-    with pytest.raises(ValueError, match="CLI-unavailable toolsets.*semantic_search"):
-        run_benchmark(
-            agent="hermes",
-            suite="natural-tools-dev",
-            task_id="htu-dev-025-semantic-search",
-            output_dir=tmp_path,
-        )
+def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path):
+    result = run_benchmark(
+        agent="hermes",
+        suite="hermes-extended",
+        task_id="htu-dev-025-semantic-search",
+        output_dir=tmp_path,
+    )
+    payload = json.loads(result.read_text())
+    assert payload["results"][0]["status"] == "environment_skipped"
+    assert payload["results"][0]["environment_skip"] is True
 
 
 def test_hermes_runner_rejects_unknown_toolsets_before_adapter_launch(
@@ -132,7 +132,7 @@ def test_hermes_runner_rejects_unknown_toolsets_before_adapter_launch(
         ValueError, match="Unknown task-requested toolsets.*imaginary_toolset"
     ):
         runner.run_benchmark(
-            agent="hermes", suite="natural-tools-dev", output_dir=tmp_path
+            agent="hermes", suite="hermes-core", output_dir=tmp_path
         )
 
 
@@ -232,10 +232,10 @@ def test_cli_smoke_validate_and_export(monkeypatch):
     assert "htu-dev-001" in out.stdout
 
 
-def test_natural_tools_dev_covers_all_tool_classes():
+def test_two_suites_cover_all_tool_classes():
     from hermesbench.schemas import NATURAL_TOOL_CLASSES
 
-    tasks = discover_tasks("natural-tools-dev")
+    tasks = discover_tasks("hermes-core") + discover_tasks("hermes-extended")
     covered = set()
     for t in tasks:
         reqs = t.metadata.get("tool_use_requirements") or []

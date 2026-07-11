@@ -46,7 +46,7 @@ Follow these steps for every release candidate.
     uv run pytest tests/test_release_reproducibility.py -v --timeout=120
     ```
 
-- [ ] Export produces valid JSONL: `uv run hermesbench export --suite natural-tools-dev --format jsonl > /tmp/check.jsonl && head -1 /tmp/check.jsonl | python -m json.tool > /dev/null`
+- [ ] Export produces valid JSONL: `uv run hermesbench export --suite hermes-core --format jsonl > /tmp/check.jsonl && head -1 /tmp/check.jsonl | python -m json.tool > /dev/null`
 - [ ] If `dist/` exists, SHA256SUMS are generated and valid: `sha256sum -c dist/SHA256SUMS`
 
 ## Self-hosted real-agent smoke
