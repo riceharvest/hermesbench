@@ -407,14 +407,14 @@ class TestNonePartialMalformed:
             }]
         ))
 
-    # ── Negative wall_time is technically valid (no bound in schema) ─────
+    # ── Negative wall_time must be rejected ──────────────────────────────
 
-    def test_negative_wall_time_not_rejected(self):
-        """wall_time has no lower-bound check in validate_result_schema —
-        negative values are accepted by the current contract."""
-        validate_result_schema(_valid_result(
-            results=[_task(wall_time_seconds=-1.0)]
-        ))
+    def test_negative_wall_time_rejected(self):
+        """wall_time < 0 must be rejected by validate_result_schema."""
+        with pytest.raises(ValueError, match="non-negative"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=-1.0)]
+            ))
 
 
 # ── Token extraction (header-only contract) ──────────────────────────────────

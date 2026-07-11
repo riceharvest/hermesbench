@@ -253,6 +253,8 @@ def validate_result_schema(data: dict[str, Any]) -> None:
             raise ValueError("task result wall_time_seconds must be a number")
         if math.isnan(wt):
             raise ValueError(f"task result wall_time_seconds is NaN")
+        if wt < 0:
+            raise ValueError(f"task result wall_time_seconds ({wt}) must be non-negative")
 
 
 # ── Explicit public allowlists (identical in JS tokenFromRequest counterpart) ──
