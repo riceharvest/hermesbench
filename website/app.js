@@ -912,6 +912,17 @@ async function loadLeaderboard() {
 async function init() {
   document.getElementById('desktop-nav').innerHTML = navHtml();
   document.getElementById('mobile-nav').innerHTML = navHtml();
+
+  const themeToggleBtn = document.getElementById('theme-toggle');
+  if (themeToggleBtn) {
+    themeToggleBtn.addEventListener('click', () => {
+      const currentTheme = document.documentElement.getAttribute('data-theme') || 'dark';
+      const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', newTheme);
+      localStorage.setItem('theme', newTheme);
+    });
+  }
+
   try {
     state.leaderboard = await loadLeaderboard();
   } catch (error) {

@@ -161,6 +161,7 @@ def test_website_build_rejects_non_archive_and_traversal_sources(tmp_path):
     (website / "data").mkdir(parents=True)
     (website / "index.html").write_text("<main></main>")
     (website / "app.js").write_text("// test")
+    (website / "index.css").write_text("/* test */")
     entry = {
         "run_id": "fixture",
         "agent": "agent",
@@ -200,6 +201,7 @@ def test_website_build_tolerates_empty_data(tmp_path):
     (website / "data").mkdir(parents=True)
     (website / "index.html").write_text("<main></main>")
     (website / "app.js").write_text("// test")
+    (website / "index.css").write_text("/* test */")
 
     result = subprocess.run(
         ["node", str(root / "website/build.js")],
@@ -409,6 +411,7 @@ def test_website_build_archive_validation_python_equivalent(tmp_path):
     (website / "data").mkdir(parents=True)
     (website / "index.html").write_text("<main></main>")
     (website / "app.js").write_text("// test")
+    (website / "index.css").write_text("/* test */")
 
     # Convert cases to JS-safe format (Python True/False -> JS true/false)
     js_cases = [(source, "true" if expected else "false") for source, expected in cases]
@@ -565,6 +568,7 @@ def test_end_to_end_python_data_gen_to_js_build(tmp_path):
     (website / "data").mkdir(parents=True)
     (website / "index.html").write_text("<html><body></body></html>")
     (website / "app.js").write_text("// test app stub")
+    (website / "index.css").write_text("/* test */")
 
     # Copy generated data files into the website fixture
     import shutil

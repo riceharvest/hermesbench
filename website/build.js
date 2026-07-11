@@ -108,7 +108,7 @@ function readJson(file) {
 for (const file of walkJson('data')) readJson(file);
 fs.rmSync('dist', { recursive: true, force: true });
 fs.mkdirSync('dist', { recursive: true });
-for (const f of ['index.html', 'app.js']) cp(f, path.join('dist', f));
+for (const f of ['index.html', 'app.js', 'index.css']) cp(f, path.join('dist', f));
 // Official result snapshots are optional: production data is served by the
 // live API, and mock/demo snapshots must never be synthesized as a fallback.
 if (fs.existsSync('data')) cp('data', path.join('dist', 'data'));
