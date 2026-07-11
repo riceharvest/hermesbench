@@ -3,9 +3,11 @@ import json
 from pathlib import Path
 import subprocess
 
+import pytest
+
 from scripts.generate_website_data import build_data, is_official_archive_source
 from hermesbench.submissions import make_submission_payload
-from hermesbench.tasks import discover_tasks
+from hermesbench.tasks import discover_tasks, parse_task_markdown
 
 
 def _result(path: Path, run_id="r1", official=False, agent="agent"):
@@ -80,6 +82,14 @@ def test_website_generator_removes_latest_result_output(tmp_path):
 
 
 def test_website_generator_omits_absolute_local_source_paths(tmp_path):
+    """Unofficial results must not leak local filesystem paths via ``source``.
+
+    The ``source`` field is only meaningful for official-run entries where it
+    points to a canonical ``official-runs/<safe-segment>/...`` archive path
+    within the repo.  For external/unofficial results the path is an absolute
+    local filesystem path that must be stripped to avoid leaking CI runners'
+    directory structures.
+    """
     _result(tmp_path / "external-results/u/hermesbench-u.json", "u", False)
 
     lb = build_data(tmp_path / "external-results", tmp_path / "out")
@@ -90,6 +100,14 @@ def test_website_generator_omits_absolute_local_source_paths(tmp_path):
 def test_website_generator_only_marks_reviewed_official_archives_as_capability_evidence(
     tmp_path, monkeypatch
 ):
+    """Only entries under ``official-runs/<segment>/...`` are capability evidence.
+
+    A result that declares ``official: true`` but lives under an arbitrary
+    directory (e.g. ``results/local/...``) is *not* automatically capability
+    evidence — it must live in the canonical ``official-runs/`` tree and pass
+    ``is_official_archive_source``.  This prevents a submitter from marking an
+    ad-hoc result as capability evidence by setting ``official: true`` in metadata.
+    """
     import scripts.generate_website_data as generator
 
     monkeypatch.setattr(generator, "ROOT", tmp_path)
@@ -194,6 +212,15 @@ def test_website_build_tolerates_empty_data(tmp_path):
 
 
 def test_app_has_honest_no_results_state():
+    """Validate source (website/app.js) rather than the built artifact
+    (website/dist/app.js).
+
+    These checks read the pre-build source file intentionally — they verify
+    developer-authored content (strings, function names) that must exist in
+    the source regardless of build output.  The build step should preserve
+    these strings, but the contract is with the source, not the generated
+    artifact.
+    """
     app = (Path(__file__).resolve().parents[1] / "website/app.js").read_text()
 
     assert "No reviewed results are published yet" in app
@@ -597,3 +624,243 @@ def test_end_to_end_python_data_gen_to_js_build(tmp_path):
     dist_lb = json.loads((dist / "data/leaderboard.json").read_text())
     assert dist_lb["schema_version"] == "hermesbench.website.leaderboard.v3"
     assert len(dist_lb["entries"]) == 3
+
+
+# ── Parameterized parse_task_markdown coverage ──────────────────────────────
+
+
+class TestParseTaskMarkdown:
+    """``parse_task_markdown`` must handle every deterministic check type,
+    missing/empty sections, YAML edge cases, and the five ``grading_type``
+    values the schema allows.
+
+    These are white-box tests exercising the parser directly on synthetic
+    markdown — they don't require a real task tree.
+    """
+
+    # ── Helpers ──────────────────────────────────────────────────────────
+
+    MINIMAL_FRONTMATTER = """\
+---
+id: test
+title: Test
+category: natural-tool-use
+wave: 1
+visibility: public
+created_at: 2026-01-01
+freshness_window: static
+expected_human_minutes: 1
+difficulty: easy
+required_toolsets: [terminal]
+grading_type: deterministic
+timeout_seconds: 30
+contamination_notes: none
+safety_notes: none
+---
+"""
+
+    @staticmethod
+    def _markdown(body: str, frontmatter: str | None = None) -> str:
+        """Wrap *body* in minimal-YAML frontmatter so the parser reaches the sections."""
+        return (frontmatter or TestParseTaskMarkdown.MINIMAL_FRONTMATTER) + body
+
+    # ── Check-type coverage ─────────────────────────────────────────────
+
+    def test_artifact_exists(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- artifact_exists: done.txt\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "artifact_exists", "path": "done.txt"}]
+
+    def test_artifact_contains(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- artifact_contains: out.txt => expected\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "artifact_contains", "path": "out.txt", "needle": "expected"}]
+
+    def test_json_field(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- json_field: report.json => ok=true\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "json_field", "path": "report.json", "expr": "ok=true"}]
+
+    def test_command_passes(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- command_passes: test -f done.txt\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "command_passes", "command": "test -f done.txt"}]
+
+    def test_artifact_not_contains(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- artifact_not_contains: out.txt => error\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "artifact_not_contains", "path": "out.txt", "needle": "error"}]
+
+    def test_artifact_matches(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- artifact_matches: answer.txt => \\d+\\.\\d+\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "artifact_matches", "path": "answer.txt", "pattern": "\\d+\\.\\d+"}]
+
+    def test_artifact_not_matches(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- artifact_not_matches: answer.txt => error.*\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "artifact_not_matches", "path": "answer.txt", "pattern": "error.*"}]
+
+    def test_glob_exists(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- glob_exists: *.log\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "glob_exists", "pattern": "*.log"}]
+
+    def test_command_contains(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- command_contains: cat answer.txt => 42\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "command_contains", "command": "cat answer.txt", "needle": "42"}]
+
+    def test_command_not_contains(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Deterministic checks\n- command_not_contains: cat answer.txt => unknown\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == [{"type": "command_not_contains", "command": "cat answer.txt", "needle": "unknown"}]
+
+    # ── Multiple checks ─────────────────────────────────────────────────
+
+    def test_multiple_checks(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown(
+            "## Deterministic checks\n"
+            "- artifact_exists: a.txt\n"
+            "- artifact_contains: b.txt => ok\n"
+            "- command_passes: test -f c.txt\n"
+        ))
+        t = parse_task_markdown(md)
+        assert len(t.deterministic_checks) == 3
+        assert t.deterministic_checks[0] == {"type": "artifact_exists", "path": "a.txt"}
+        assert t.deterministic_checks[1] == {"type": "artifact_contains", "path": "b.txt", "needle": "ok"}
+        assert t.deterministic_checks[2] == {"type": "command_passes", "command": "test -f c.txt"}
+
+    # ── Section extraction ──────────────────────────────────────────────
+
+    def test_prompt_scoring_and_expected_artifacts(self, tmp_path):
+        body = (
+            "## Prompt\nDo the thing.\n"
+            "## Expected artifacts\n- out.txt\n"
+            "## Scoring rubric\nMust pass.\n"
+            "## Deterministic checks\n- artifact_exists: out.txt\n"
+        )
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown(body))
+        t = parse_task_markdown(md)
+        assert t.prompt == "Do the thing."
+        assert t.expected_artifacts == ["out.txt"]
+        assert t.scoring_rubric == "Must pass."
+
+    def test_setup_and_cleanup(self, tmp_path):
+        body = (
+            "## Setup\nCopy fixture.\n"
+            "## Prompt\nDo it.\n"
+            "## Deterministic checks\n- artifact_exists: done.txt\n"
+            "## Cleanup\nDelete workdir.\n"
+        )
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown(body))
+        t = parse_task_markdown(md)
+        assert t.setup == "Copy fixture."
+        assert t.cleanup == "Delete workdir."
+
+    def test_hidden_checks(self, tmp_path):
+        body = (
+            "## Prompt\nDo it.\n"
+            "## Deterministic checks\n- artifact_exists: out.txt\n"
+            "## Hidden checks\n- redacted: true\n"
+        )
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown(body))
+        t = parse_task_markdown(md)
+        assert t.hidden_checks == ["redacted: true"]
+
+    # ── Edge cases ──────────────────────────────────────────────────────
+
+    def test_missing_frontmatter_raises(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text("## Prompt\nNo frontmatter.\n")
+        with pytest.raises(ValueError, match="missing YAML frontmatter"):
+            parse_task_markdown(md)
+
+    def test_empty_frontmatter_is_empty_dict(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text("---\n---\n## Prompt\nBody.\n")
+        with pytest.raises(ValueError, match="missing metadata"):
+            parse_task_markdown(md)
+
+    def test_no_deterministic_checks_is_empty_list(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Prompt\nDo it.\n"))
+        t = parse_task_markdown(md)
+        assert t.deterministic_checks == []
+
+    def test_absent_sections_return_empty(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(self._markdown("## Prompt\nDo it.\n## Deterministic checks\n- artifact_exists: done.txt\n"))
+        t = parse_task_markdown(md)
+        assert t.setup == ""
+        assert t.scoring_rubric == ""
+        assert t.cleanup == ""
+
+    def test_empty_line_between_sections(self, tmp_path):
+        md = tmp_path / "t.md"
+        md.write_text(
+            self._markdown(
+                "## Prompt\nDo it.\n\n## Deterministic checks\n- artifact_exists: done.txt\n\n"
+                "## Hidden checks\n- none\n"
+            )
+        )
+        t = parse_task_markdown(md)
+        assert t.prompt == "Do it."
+        assert not t.deterministic_checks[0].get("needle")
+
+    def test_required_toolsets_as_list(self, tmp_path):
+        """Verify that YAML list-typed required_toolsets parse correctly."""
+        fm = """\
+---
+id: test
+title: Test
+category: natural-tool-use
+wave: 1
+visibility: public
+created_at: 2026-01-01
+freshness_window: static
+expected_human_minutes: 1
+difficulty: easy
+required_toolsets:
+- terminal
+- file
+grading_type: deterministic
+timeout_seconds: 30
+contamination_notes: none
+safety_notes: none
+---
+"""
+        md = tmp_path / "t.md"
+        md.write_text(fm + "## Prompt\nDo.\n## Deterministic checks\n- artifact_exists: done.txt\n")
+        t = parse_task_markdown(md)
+        assert t.metadata["required_toolsets"] == ["terminal", "file"]
+
+    def test_all_five_grading_types_accepted(self, tmp_path):
+        """The schema allows exactly {'deterministic','artifact','test','judge','hybrid'}."""
+        for gt in ("deterministic", "artifact", "test", "judge", "hybrid"):
+            fm = self.MINIMAL_FRONTMATTER.replace("grading_type: deterministic", f"grading_type: {gt}")
+            md = tmp_path / f"t-{gt}.md"
+            md.write_text(fm + "## Prompt\nDo.\n## Deterministic checks\n- artifact_exists: done.txt\n")
+            t = parse_task_markdown(md)
+            assert t.metadata["grading_type"] == gt
+
+    def test_invalid_grading_type_raises(self, tmp_path):
+        fm = self.MINIMAL_FRONTMATTER.replace("grading_type: deterministic", "grading_type: invalid")
+        md = tmp_path / "t.md"
+        md.write_text(fm + "## Prompt\nDo.\n")
+        with pytest.raises(ValueError, match="bad grading_type"):
+            parse_task_markdown(md)

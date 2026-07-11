@@ -1,3 +1,12 @@
+"""Test telemetry extraction from Hermes CLI output and profile state.
+
+Edge-coverage additions:
+  - ``_tool_log_lines`` with None / missing profile dir.
+  - ``extract_hermes_telemetry`` with ``cost`` key (replaces, not adds).
+  - ``extract_hermes_telemetry`` with purely malformed text (no JSON).
+  - ``extract_hermes_telemetry`` with empty text.
+"""
+
 import json
 import os
 import subprocess
@@ -608,3 +617,78 @@ def test_total_tokens_from_explicit_supersedes_aggregate():
     )
     telemetry = extract_hermes_telemetry(text)
     assert telemetry.token_usage["total_tokens"] == 999
+
+
+# ── Edge-coverage additions for _tool_log_lines ──────────────────────────────
+
+
+def test_tool_log_lines_none_profile_returns_empty_string():
+    """_tool_log_lines(None, ...) must return '' without crashing."""
+    assert _tool_log_lines(None) == ""
+    assert _tool_log_lines(None, session_id="any") == ""
+
+
+def test_tool_log_lines_missing_dir_returns_empty_string(tmp_path):
+    """_tool_log_lines with a non-existent profile dir returns ''."""
+    missing = tmp_path / "nonexistent"
+    assert _tool_log_lines(missing) == ""
+    assert _tool_log_lines(missing, session_id="any") == ""
+
+
+# ── Edge-coverage additions for extract_hermes_telemetry ─────────────────────
+
+
+def test_cost_key_replaces_not_adds():
+    """The bare ``cost`` key (not cost_usd/costUSD) replaces, not adds.
+
+    This matches the source behaviour at::
+
+        cost = (cost or 0.0) + float(n) if key != "cost" else float(n)
+
+    so a single ``cost`` value is taken directly.
+    """
+    text = json.dumps({"cost": 1.23})
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.cost_usd == 1.23
+
+
+def test_cost_key_in_multi_object():
+    """Multiple objects with cost: the *last* bare ``cost`` wins."""
+    text = "\n".join([
+        json.dumps({"cost": 0.5}),
+        json.dumps({"cost": 1.5}),
+    ])
+    telemetry = extract_hermes_telemetry(text)
+    # bare 'cost' replaces; second object's 1.5 replaces 0.5
+    assert telemetry.cost_usd == 1.5
+
+
+def test_extract_telemetry_from_plain_text_no_json():
+    """No JSON objects in the text → fallback to regex extraction."""
+    text = "tool_calls: 3  input_tokens: 100  output_tokens: 50  total_tokens: 150  cost_usd: 0.01"
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.tool_calls == 3
+    assert telemetry.token_usage["input_tokens"] == 100
+    assert telemetry.token_usage["output_tokens"] == 50
+    assert telemetry.token_usage["total_tokens"] == 150
+    assert telemetry.cost_usd == 0.01
+
+
+def test_extract_telemetry_malformed_json_skipped():
+    """Malformed JSON lines between valid ones are gracefully skipped."""
+    text = '\n'.join([
+        '{"usage": {"input_tokens": 10, "output_tokens": 5}}',
+        'NOT JSON AT ALL',
+        '{"cost_usd": 0.01}',
+    ])
+    telemetry = extract_hermes_telemetry(text)
+    assert telemetry.token_usage["input_tokens"] == 10
+    assert telemetry.cost_usd == 0.01
+
+
+def test_extract_telemetry_empty_text():
+    """Empty text → tool_calls=0, token_usage=None, cost_usd=None."""
+    telemetry = extract_hermes_telemetry("")
+    assert telemetry.tool_calls == 0
+    assert telemetry.token_usage is None
+    assert telemetry.cost_usd is None
