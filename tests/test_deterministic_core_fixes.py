@@ -107,7 +107,7 @@ def test_false_done_cannot_pass_capability_probe(monkeypatch, tmp_path):
     )
     result = runner.run_benchmark(
         agent="hermes",
-        suite="natural-tools-dev",
+        suite="hermes-core",
         task_id="htu-dev-001-file-and-terminal-self-serve",
         output_dir=tmp_path,
     )
@@ -117,6 +117,23 @@ def test_false_done_cannot_pass_capability_probe(monkeypatch, tmp_path):
     assert task_result["effective_task_score"] == 0.0
     assert task_result["passed"] is False
     assert aggregate(result)["capability_pass"] is False
+
+
+def test_capability_pass_is_task_scoped_not_union_scoped(tmp_path):
+    from hermesbench.scoring import aggregate
+
+    results = [
+        TaskResult("file", "file", "passed", 1.0, True, 0.1,
+                   required_tool_classes=["file"], tool_classes_used=["file"]),
+        TaskResult("web", "web", "passed", 1.0, True, 0.1,
+                   required_tool_classes=["web"], tool_classes_used=[]),
+    ]
+    path = tmp_path / "result.json"
+    path.write_text(json.dumps(RunResult(
+        "hermesbench.result.v1", "scope", "hermes-core", "hermes", None,
+        "2026-01-01T00:00:00", "2026-01-01T00:00:01", results, {}
+    ).to_jsonable()))
+    assert aggregate(path)["capability_pass"] is False
 
 
 def test_result_exposes_effective_scoring_and_sandbox(tmp_path):

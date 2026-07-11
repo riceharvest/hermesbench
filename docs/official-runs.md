@@ -4,7 +4,7 @@ A HermesBench run is official only when a maintainer operates it, reviews it, an
 
 ## Capability scope
 
-Official evidence must state whether it covers the portable **core CLI** surface or one or more optional **integrations**. Integrations such as browser automation, connected services, desktop control, and skills depend on runtime configuration, credentials, and local services. An unavailable integration is an environmental limitation to disclose, not a model failure.
+Official evidence must state whether it covers **`hermes-core`** (tools/features shipped in the base installation) or **`hermes-extended`** (installable/configurable ecosystem tools and integrations). Extended tools such as connected services, desktop control, and account-backed integrations depend on runtime configuration, credentials, and local services. An unavailable extended tool is an environmental limitation to disclose, not a model failure.
 
 ## Who can run official submissions
 
@@ -12,7 +12,7 @@ Only designated maintainers may mark runs official. Self-submitted uploads are a
 
 ## Required disclosure
 
-Official manifests disclose hardware/runtime, OS, provider, model, agent version, runner commit, timeout policy, retry policy, suite version, capability scope (core CLI and named integrations), available toolsets, and result hash.
+Official manifests disclose hardware/runtime, OS, provider, model, agent version, runner commit, timeout policy, retry policy, suite version, capability scope (`hermes-core` or `hermes-extended`), available toolsets, and result hash.
 
 ## Private packs (optional)
 

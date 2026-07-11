@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 BENCHMARK_VERSIONS = {
-    'core-cli-v0.1': {
-        'suite': 'core-cli',
-        'task_count': 3,
+    'hermes-core-v0.1': {
+        'suite': 'hermes-core',
+        'task_count': 13,
         'status': 'development',
-        'notes': 'Hermes CLI-supported core tool suite.',
+        'notes': 'Hermes Agent tools and features shipped in the base installation.',
     },
-    'natural-tools-dev-v0.1': {
-        'suite': 'natural-tools-dev',
-        'task_count': 38,
+    'hermes-extended-v0.1': {
+        'suite': 'hermes-extended',
+        'task_count': 25,
         'status': 'development',
-        'notes': 'Minimum-capable-model probe for Hermes Agent tool coverage.',
-    }
+        'notes': 'Installable and configurable Hermes ecosystem tools and integrations.',
+    },
 }
-DEFAULT_BENCHMARK_VERSION = 'core-cli-v0.1'
+DEFAULT_BENCHMARK_VERSION = 'hermes-core-v0.1'
 
 def list_versions() -> dict:
     return BENCHMARK_VERSIONS.copy()

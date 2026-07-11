@@ -1,5 +1,6 @@
 from __future__ import annotations
 import json, re, shutil, subprocess, uuid
+from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -29,7 +30,20 @@ _TOKEN_KEYS = {
     "cache_read_input_tokens",
     "cache_creation_input_tokens",
     "reasoning_tokens",
+    "tool_input_tokens",
+    "tool_output_tokens",
+    "tool_calls_input_tokens",
+    "tool_calls_output_tokens",
 }
+
+# Normalisation map: synonymous keys map to a canonical key so that, e.g.,
+# prompt_tokens and input_tokens both contribute to input_tokens in the final
+# aggregate. Canonical names use the _input_tokens / _output_tokens suffix.
+_TOKEN_NORMALIZE: dict[str, str] = {
+    "prompt_tokens": "input_tokens",
+    "completion_tokens": "output_tokens",
+}
+
 
 
 # Hermes CLI built-ins as of the runtime inventory used by this adapter.  Names
@@ -187,7 +201,9 @@ def _merge_usage(dst: dict[str, int | float], usage: dict[str, Any]) -> None:
     for k, v in usage.items():
         n = _num(v)
         if n is not None and ("token" in k or k in _TOKEN_KEYS):
-            dst[k] = dst.get(k, 0) + n
+            # Normalise synonymous keys (prompt_tokens → input_tokens, etc.)
+            canonical = _TOKEN_NORMALIZE.get(k, k)
+            dst[canonical] = dst.get(canonical, 0) + n
 
 
 def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTelemetry:
@@ -210,6 +226,12 @@ def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTele
             for key in _USAGE_KEYS
             if isinstance(node.get(key), dict)
         }
+        nested_usage_parent_ids = {
+            id(node)
+            for node in _walk(obj)
+            if isinstance(node, dict)
+            and any(isinstance(node.get(key), dict) for key in _USAGE_KEYS)
+        }
         for node in _walk(obj):
             if not isinstance(node, dict):
                 continue
@@ -228,8 +250,10 @@ def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTele
             for key in _USAGE_KEYS:
                 if isinstance(node.get(key), dict):
                     _merge_usage(usage, node[key])
-            # Some providers put token fields directly on the response object.
-            if id(node) not in nested_usage_ids:
+            # Skip nested usage nodes and their parents' direct fields. This
+            # prevents double-counting when a response repeats usage values at
+            # both {"usage": {"total_tokens": 100}} and the outer level.
+            if id(node) not in nested_usage_ids | nested_usage_parent_ids:
                 _merge_usage(usage, node)
             for key in _COST_KEYS:
                 if key in node:
@@ -246,7 +270,8 @@ def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTele
         for key in _TOKEN_KEYS:
             m = re.search(rf"{re.escape(key)}\s*[:=]\s*(\d+(?:\.\d+)?)", text, re.I)
             if m:
-                usage[key] = usage.get(key, 0) + (_num(m.group(1)) or 0)
+                canonical = _TOKEN_NORMALIZE.get(key, key)
+                usage[canonical] = usage.get(canonical, 0) + (_num(m.group(1)) or 0)
     if cost is None:
         m = re.search(r"cost(?:_usd)?\s*[:=]\s*\$?(\d+(?:\.\d+)?)", text, re.I)
         if m:
@@ -270,6 +295,14 @@ def extract_hermes_telemetry(text: str, source: str | None = None) -> HermesTele
     telemetry.tool_calls = (
         explicit_tool_count if explicit_tool_count is not None else event_tool_count
     )
+    # Compute aggregate total_tokens from input+output when total_tokens was
+    # not explicitly provided (avoids double-counting an already-present total).
+    if usage:
+        if "total_tokens" not in usage:
+            inp = usage.get("input_tokens", 0)
+            out = usage.get("output_tokens", 0)
+            if inp or out:
+                usage["total_tokens"] = inp + out
     telemetry.token_usage = usage or None
     telemetry.cost_usd = cost
     return telemetry
@@ -350,9 +383,29 @@ def _resolve_toolsets(task) -> list[str]:
     return sorted(set(out))
 
 
-def unsupported_cli_toolsets(task) -> list[str]:
+def unsupported_cli_toolsets(task, *, check_runtime: bool = True) -> list[str]:
     """Return requested toolsets that Hermes CLI cannot expose via --toolsets."""
-    return sorted(set(_resolve_toolsets(task)) - _CLI_TOOLSETS)
+    available = available_cli_toolsets() if check_runtime else _CLI_TOOLSETS
+    return sorted(set(_resolve_toolsets(task)) - available)
+
+
+@lru_cache(maxsize=1)
+def available_cli_toolsets() -> set[str]:
+    """Read the enabled Hermes CLI toolsets from the current installation."""
+    try:
+        result = subprocess.run(
+            ["hermes", "tools", "list"], capture_output=True, text=True, timeout=10
+        )
+    except (OSError, subprocess.SubprocessError):
+        return set(_CLI_TOOLSETS)
+    if result.returncode != 0:
+        return set(_CLI_TOOLSETS)
+    enabled = set()
+    for line in result.stdout.splitlines():
+        match = re.search(r"✓ enabled\s+(\S+)", line)
+        if match and match.group(1) in _CLI_TOOLSETS:
+            enabled.add(match.group(1))
+    return enabled or set(_CLI_TOOLSETS)
 
 
 @dataclass
@@ -478,12 +531,18 @@ def _marked_session_id(text: str, run_marker: str) -> str | None:
     return None
 
 
-def _profile_with_cwd(profile: str | None, workdir: Path) -> tuple[str, Path]:
+def _profile_with_cwd(
+    profile: str | None,
+    workdir: Path,
+    reasoning_effort: str | None = None,
+) -> tuple[str, Path]:
     """Create a temporary profile that overrides terminal.cwd to workdir.
 
     Hermes tools use the configured terminal.cwd, not the subprocess cwd. Without
     this override file/terminal/search tools operate in the wrong directory and
-    benchmark tasks fail.
+    benchmark tasks fail. When ``reasoning_effort`` is omitted, the source
+    profile's configured value is intentionally inherited; otherwise the
+    temporary profile overrides it.
     """
     home = Path.home() / ".hermes"
     profiles_dir = home / "profiles"
@@ -531,6 +590,11 @@ def _profile_with_cwd(profile: str | None, workdir: Path) -> tuple[str, Path]:
             terminal = data["terminal"] = {}
         # Hermes tools honor terminal.cwd rather than the launcher cwd.
         terminal["cwd"] = str(workdir.resolve())
+        if reasoning_effort is not None:
+            agent = data.setdefault("agent", {})
+            if not isinstance(agent, dict):
+                agent = data["agent"] = {}
+            agent["reasoning_effort"] = reasoning_effort
         cfg.write_text(yaml.safe_dump(data, sort_keys=False))
         return tmp_name, dst
     except Exception:
@@ -577,7 +641,9 @@ class HermesCLIAdapter(AgentAdapter):
         tmp_profile_dir: Path | None = None
         try:
             started_at = __import__("time").time()
-            profile_name, tmp_profile_dir = _profile_with_cwd(self.profile, workdir)
+            profile_name, tmp_profile_dir = _profile_with_cwd(
+                self.profile, workdir, reasoning_effort=self.reasoning_effort
+            )
             cmd += ["-p", profile_name]
             cmd += [
                 "chat",
@@ -598,7 +664,6 @@ class HermesCLIAdapter(AgentAdapter):
                 cwd=workdir,
                 text=True,
                 capture_output=True,
-                timeout=int(task.metadata["timeout_seconds"]),
             )
             transcript = p.stdout + p.stderr
             telemetry = (

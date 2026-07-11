@@ -1,7 +1,8 @@
 from __future__ import annotations
 
 import hmac
-from dataclasses import dataclass, asdict
+import math
+from dataclasses import dataclass, asdict, field
 from typing import Any
 
 RESULT_SCHEMA_VERSION = "hermesbench.result.v1"
@@ -54,10 +55,129 @@ class TaskResult:
     cost_usd: float | None = None
     false_done: bool = False
     timeout: bool = False
+    environment_skip: bool = False
+    skip_reason: str | None = None
     verification_evidence: list[str] | None = None
     logs: dict[str, Any] | None = None
     tool_classes_used: list[str] | None = None
     required_tool_classes: list[str] | None = None
+
+@dataclass
+class RunLedgerMetadata:
+    """Structured run-level metadata for model identity, runtime, hardware,
+    provenance, and measurement sources.
+
+    All fields default to ``None`` — the runner populates what it can safely
+    discover.  No private paths, secrets, or API keys are recorded.
+    The ``metadata_available`` sub-dict flags which categories of metadata
+    were actually populated (so consumers can distinguish "ran but got None"
+    from "was never instrumented").
+    """
+
+    # ── Model identity ─────────────────────────────────────────────────
+    provider: str | None = None
+    """LLM provider (e.g. ``"openai"``, ``"deepseek"``)."""
+    model: str | None = None
+    """Model identifier (e.g. ``"deepseek-chat"``)."""
+    reasoning_effort: str | None = None
+    """Reasoning effort setting (``"low"``, ``"high"``, etc.)."""
+    quantization: str | None = None
+    """Quantization level (e.g. ``"Q4_K_M"``), or ``None`` for unquantized."""
+    backend: str | None = None
+    """Serving / inference backend (e.g. ``"llama.cpp"``, ``"sglang"``)."""
+
+    # ── Runner / runtime ───────────────────────────────────────────────
+    profile: str | None = None
+    """Hermes agent profile name."""
+    benchmark_version: str | None = None
+    """Resolved benchmark version string (e.g. ``"hermes-core-v0.1"``)."""
+    jobs: int | None = None
+    """Number of parallel workers used."""
+    run_wall_time_seconds: float | None = None
+    """Monotonic wall-clock time for the entire run, in seconds."""
+    engine_version: str | None = None
+    """Adapter / CLI engine version (e.g. hermes CLI version, openai-codex version)."""
+    hermes_version: str | None = None
+    """Hermes Agent version if available."""
+
+    # ── Generation / provenance ────────────────────────────────────────
+    git_commit: str | None = None
+    """Short git commit hash of the HermesBench checkout, or ``None``."""
+    command: str | None = None
+    """Invocation command (secrets scrubbed)."""
+    config_summary: dict[str, Any] | None = None
+    """Non-secret configuration summary."""
+
+    # ── Platform / hardware ────────────────────────────────────────────
+    os_platform: str | None = None
+    """OS description (``platform.platform()``)."""
+    python_version: str | None = None
+    """Python version string."""
+    cpu_info: str | None = None
+    """CPU model / count if safely discoverable."""
+    gpu_info: str | None = None
+    """GPU model / count if safely discoverable (no drivers invoked)."""
+
+    # ── Measurement-source availability markers ────────────────────────
+    metadata_available: dict[str, bool] = field(default_factory=dict)
+    """Flags which metadata categories were populated.
+
+    Keys are dotted category paths (e.g. ``"model_identity"``,
+    ``"provenance"``, ``"hardware"``).  Consumers can use this to
+    distinguish ``None``-from-unpopulated vs ``None``-from-unavailable.
+    """
+
+    def to_metadata_dict(self) -> dict[str, Any]:
+        """Flatten to a single-level dict suitable for ``RunResult.metadata``.
+
+        Only non-None values are included (to conserve the 20-key limit).
+        The ``metadata_available`` marker is always included.
+        Compound fields (``config_summary``, ``metadata_available``) are
+        kept as sub-dicts.
+        """
+        d: dict[str, Any] = {}
+        for key in (
+            "provider", "model", "reasoning_effort", "quantization", "backend",
+            "profile", "benchmark_version", "jobs", "run_wall_time_seconds",
+            "engine_version", "hermes_version",
+            "git_commit", "command", "config_summary",
+            "os_platform", "python_version", "cpu_info", "gpu_info",
+        ):
+            val = getattr(self, key, None)
+            if val is not None:
+                d[key] = val
+        if self.metadata_available:
+            d["metadata_available"] = self.metadata_available
+        else:
+            # Always include the marker so consumers know it's intentional.
+            d["metadata_available"] = {}
+        return d
+
+    @classmethod
+    def from_metadata_dict(cls, d: dict[str, Any]) -> RunLedgerMetadata:
+        """Inverse of ``to_metadata_dict``."""
+        return cls(
+            provider=d.get("provider"),
+            model=d.get("model"),
+            reasoning_effort=d.get("reasoning_effort"),
+            quantization=d.get("quantization"),
+            backend=d.get("backend"),
+            profile=d.get("profile"),
+            benchmark_version=d.get("benchmark_version"),
+            jobs=d.get("jobs"),
+            run_wall_time_seconds=d.get("run_wall_time_seconds"),
+            engine_version=d.get("engine_version"),
+            hermes_version=d.get("hermes_version"),
+            git_commit=d.get("git_commit"),
+            command=d.get("command"),
+            config_summary=d.get("config_summary"),
+            os_platform=d.get("os_platform"),
+            python_version=d.get("python_version"),
+            cpu_info=d.get("cpu_info"),
+            gpu_info=d.get("gpu_info"),
+            metadata_available=d.get("metadata_available", {}),
+        )
+
 
 @dataclass
 class RunResult:
@@ -119,23 +239,35 @@ def validate_result_schema(data: dict[str, Any]) -> None:
             if not isinstance(val, str) or not val:
                 raise ValueError(f"missing or non-empty-string task result field: {field}")
         score = r.get("score")
-        if not isinstance(score, (int, float)):
+        if isinstance(score, bool) or not isinstance(score, (int, float)):
             raise ValueError("task result score must be a number")
+        if math.isnan(score):
+            raise ValueError(f"task result score is NaN")
         if score < 0.0 or score > 1.0:
             raise ValueError(f"task result score {score!r} out of range [0, 1]")
         passed = r.get("passed")
         if not isinstance(passed, bool):
             raise ValueError("task result passed must be a boolean")
         wt = r.get("wall_time_seconds")
-        if not isinstance(wt, (int, float)):
+        if isinstance(wt, bool) or not isinstance(wt, (int, float)):
             raise ValueError("task result wall_time_seconds must be a number")
+        if math.isnan(wt):
+            raise ValueError(f"task result wall_time_seconds is NaN")
 
 
 # ── Explicit public allowlists (identical in JS tokenFromRequest counterpart) ──
 # Fields allowed in public-safe result payloads: metadata-level.
 PUBLIC_METADATA_KEYS: set[str] = {
-    "sanitized", "official", "reasoning_effort", "agent_version", "runner",
-    "environment", "ci_run", "provider", "model", "suite",
+    "sanitized", "official",
+    # Run-ledger metadata (non-secret identity, runtime, provenance, hardware)
+    "provider", "model", "reasoning_effort", "quantization", "backend",
+    "profile", "benchmark_version", "jobs", "run_wall_time_seconds",
+    "engine_version", "hermes_version", "git_commit", "command",
+    "config_summary",
+    "os_platform", "python_version", "cpu_info", "gpu_info",
+    "metadata_available",
+    # Legacy fields kept for backward compatibility
+    "agent_version", "runner", "environment", "ci_run", "suite",
 }
 # Fields allowed per-task in public-safe result payloads.
 PUBLIC_TASK_KEYS: set[str] = {

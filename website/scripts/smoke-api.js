@@ -54,7 +54,7 @@ async function call(handler, method, body, headers = {}) {
     result: {
       schema_version: 'hermesbench.result.v1',
       run_id: 'api-smoke-run',
-      suite: 'natural-tools-dev',
+      suite: 'hermes-core',
       agent: 'hermes',
       model: 'test-model',
       started_at: '2026-06-02T00:00:00Z',
@@ -129,7 +129,7 @@ async function call(handler, method, body, headers = {}) {
       result: {
         schema_version: 'hermesbench.result.v1',
         run_id: 'official-classification-test',
-        suite: 'natural-tools-dev',
+        suite: 'hermes-core',
         agent: 'hermes',
         model: 'test-model',
         metadata: {},
@@ -150,7 +150,7 @@ async function call(handler, method, body, headers = {}) {
       result: {
         schema_version: 'hermesbench.result.v1',
         run_id: 'official-metadata-test',
-        suite: 'natural-tools-dev',
+        suite: 'hermes-core',
         agent: 'hermes',
         model: 'test-model',
         metadata: { official: true },
@@ -205,7 +205,7 @@ async function call(handler, method, body, headers = {}) {
     const { sanitizeResult } = require('../api/_submissions');
     const dirtyResult = {
       run_id: 'sanitize-test',
-      suite: 'natural-tools-dev',
+      suite: 'hermes-core',
       agent: 'hermes',
       submission_token: 'should-not-persist',
       metadata: {
@@ -247,7 +247,7 @@ async function call(handler, method, body, headers = {}) {
       result: {
         schema_version: 'hermesbench.result.v1',
         run_id: 'too-many-tasks-test',
-        suite: 'natural-tools-dev',
+        suite: 'hermes-core',
         agent: 'hermes',
         model: 'test-model',
         metadata: {},
@@ -270,7 +270,7 @@ async function call(handler, method, body, headers = {}) {
       result: {
         schema_version: 'hermesbench.result.v1',
         run_id: 'too-many-meta-test',
-        suite: 'natural-tools-dev',
+        suite: 'hermes-core',
         agent: 'hermes',
         model: 'test-model',
         metadata: meta,

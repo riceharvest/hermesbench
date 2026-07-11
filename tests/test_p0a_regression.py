@@ -63,6 +63,20 @@ def _valid_result(**overrides) -> dict:
     return data
 
 
+def _task(**overrides) -> dict:
+    """Return a minimally valid task result dict."""
+    d = {
+        "task_id": "t1",
+        "category": "natural-tool-use",
+        "status": "passed",
+        "score": 1.0,
+        "passed": True,
+        "wall_time_seconds": 1.0,
+    }
+    d.update(overrides)
+    return d
+
+
 # ── Exact schema version ─────────────────────────────────────────────────────
 
 
@@ -189,6 +203,218 @@ class TestHardLimits:
     def test_rejects_none_metadata(self):
         with pytest.raises(ValueError, match="metadata must be a dict"):
             validate_result_schema(_valid_result(metadata=None))
+
+
+# ── NaN / bool-as-number regression (proven schema gaps) ──────────────────
+
+
+class TestNanAndBoolRegression:
+    """Regression: scores and wall_time must be true numbers, not NaN or bool.
+
+    Python's ``isinstance(float('nan'), float)`` is True and
+    ``isinstance(True, int)`` is True (bool is a subclass of int),
+    so we must check explicitly.
+    """
+
+    def test_rejects_nan_score(self):
+        with pytest.raises(ValueError, match="score is NaN"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=float("nan"))]
+            ))
+
+    def test_rejects_nan_wall_time(self):
+        with pytest.raises(ValueError, match="wall_time_seconds is NaN"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=float("nan"))]
+            ))
+
+    def test_rejects_nan_score_in_second_result(self):
+        """Multiple results: NaN in any position must be caught."""
+        with pytest.raises(ValueError, match="score is NaN"):
+            validate_result_schema(_valid_result(
+                results=[
+                    _task(task_id="t1", score=0.3),
+                    _task(task_id="t2", score=float("nan")),
+                ]
+            ))
+
+    def test_rejects_bool_score(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=True)]
+            ))
+
+    def test_rejects_bool_score_false(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=False)]
+            ))
+
+    def test_rejects_bool_wall_time(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=True)]
+            ))
+
+    def test_rejects_bool_wall_time_false(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=False)]
+            ))
+
+    def test_accepts_int_score_zero(self):
+        """0 (int) is a valid score — Python int is fine."""
+        validate_result_schema(_valid_result(
+            results=[_task(score=0)]
+        ))
+
+    def test_accepts_zero_wall_time(self):
+        """0.0 wall_time is valid."""
+        validate_result_schema(_valid_result(
+            results=[_task(wall_time_seconds=0.0)]
+        ))
+
+
+# ── None / partial / malformed result entries ─────────────────────────────
+
+
+class TestNonePartialMalformed:
+    """Edge cases: None values, missing keys, partial task results."""
+
+    # ── None values on required result fields ────────────────────────────
+
+    def test_rejects_none_task_id(self):
+        with pytest.raises(ValueError, match="task_id"):
+            validate_result_schema(_valid_result(
+                results=[_task(task_id=None)]
+            ))
+
+    def test_rejects_none_category(self):
+        with pytest.raises(ValueError, match="category"):
+            validate_result_schema(_valid_result(
+                results=[_task(category=None)]
+            ))
+
+    def test_rejects_none_status(self):
+        with pytest.raises(ValueError, match="status"):
+            validate_result_schema(_valid_result(
+                results=[_task(status=None)]
+            ))
+
+    def test_rejects_none_score(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(score=None)]
+            ))
+
+    def test_rejects_none_passed(self):
+        with pytest.raises(ValueError, match="passed must be a boolean"):
+            validate_result_schema(_valid_result(
+                results=[_task(passed=None)]
+            ))
+
+    def test_rejects_none_wall_time(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[_task(wall_time_seconds=None)]
+            ))
+
+    # ── Missing keys at the result-entry level ───────────────────────────
+
+    def test_rejects_missing_score_key(self):
+        with pytest.raises(ValueError, match="score must be a number"):
+            validate_result_schema(_valid_result(
+                results=[{"task_id": "t1", "category": "x", "status": "passed",
+                          "passed": True, "wall_time_seconds": 1.0}]
+            ))
+
+    def test_rejects_missing_passed_key(self):
+        with pytest.raises(ValueError, match="passed must be a boolean"):
+            validate_result_schema(_valid_result(
+                results=[{"task_id": "t1", "category": "x", "status": "passed",
+                          "score": 0.5, "wall_time_seconds": 1.0}]
+            ))
+
+    def test_rejects_missing_wall_time_key(self):
+        with pytest.raises(ValueError, match="wall_time_seconds must be a number"):
+            validate_result_schema(_valid_result(
+                results=[{"task_id": "t1", "category": "x", "status": "passed",
+                          "score": 0.5, "passed": True}]
+            ))
+
+    def test_rejects_missing_task_id_key(self):
+        with pytest.raises(ValueError, match="task_id"):
+            validate_result_schema(_valid_result(
+                results=[{"category": "x", "status": "passed",
+                          "score": 0.5, "passed": True, "wall_time_seconds": 1.0}]
+            ))
+
+    # ── Missing top-level keys ───────────────────────────────────────────
+
+    def test_rejects_missing_results_key(self):
+        payload = _valid_result()
+        del payload["results"]
+        with pytest.raises(ValueError, match="results must be a list"):
+            validate_result_schema(payload)
+
+    def test_rejects_missing_metadata_key(self):
+        payload = _valid_result()
+        del payload["metadata"]
+        with pytest.raises(ValueError, match="metadata must be a dict"):
+            validate_result_schema(payload)
+
+    def test_rejects_results_as_none(self):
+        with pytest.raises(ValueError, match="results must be a list"):
+            validate_result_schema(_valid_result(results=None))
+
+    # ── Boundary: empty / minimal valid ──────────────────────────────────
+
+    def test_accepts_empty_results_list(self):
+        """Zero tasks is valid (empty run)."""
+        validate_result_schema(_valid_result(results=[]))
+
+    def test_accepts_empty_metadata_dict(self):
+        validate_result_schema(_valid_result(metadata={}))
+
+    def test_accepts_minimal_task_entry(self):
+        """Only the 6 required fields, nothing extra."""
+        validate_result_schema(_valid_result(
+            results=[{
+                "task_id": "min",
+                "category": "x",
+                "status": "passed",
+                "score": 0.0,
+                "passed": True,
+                "wall_time_seconds": 0.0,
+            }]
+        ))
+
+    # ── Partial: extra fields SHOULD NOT cause validation to reject ──────
+
+    def test_accepts_extra_fields_in_result(self):
+        """Extra fields at the result level are not flagged by schema validation.
+        (The allowlist stripping happens later during sanitize_for_storage.)"""
+        validate_result_schema(_valid_result(
+            results=[{
+                "task_id": "t1",
+                "category": "x",
+                "status": "passed",
+                "score": 0.5,
+                "passed": True,
+                "wall_time_seconds": 1.0,
+                "extra_field": "should-not-cause-rejection",
+                "raw_task_score": 0.55,
+            }]
+        ))
+
+    # ── Negative wall_time is technically valid (no bound in schema) ─────
+
+    def test_negative_wall_time_not_rejected(self):
+        """wall_time has no lower-bound check in validate_result_schema —
+        negative values are accepted by the current contract."""
+        validate_result_schema(_valid_result(
+            results=[_task(wall_time_seconds=-1.0)]
+        ))
 
 
 # ── Token extraction (header-only contract) ──────────────────────────────────
@@ -512,3 +738,96 @@ class TestValidateSubmissionPayload:
         )
         assert "submission_token" not in stored
         assert "submission_token" not in stored.get("metadata", {})
+
+    # ── Run-ledger metadata allowlist parity ──────────────────────────
+
+    def test_all_new_run_ledger_fields_survive_sanitization(self):
+        """All new PUBLIC_METADATA_KEYS fields survive sanitize_for_storage."""
+        run_ledger_meta = {
+            "provider": "deepseek",
+            "model": "deepseek-chat",
+            "reasoning_effort": "high",
+            "quantization": "Q4_K_M",
+            "backend": "llama.cpp",
+            "profile": "hermesbench",
+            "benchmark_version": "core-cli-v0.1",
+            "jobs": 2,
+            "run_wall_time_seconds": 42.5,
+            "engine_version": "1.2.3",
+            "hermes_version": "0.5.0",
+            "git_commit": "abc1234",
+            "command": "hermesbench run --suite core",
+            "config_summary": {"max_tokens": 4096},
+            "os_platform": "Linux-7.1.3-x86_64",
+            "python_version": "3.11.14",
+            "cpu_info": "AMD EPYC; 8 cores",
+            "gpu_info": "1x NVIDIA A100",
+            "metadata_available": {"model_identity": True, "runtime": True},
+        }
+        payload = _valid_result(metadata=run_ledger_meta)
+        stored = sanitize_for_storage(payload)
+        meta = stored["metadata"]
+        for field in run_ledger_meta:
+            assert field in meta, f"{field!r} missing from sanitized metadata"
+            assert meta[field] == run_ledger_meta[field]
+        assert meta["sanitized"] is True
+
+    def test_secret_fields_stripped_from_metadata(self):
+        """Secret-like fields not in PUBLIC_METADATA_KEYS are stripped."""
+        payload = _valid_result(
+            metadata={
+                "official": True,
+                "provider": "deepseek",
+                "api_key": "sk-12345",
+                "password": "hunter2",
+                "aws_secret": "AKIA123",
+                "internal_notes": "sensitive",
+                "db_url": "postgresql://user:pass@host/db",
+            }
+        )
+        stored = sanitize_for_storage(payload)
+        meta = stored["metadata"]
+        # Allowed fields survive
+        assert meta.get("official") is True
+        assert meta.get("provider") == "deepseek"
+        # Secrets are stripped
+        assert "api_key" not in meta
+        assert "password" not in meta
+        assert "aws_secret" not in meta
+        assert "internal_notes" not in meta
+        assert "db_url" not in meta
+        assert meta["sanitized"] is True
+
+    def test_run_ledger_fields_stripped_when_old_allowlist(self):
+        """Previously, fields like 'provider', 'model' were already allowed;
+        verify config_summary (dict) and metadata_available (dict) survive."""
+        payload = _valid_result(
+            metadata={
+                "config_summary": {"max_tokens": 8192, "temperature": 0.7},
+                "metadata_available": {"hardware": True},
+            }
+        )
+        stored = sanitize_for_storage(payload)
+        meta = stored["metadata"]
+        assert meta.get("config_summary") == {"max_tokens": 8192, "temperature": 0.7}
+        assert meta.get("metadata_available") == {"hardware": True}
+
+    def test_js_public_metadata_keys_match_python(self):
+        """Verify the set of PUBLIC_METADATA_KEYS in Python matches the JS
+        allowlist.  Parses quoted strings from the JS Set literal."""
+        import re
+        js_path = Path(__file__).resolve().parent.parent / "website/api/_submissions.js"
+        js_src = js_path.read_text()
+        marker = "const PUBLIC_METADATA_KEYS = new Set(["
+        start = js_src.index(marker)
+        bracket = js_src.index("[", start)
+        end = js_src.index("]);", bracket)
+        body = js_src[bracket + 1 : end]
+        # Extract all single-quoted strings (the JS uses single quotes)
+        js_keys = set(re.findall(r"'([^']+)'", body))
+        py_keys = PUBLIC_METADATA_KEYS
+        assert js_keys == py_keys, (
+            f"JS/PY mismatch\n"
+            f"  JS-only:  {sorted(js_keys - py_keys)}\n"
+            f"  PY-only:  {sorted(py_keys - js_keys)}"
+        )

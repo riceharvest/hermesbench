@@ -5,13 +5,13 @@
 ![Tasks](https://img.shields.io/badge/tasks-38-orange)
 ![Status](https://img.shields.io/badge/status-pre--official-blue)
 
-HermesBench is an **early-stage tool-use benchmark harness** for Hermes-style agents. It distinguishes the portable **core CLI** surface (local file, terminal, task, and runner behavior) from optional **integrations** (for example browser, cloud services, desktop control, and connected skills). It does not yet establish a minimum-capable-model boundary for the full Hermes Agent surface; that requires archived, reproducible runs in an environment where the requested integrations are available.
+HermesBench is an **early-stage tool-use benchmark harness** for Hermes-style agents. It reports two scopes: **`hermes-core`**, the tools and features shipped in the base Hermes Agent installation, and **`hermes-extended`**, the installable/configurable ecosystem tools and integrations. It does not yet establish a minimum-capable-model boundary for the full Hermes Agent surface; that requires archived, reproducible runs in an environment where the requested tools are available.
 
 Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers get trained on, and leaderboard wins stop predicting whether an agent can actually finish messy work. HermesBench flips the signal. We grade agentic behavior from telemetry, not output correctness. A task is a capability probe, not a puzzle with a known answer. The benchmark is open-ended by design: a model must autonomously decide which Hermes tool, skill, or workflow to invoke, and then actually do it. Failures are not "wrong answers"; they are missing capabilities.
 
 ## What makes it different
 
-- **Scoped capability evidence:** core-CLI probes can be evaluated in a local runner; integration probes are evidence only when the matching toolset, credentials, and service are available and disclosed.
+- **Scoped capability evidence:** core probes cover shipped Hermes features; extended probes are evidence only when the matching toolset, credentials, and service are available and disclosed.
 - **Future minimum-capable-model goal:** once official, reproducible coverage exists, the data can be used to estimate the smallest model that satisfies a stated capability scope.
 - **Tool-class coverage:** probes every built-in tool category: `file`, `terminal`, `web`, `browser`, `browser_cdp`, `code_execution`, `vision`, `image_gen`, `video`, `video_gen`, `tts`, `memory`, `todo`, `skills`, `session_search`, `semantic_search`, `delegation`, `clarify`, `cronjob`, `computer_use`, `homeassistant`, `kanban`, `project`, `discord`, `discord_admin`, `x_search`, `yuanbao`, `spotify`, `feishu`, `messaging`, `stt`, `obsidian`, `github`, `docker`, `notion`, `linear`, `maps`, `himalaya`, and `openhue`.
 - **Auditable prompts:** tasks state a goal and required evidence; the agent must execute tools and leave verifiable artifacts. Some development probes explicitly name the target capability and are not yet autonomous-selection evaluations.
@@ -22,7 +22,7 @@ Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers g
 
 ## Current status
 
-HermesBench is under active validation. Hermes CLI runs are preflighted against the toolsets the active runtime exposes. Core CLI and each optional integration must be reported separately; unavailable integrations are environmental skips, not model failures. Only reviewed, archived official runs appear as public capability evidence. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
+HermesBench is under active validation. Hermes runs are preflighted against the toolsets the active runtime exposes. `hermes-core` and `hermes-extended` must be reported separately; unavailable extended tools are environmental skips, not model failures. Only reviewed, archived official runs appear as public capability evidence. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
 
 ## Quick start
 
@@ -30,7 +30,7 @@ HermesBench is under active validation. Hermes CLI runs are preflighted against 
 git clone https://github.com/riceharvest/hermesbench.git
 cd hermesbench
 uv run hermesbench validate-tasks
-uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --suite core-cli --output-dir /tmp/hermesbench-results
+uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --suite hermes-core --output-dir /tmp/hermesbench-results
 uv run hermesbench score /tmp/hermesbench-results/*.json
 ```
 
@@ -43,9 +43,9 @@ uv sync --dev                    # development/test tools
 Run one task with Hermes CLI to probe tool-class coverage:
 
 ```bash
-uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite core-cli --output-dir results/hermes-core-cli
-# Run integrations only in an environment that exposes and documents them:
-uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite integrations --output-dir results/hermes-integrations
+uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite hermes-core --output-dir results/hermes-core
+# Run installable/configurable tools only in an environment that exposes and documents them:
+uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite hermes-extended --output-dir results/hermes-extended
 ```
 
 ## CLI reference
@@ -53,11 +53,11 @@ uv run hermesbench run --agent hermes --model openai-codex/gpt-5.5 --suite integ
 ```bash
 uv run hermesbench validate-tasks
 uv run hermesbench versions
-uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --suite core-cli --jobs auto
-uv run hermesbench run --agent hermes --benchmark-version hermesbench-v0.1 --jobs 1
-uv run hermesbench run --agent shell --command './my-agent-runner.sh' --suite natural-tools-dev --jobs 4
+uv run hermesbench run --agent hermes --provider openai-codex --model gpt-5.5 --reasoning-effort low --suite hermes-core --jobs auto
+uv run hermesbench run --agent hermes --benchmark-version hermes-core-v0.1 --jobs 1
+uv run hermesbench run --agent shell --command './my-agent-runner.sh' --suite hermes-core --jobs 4
 uv run hermesbench score results/<run>.json
-uv run hermesbench export --suite natural-tools-dev --format jsonl
+uv run hermesbench export --suite hermes-core --format jsonl
 uv run hermesbench upload results/<run>.json --endpoint https://www.benchcut.info/v1/results
 uv run hermesbench serve-api --host 127.0.0.1 --port 8787
 uv run hermesbench archive-official --result results/run.json --manifest official-runs/run.yaml --output official-runs/archive/run
@@ -72,7 +72,7 @@ src/hermesbench/          Python CLI, runner, schemas, adapters, graders, API/st
 src/hermesbench/adapters/ Hermes CLI and shell adapter implementations
 src/hermesbench/graders/  deterministic artifact/test checks and telemetry-based behavior grading
 tasks/                    benchmark task markdown and manifest
-tasks/natural-tools-dev/  natural tool-use capability probes
+tasks/natural-tools-dev/  38 probes partitioned into hermes-core/hermes-extended
 fixtures/                 local deterministic task fixtures
 docs/                     methodology, governance, deployment, release docs
 website/                  leaderboard site with authenticated submissions
@@ -83,11 +83,10 @@ tests/                    parser, runner, API, storage, official-run, and websit
 
 | Suite | Count | Purpose | Credential-free |
 |---|---:|---|---|
-| `core-cli` | 3 | Hermes CLI-supported core tasks | Varies |
-| `integrations` | 35 | Tasks requiring configured Hermes integrations unavailable to the CLI adapter | No |
-| `natural-tools-dev` | 38 | Combined development inventory; not a single capability claim | Some |
+| `hermes-core` | 13 | Hermes tools and features shipped in the base installation | Varies |
+| `hermes-extended` | 25 | Installable/configurable tools and integrations | No |
 
-`core-cli` and `integrations` are separate reporting scopes. Run and publish them separately: core-CLI results do not imply connected-service or desktop capability, and unavailable integrations are environmental skips rather than model failures. `natural-tools-dev` is the combined public development inventory.
+`hermes-core` and `hermes-extended` are separate reporting scopes. Run and publish them separately: core results do not imply every optional integration is configured, and unavailable extended tools are environmental skips, not model failures.
 
 | Task | Required tool classes | Difficulty | Notes |
 |---|---|---:|---|
