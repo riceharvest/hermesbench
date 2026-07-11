@@ -29,11 +29,20 @@ def sanitize_result(data: dict[str, Any], strip_logs: bool = True) -> dict[str, 
     for key in list(clean):
         if key.lower() in SENSITIVE_LOG_KEYS:
             clean.pop(key, None)
+    # Filter metadata keys using the allowlist
+    if strip_logs and "metadata" in clean:
+        clean["metadata"] = {k: v for k, v in clean["metadata"].items() if k in PUBLIC_METADATA_KEYS}
+    # Filter task keys using the allowlist
     if strip_logs:
         for task in clean.get("results", []):
             task.pop("logs", None)
             for key in list(task.keys()):
                 if key.lower() in SENSITIVE_LOG_KEYS:
+                    task.pop(key, None)
+            # Keep only public-safe task keys
+            allowed_task_keys = PUBLIC_TASK_KEYS & set(task.keys())
+            for key in list(task.keys()):
+                if key not in allowed_task_keys:
                     task.pop(key, None)
     clean.setdefault("metadata", {})["sanitized"] = bool(strip_logs)
     return clean
