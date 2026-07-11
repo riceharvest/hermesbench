@@ -1,5 +1,8 @@
 import json, subprocess, sys
 from pathlib import Path
+
+import pytest
+
 from hermesbench.versions import resolve_version
 from hermesbench.tasks import (
     discover_tasks,
@@ -94,20 +97,35 @@ Do it.
     assert all("PASS" in e for e in evidence)
 
 
-def test_task_markdown_parser_extracts_checks():
-    task = discover_tasks("hermes-core")[0]
+@pytest.mark.parametrize("task_idx", [0, 3, 6, 10])
+def test_task_markdown_parser_extracts_checks(task_idx):
+    tasks = discover_tasks("hermes-core")
+    assert task_idx < len(tasks)
+    task = tasks[task_idx]
     parsed = parse_task_markdown(task.path)
     assert parsed.metadata["id"].startswith("htu-dev-")
     assert parsed.deterministic_checks
 
 
 def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path):
-    result = run_benchmark(
-        agent="hermes",
-        suite="hermes-extended",
-        task_id="htu-dev-025-semantic-search",
-        output_dir=tmp_path,
+    import hermesbench.adapters.hermes as hermes_adapter
+
+    # This is a runner contract test; do not require a real Hermes installation.
+    monkeypatch = pytest.MonkeyPatch()
+    monkeypatch.setattr(
+        hermes_adapter,
+        "unsupported_cli_toolsets",
+        lambda task, *, check_runtime=True: ["semantic_search"],
     )
+    try:
+        result = run_benchmark(
+            agent="hermes",
+            suite="hermes-extended",
+            task_id="htu-dev-025-semantic-search",
+            output_dir=tmp_path,
+        )
+    finally:
+        monkeypatch.undo()
     payload = json.loads(result.read_text())
     assert payload["results"][0]["status"] == "environment_skipped"
     assert payload["results"][0]["environment_skip"] is True
@@ -241,6 +259,10 @@ def test_cli_smoke_validate_and_export(monkeypatch):
 # Remove the entry once a covering task exists.  This lets the benchmark evolve
 # (you can declare a class canonical before shipping a task for it) while still
 # detecting accidental coverage loss (removing a task without updating the gap).
+#
+# Currently empty: all canonical tool classes have covering tasks.  If you
+# intentionally add a gap (e.g. a future class with no task yet), list its
+# name here so the coverage contract stops rejecting it.
 _COVERAGE_GAPS: set[str] = set()
 
 
