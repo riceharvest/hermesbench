@@ -234,24 +234,190 @@ def test_cli_smoke_validate_and_export(monkeypatch):
     assert "htu-dev-001" in out.stdout
 
 
-def test_two_suites_cover_all_tool_classes():
+# ── Tool-class coverage contract ───────────────────────────────────────────
+#
+# Intentionally uncovered tool classes — when a new canonical class is added
+# to NATURAL_TOOL_CLASSES but no task exercises it yet, add it here temporarily.
+# Remove the entry once a covering task exists.  This lets the benchmark evolve
+# (you can declare a class canonical before shipping a task for it) while still
+# detecting accidental coverage loss (removing a task without updating the gap).
+_COVERAGE_GAPS: set[str] = set()
+
+
+def test_tool_classes_are_valid_and_covered():
+    """Validate the tool-class contract:
+      1. Every task references only known canonical classes (no typos).
+      2. Coverage spans every canonical class except explicit gaps.
+      3. Gap entries reference only known canonical classes (no orphans).
+
+    This is stronger than the previous strict-equality check because it also
+    validates task requirements one-by-one, while the gap mechanism lets the
+    benchmark add canonical classes ahead of having shipping tasks.
+    """
     from hermesbench.schemas import NATURAL_TOOL_CLASSES
 
     tasks = discover_tasks("hermes-core") + discover_tasks("hermes-extended")
-    covered = set()
+    covered: set[str] = set()
+
     for t in tasks:
         reqs = t.metadata.get("tool_use_requirements") or []
         for r in reqs:
+            assert r in NATURAL_TOOL_CLASSES, (
+                f"Task {t.metadata['id']} references unknown tool class {r!r}. "
+                f"Add to NATURAL_TOOL_CLASSES in schemas.py, or fix the typo."
+            )
             covered.add(r)
-    assert covered == NATURAL_TOOL_CLASSES
+
+    # All non-gap canonical classes must be covered
+    expected_covered = NATURAL_TOOL_CLASSES - _COVERAGE_GAPS
+    missing = expected_covered - covered
+    assert not missing, (
+        f"Tasks are missing coverage for {len(missing)} expected class(es): "
+        f"{sorted(missing)}.  Add a task that covers them, or add to "
+        f"_COVERAGE_GAPS in this test if intentionally uncovered."
+    )
+
+    # Gap entries must be known canonical classes
+    orphan_gaps = _COVERAGE_GAPS - NATURAL_TOOL_CLASSES
+    assert not orphan_gaps, (
+        f"_COVERAGE_GAPS contains {sorted(orphan_gaps)} which are not in "
+        f"NATURAL_TOOL_CLASSES"
+    )
 
 
-def test_behavior_grader_maps_new_tool_classes():
+def test_behavior_grader_maps_all_tool_classes():
+    """Every canonical tool class must have at least one entry in the
+    behavior grader's tool-name mapping (_BEHAVIOR_TOOLS), and every
+    mapped value must be a known canonical class.
+
+    This is a bidirectional integrity contract:
+      - Adding a new canonical class without a behavior grader mapping is
+        caught (the grader would silently fail to classify its tools).
+      - A typo in the grader's mapping (orphan value) is also caught.
+    """
     from hermesbench.graders.behavior import _BEHAVIOR_TOOLS
-
-    # Check that all canonical classes in NATURAL_TOOL_CLASSES are mapped
     from hermesbench.schemas import NATURAL_TOOL_CLASSES
 
     mapped_classes = set(_BEHAVIOR_TOOLS.values())
-    for cls in NATURAL_TOOL_CLASSES:
-        assert cls in mapped_classes
+
+    # Every canonical class must have at least one behavior mapping
+    unmapped = NATURAL_TOOL_CLASSES - mapped_classes
+    assert not unmapped, (
+        f"Behavior grader has no tool-name mapping for {sorted(unmapped)}. "
+        f"Add entries to _BEHAVIOR_TOOLS in graders/behavior.py."
+    )
+
+    # Every mapped class must be a known canonical class
+    orphans = mapped_classes - NATURAL_TOOL_CLASSES
+    assert not orphans, (
+        f"_BEHAVIOR_TOOLS maps to unknown class(es) {sorted(orphans)}. "
+        f"Fix values or add them to NATURAL_TOOL_CLASSES in schemas.py."
+    )
+
+
+# ── Regression: contract contract detects violations ──────────────────────
+
+
+def _get_mod():
+    """Return this test module via sys.modules (can't self-import at runtime)."""
+    import sys
+    return sys.modules[__name__]
+
+
+def test_coverage_contract_rejects_unknown_tool_class(tmp_path, monkeypatch):
+    """If a task references a class not in NATURAL_TOOL_CLASSES the contract
+    must reject it — this catches typos and missing canonical registrations."""
+    import pytest
+    from hermesbench.schemas import NATURAL_TOOL_CLASSES
+    from types import SimpleNamespace
+
+    mod = _get_mod()
+    bad_task = SimpleNamespace(
+        metadata={"id": "bad-typo", "tool_use_requirements": ["typo_class"]}
+    )
+    monkeypatch.setattr(
+        mod, "discover_tasks",
+        lambda suite, **kw: [bad_task] if suite == "hermes-core" else [],
+    )
+
+    with pytest.raises(AssertionError, match="typo_class"):
+        mod.test_tool_classes_are_valid_and_covered()
+
+
+def test_coverage_contract_rejects_orphan_gap(monkeypatch):
+    """A _COVERAGE_GAPS entry that doesn't exist in NATURAL_TOOL_CLASSES must
+    be caught — prevents dead gap references."""
+    import pytest
+    mod = _get_mod()
+    mod._COVERAGE_GAPS.add("nonexistent_gap")
+    try:
+        with pytest.raises(AssertionError, match="nonexistent_gap"):
+            mod.test_tool_classes_are_valid_and_covered()
+    finally:
+        mod._COVERAGE_GAPS.discard("nonexistent_gap")
+
+
+def test_coverage_contract_rejects_uncovered_class(tmp_path, monkeypatch):
+    """If a canonical class has no covering task and is not listed in gaps,
+    the contract must report the missing class."""
+    import pytest
+    mod = _get_mod()
+
+    # Save original gap state so mutations cannot accidentally remove a real
+    # pre-existing gap if _COVERAGE_GAPS changes in the future.
+    original_gaps = set(mod._COVERAGE_GAPS)
+    try:
+        mod._COVERAGE_GAPS.discard("vision")  # ensure it's not gapped
+
+        # Patch module-level discover_tasks to strip one class from every task
+        original = mod.discover_tasks
+
+        def stripped_discover(suite, **kw):
+            tasks = original(suite, **kw)
+            for t in tasks:
+                reqs = t.metadata.get("tool_use_requirements") or []
+                t.metadata["tool_use_requirements"] = [
+                    r for r in reqs if r != "vision"
+                ]
+            return tasks
+
+        monkeypatch.setattr(mod, "discover_tasks", stripped_discover)
+
+        with pytest.raises(AssertionError, match="vision"):
+            mod.test_tool_classes_are_valid_and_covered()
+    finally:
+        mod._COVERAGE_GAPS.clear()
+        mod._COVERAGE_GAPS.update(original_gaps)
+
+
+def test_behavior_grader_rejects_unmapped_class(monkeypatch):
+    """A canonical class without any behavior mapping should be caught."""
+    import pytest
+    from hermesbench.graders import behavior as behavior_mod
+
+    mod = _get_mod()
+    original = dict(behavior_mod._BEHAVIOR_TOOLS)
+    behavior_mod._BEHAVIOR_TOOLS = {
+        k: v for k, v in original.items() if v != "vision"
+    }
+    try:
+        with pytest.raises(AssertionError, match="vision"):
+            mod.test_behavior_grader_maps_all_tool_classes()
+    finally:
+        behavior_mod._BEHAVIOR_TOOLS = original
+
+
+def test_behavior_grader_rejects_orphan_mapping(monkeypatch):
+    """A _BEHAVIOR_TOOLS value that isn't a known canonical class must be
+    caught — this catches typos in the grader mapping."""
+    import pytest
+    from hermesbench.graders import behavior as behavior_mod
+
+    mod = _get_mod()
+    original = dict(behavior_mod._BEHAVIOR_TOOLS)
+    behavior_mod._BEHAVIOR_TOOLS["_test_orphan_tool"] = "orphan_class"
+    try:
+        with pytest.raises(AssertionError, match="orphan_class"):
+            mod.test_behavior_grader_maps_all_tool_classes()
+    finally:
+        behavior_mod._BEHAVIOR_TOOLS = original

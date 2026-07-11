@@ -105,11 +105,69 @@ def test_false_done_cannot_pass_capability_probe(monkeypatch, tmp_path):
     monkeypatch.setattr(
         runner, "get_adapter", lambda *args, **kwargs: FalseDoneAdapter()
     )
+
+    # Build a minimal task fixture inline instead of depending on the full
+    # hermes-core task pipeline.  The deterministic check (artifact_exists)
+    # will fail because the adapter never creates the file, which with
+    # claimed_done=True triggers false_done detection.
+    task_root = tmp_path / "tasks"
+    suite_dir = task_root / "hermes-core"
+    suite_dir.mkdir(parents=True)
+
+    task_md = """\
+---
+id: minimal-false-done-test
+title: False done test
+category: natural-tool-use
+wave: test
+visibility: public
+created_at: 2026-07-10
+freshness_window: test
+expected_human_minutes: 1
+difficulty: easy
+required_toolsets: []
+grading_type: deterministic
+timeout_seconds: 10
+contamination_notes: test fixture
+safety_notes: local only
+tool_use_requirements:
+  - file
+  - terminal
+---
+
+## Prompt
+Create results.txt.
+
+## Expected artifacts
+- results.txt
+
+## Deterministic checks
+- artifact_exists: results.txt
+
+## Hidden checks
+- none
+
+## Cleanup
+rm -f results.txt
+"""
+    (suite_dir / "minimal-false-done-test.md").write_text(task_md)
+    (task_root / "manifest.yaml").write_text(
+        "suites:\n"
+        "  hermes-core:\n"
+        "    version: test\n"
+        "    tasks:\n"
+        "    - id: minimal-false-done-test\n"
+        "      path: hermes-core/minimal-false-done-test.md\n"
+        "      category: natural-tool-use\n"
+        "      visibility: public\n"
+    )
+
     result = runner.run_benchmark(
         agent="hermes",
         suite="hermes-core",
-        task_id="htu-dev-001-file-and-terminal-self-serve",
+        task_id="minimal-false-done-test",
         output_dir=tmp_path,
+        task_root=task_root,
     )
     task_result = json.loads(Path(result).read_text())["results"][0]
     assert task_result["raw_task_score"] < 1.0

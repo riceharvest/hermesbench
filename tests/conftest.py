@@ -1,4 +1,16 @@
-"""Root conftest: custom CLI options and shared fixtures for acceptance tests."""
+"""Root conftest: custom CLI options and shared fixtures for acceptance tests.
+
+Fixture policy:
+  - The ``fake_hermes`` fixture (test_hermes_telemetry.py) is deliberately
+    module-scoped — it sets up PATH, HOME, monkeypatches, and an executable
+    shim that only the telemetry module needs.  No other test module currently
+    requires it, so hoisting it here would increase fixture surface without
+    reducing real duplication.
+  - Module-level helpers (``_fake_task``, ``_temporary_profile_dirs`` in
+    test_hermes_telemetry.py) serve the same purpose in the same module.
+  - If a second module ever needs ``fake_hermes``, promote it here with a
+    ``@pytest.fixture(scope='module')`` and document the cross-module contract.
+"""
 
 import pytest
 

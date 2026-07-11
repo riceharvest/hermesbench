@@ -1,6 +1,7 @@
 """Tests for run-ledger schema (RunLedgerMetadata) and run-level wall time."""
 
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -360,19 +361,31 @@ class TestRunWallTime:
         )
 
     def test_run_wall_time_with_parallel_tasks(self, tmp_path, monkeypatch):
-        """With parallelism, run wall time should be less than sum of task times."""
-        from hermesbench.adapters.base import AgentRun
-        import time as _time
+        """With parallelism, run wall time should be less than sum of task times.
 
-        class SlowAdapter:
+        Uses a threading.Barrier to prove parallel execution deterministically
+        instead of timing-sensitive real sleeps. All 3 tasks wait on the barrier
+        before returning — if they ran sequentially the first would time out.
+        A tiny bounded computation (counting loop) after the barrier ensures
+        wall-time measurements are reliably non-zero at 3-decimal precision
+        without introducing timing flakiness.
+        """
+        from hermesbench.adapters.base import AgentRun
+
+        barrier = threading.Barrier(3, timeout=5)  # 3 tasks, all must arrive
+
+        class SyncAdapter:
             def run_task(self, task, workdir, hidden_dir=None):
-                _time.sleep(0.3)
+                barrier.wait()  # proves parallel execution
+                # Bounded CPU work so wall_time_seconds is reliably > 0
+                # even at 3-decimal rounding, without real I/O sleeps.
+                _ = sum(i * i for i in range(250_000))
                 (workdir / "done.txt").write_text("ok")
                 return AgentRun(status="completed", transcript="done", tool_calls=0)
 
         monkeypatch.setattr(
             "hermesbench.runner.get_adapter",
-            lambda *args, **kwargs: SlowAdapter(),
+            lambda *args, **kwargs: SyncAdapter(),
         )
 
         task_root = tmp_path / "tasks"
@@ -389,8 +402,8 @@ class TestRunWallTime:
         data = json.loads(result_path.read_text())
         run_wall = data["metadata"]["run_wall_time_seconds"]
         task_sum = sum(r["wall_time_seconds"] for r in data["results"])
-        # With 3 workers and 3 0.3s tasks, wall time ≈ 0.3-0.5s,
-        # sum ≈ 0.9s — wall must be clearly less than sum.
+        # All tasks overlap (barrier synchronisation), so run wall time ≈
+        # max(task_time) which must be < sum of individual task times.
         assert run_wall < task_sum, (
             f"parallel run wall time {run_wall} >= sum of task times {task_sum} — "
             "expected parallelism to reduce wall time"

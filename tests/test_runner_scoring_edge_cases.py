@@ -44,7 +44,7 @@ from pathlib import Path
 
 import pytest
 
-from hermesbench.runner import _resolve_jobs
+from hermesbench.runner import _resolve_jobs, _safe_command
 from hermesbench.scoring import _parse_iso_timestamp, _run_duration_seconds, aggregate
 
 
@@ -633,3 +633,161 @@ class TestAggregateEdgeCases:
         assert score["cost_usd"] == 0.0
         assert score["cost_per_task_usd"] == 0.0
         assert score["cost_per_successful_task_usd"] == 0.0
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  _safe_command redaction edge cases
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestSafeCommand:
+    """Focused regression tests for ``_safe_command`` credential redaction.
+
+    Tests only edge cases the implementation actually supports, based on
+    ``SENSITIVE_COMMAND_RE`` at runner.py:30-32.
+    """
+
+    def test_none_input(self) -> None:
+        """None → None (no crash)."""
+        assert _safe_command(None) is None
+
+    def test_empty_string(self) -> None:
+        """Empty string → unchanged empty string."""
+        assert _safe_command("") == ""
+
+    def test_no_credentials_unchanged(self) -> None:
+        """Plain command with no sensitive keywords is returned unchanged."""
+        cmd = "ls -la /tmp"
+        assert _safe_command(cmd) == cmd
+
+    def test_api_key_equal_separator(self) -> None:
+        """api_key=value redacts the value after ``=``."""
+        result = _safe_command("api_key=abc123")
+        assert result == "api_key=[REDACTED]"
+
+    def test_token_colon_separator(self) -> None:
+        """token:value redacts the value after ``:``."""
+        result = _safe_command("token:my-secret-token")
+        assert result == "token:[REDACTED]"
+
+    def test_secret_whitespace_separator(self) -> None:
+        """secret value (whitespace separator) redacts the value."""
+        result = _safe_command("secret mypass")
+        assert result == "secret [REDACTED]"
+
+    def test_bearer_jwt(self) -> None:
+        """``Bearer <token>`` outside ``authorization:`` header redacts the token,
+        preserving the ``Bearer `` prefix via the ``\\bBearer\\s+`` branch."""
+        result = _safe_command(
+            "--header 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiIxIn0.dkWrCQ'"
+        )
+        assert "Bearer " in result  # prefix preserved
+        assert "eyJhbGciOiJIUzI1NiJ9" not in result
+        assert "[REDACTED]" in result
+
+    def test_case_insensitive(self) -> None:
+        """All keywords match case-insensitively."""
+        result = _safe_command("API_KEY=foo TOKEN=bar SECRET=baz")
+        assert result == "API_KEY=[REDACTED] TOKEN=[REDACTED] SECRET=[REDACTED]"
+
+    def test_multiple_credential_types(self) -> None:
+        """Multiple credential keywords in one command are all redacted."""
+        result = _safe_command(
+            "hermes --api-key=abc --token=def --secret=ghi --password=jkl"
+        )
+        assert "abc" not in result
+        assert "def" not in result
+        assert "ghi" not in result
+        assert "jkl" not in result
+        assert all(kw in result for kw in ("--api-key=", "--token=", "--secret=", "--password="))
+        assert result.count("[REDACTED]") == 4
+
+    def test_env_var_export_form(self) -> None:
+        """``export PASSWORD=abc123`` redacts the value."""
+        result = _safe_command("export PASSWORD=abc123")
+        assert result == "export PASSWORD=[REDACTED]"
+
+    def test_hyphenated_and_underscored(self) -> None:
+        """api-key and api_key both redact (``[_-]?`` in pattern)."""
+        r1 = _safe_command("--api-key=mykey")
+        r2 = _safe_command("--api_key=mykey")
+        r3 = _safe_command("--apikey=mykey")
+        assert r1 == "--api-key=[REDACTED]"
+        assert r2 == "--api_key=[REDACTED]"
+        assert r3 == "--apikey=[REDACTED]"
+
+    def test_comma_terminated_value(self) -> None:
+        """Redaction stops at comma (``[^\\s,]+``), so the comma is preserved."""
+        result = _safe_command("api_key=val1,other")
+        assert result == "api_key=[REDACTED],other"
+
+    def test_password_and_credential_keywords(self) -> None:
+        """password= and credential= are redacted."""
+        result = _safe_command("credential=admin password=hunter2")
+        assert result == "credential=[REDACTED] password=[REDACTED]"
+
+
+# ═══════════════════════════════════════════════════════════════════════
+#  aggregate — reasoning_effort preservation
+# ═══════════════════════════════════════════════════════════════════════
+
+
+class TestAggregateReasoningEffort:
+    """``aggregate()`` must preserve ``reasoning_effort`` from metadata."""
+
+    _BASE_RESULT: dict = {
+        "schema_version": "hermesbench.result.v1",
+        "run_id": "re-test",
+        "suite": "natural-tools-dev",
+        "agent": "hermes",
+        "model": "m",
+        "started_at": "s",
+        "completed_at": "c",
+        "results": [
+            {
+                "task_id": "t1",
+                "category": "cat",
+                "status": "passed",
+                "score": 1.0,
+                "passed": True,
+                "wall_time_seconds": 10,
+            },
+        ],
+    }
+
+    def test_reasoning_effort_preserved(self, tmp_path: Path) -> None:
+        """``aggregate()`` returns ``reasoning_effort`` from metadata unchanged."""
+        data = dict(self._BASE_RESULT)
+        data["metadata"] = {"reasoning_effort": "high"}
+        path = tmp_path / "result.json"
+        path.write_text(json.dumps(data))
+        score = aggregate(path)
+        assert score["reasoning_effort"] == "high"
+
+    def test_reasoning_effort_none_when_missing(self, tmp_path: Path) -> None:
+        """No ``reasoning_effort`` in metadata → ``None`` in score."""
+        data = dict(self._BASE_RESULT)
+        data["metadata"] = {}
+        path = tmp_path / "result.json"
+        path.write_text(json.dumps(data))
+        score = aggregate(path)
+        assert score["reasoning_effort"] is None
+
+    def test_reasoning_effort_null_in_metadata(self, tmp_path: Path) -> None:
+        """``reasoning_effort`` explicitly ``null`` → ``None`` in score."""
+        data = dict(self._BASE_RESULT)
+        data["metadata"] = {"reasoning_effort": None}
+        path = tmp_path / "result.json"
+        path.write_text(json.dumps(data))
+        score = aggregate(path)
+        assert score["reasoning_effort"] is None
+
+    def test_reasoning_effort_with_different_values(self, tmp_path: Path) -> None:
+        """Different reasoning_effort values flow through unchanged."""
+        for effort in ("low", "medium", "high", "max", "some-custom-value"):
+            data = dict(self._BASE_RESULT)
+            data["metadata"] = {"reasoning_effort": effort}
+            path = tmp_path / "result.json"
+            path.write_text(json.dumps(data))
+            score = aggregate(path)
+            assert score["reasoning_effort"] == effort
