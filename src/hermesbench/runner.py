@@ -436,7 +436,9 @@ def run_benchmark(
         else skipped_results[task.metadata["id"]]
         for task in tasks
     ]
-    run_wall_time = round(time.perf_counter() - run_t0, 3)
+    # Preserve a positive runtime for completed runs even when a very fast
+    # task rounds below the millisecond display precision used in metadata.
+    run_wall_time = max(round(time.perf_counter() - run_t0, 3), 0.001)
     completed = datetime.now(timezone.utc).isoformat()
 
     # Build structured run-ledger metadata.

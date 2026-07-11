@@ -1,3 +1,4 @@
+import threading
 import time
 from pathlib import Path
 
@@ -64,16 +65,17 @@ Delete the isolated workdir.
 def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
     task_root = tmp_path / "tasks"
     _write_task_pack(task_root, count=2)
+    barrier = threading.Barrier(2, timeout=5)
 
-    class DelayThenSucceedAdapter:
+    class BarrierDelayedAdapter:
         def run_task(self, task, workdir, hidden_dir=None):
-            time.sleep(0.45)
+            barrier.wait()  # Both tasks synchronize here, ensuring parallel execution
             (workdir / "done.txt").write_text("ok")
             return AgentRun(status="completed", transcript="done", tool_calls=0)
 
     monkeypatch.setattr(
         "hermesbench.runner.get_adapter",
-        lambda *args, **kwargs: DelayThenSucceedAdapter(),
+        lambda *args, **kwargs: BarrierDelayedAdapter(),
     )
 
     started = time.perf_counter()
@@ -87,4 +89,4 @@ def test_run_benchmark_can_execute_tasks_in_parallel(tmp_path, monkeypatch):
     elapsed = time.perf_counter() - started
 
     assert result.exists()
-    assert elapsed < 0.85
+    assert elapsed < 2.0

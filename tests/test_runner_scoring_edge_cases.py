@@ -356,6 +356,7 @@ class TestAggregateTimestampFormats:
         ("2026-07-10 00:00:00", "2026-07-10 00:05:30", 330.0),
         ("2026-07-10T00:00:00.000Z", "2026-07-10T00:05:30.000Z", 330.0),
         ("2026-07-10T12:00:00.1Z", "2026-07-10T12:05:30.2Z", 330.1),
+        ("2026-07-10T00:00:00+02:00", "2026-07-10T00:05:30-05:00", 330.0 + 7*3600),  # mixed offsets (+02:00 to -05:00 = 7h diff)
         ("s", "c", None),
     ]
 
@@ -371,6 +372,7 @@ class TestAggregateTimestampFormats:
             "space-separator",
             "both-Z-with-micros",
             "short-fractional-Z",
+            "mixed-offsets",
             "unparseable",
         ],
     )

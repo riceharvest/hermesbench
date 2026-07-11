@@ -36,4 +36,4 @@ markers = [
 ]
 pythonpath = ["src", "."]
 testpaths = ["tests"]
-addopts = "-n auto"
+addopts = ""
