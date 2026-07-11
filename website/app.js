@@ -280,7 +280,7 @@ function homePage() {
     <span class="dashboard-label">BenchCut / capability probes</span>
     <span class="toolbar-status">${fmt.num(taskStats.total)} tasks</span>
     <span class="toolbar-status">${fmt.num(suites.length)} suites</span>
-    <a class="text-pill" href="#/submit">Run benchmark</a>
+
   </section>
   <section class="data-grid metrics-grid" aria-label="Benchmark metrics">
     ${dashboardMetric('Published runs', fmt.num(officialRuns), 'official evidence')}
@@ -375,7 +375,7 @@ function leaderboardPage() {
   const capability = isCapabilityData();
   if (!rows.length) {
     return `${pageHead('leaderboard', 'Runs', 'Sort verified work by score, reliability, speed, efficiency, or value.', `<aside class="panel">${metricRow('visible runs', '0')}${metricRow('status', 'awaiting data')}</aside>`)}
-    ${emptyState('No published runs', 'Upload a result for review or run the benchmark locally.', '<a class="btn primary" href="#/submit">Run it</a>')}`;
+    ${emptyState('No published runs', 'No reviewed benchmark runs are currently published.')}`;
   }
   return `${pageHead('leaderboard', 'Runs', 'Verified work, ranked by the metric you choose.', `<aside class="panel">${metricRow('visible runs', fmt.num(rows.length))}${metricRow('task sets', fmt.num(new Set(sourceRows().map((r) => r.suite)).size))}${metricRow('best score', fmt.pct(scoreOf(rows[0] || {})))}</aside>`)}
   ${controls(state.leaderboard)}
