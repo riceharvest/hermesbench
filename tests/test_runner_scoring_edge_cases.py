@@ -293,6 +293,15 @@ class TestRunDurationSeconds:
         assert dur is not None
         assert dur == pytest.approx(330.0)
 
+    def test_different_non_utc_offsets(self) -> None:
+        """Different non-UTC offsets are compared on the absolute timeline."""
+        dur = _run_duration_seconds(
+            "2026-07-10T12:00:00+02:00",
+            "2026-07-10T05:30:00-05:00",
+        )
+        assert dur is not None
+        assert dur == pytest.approx(1800.0)
+
     def test_negative_offset(self) -> None:
         """Both with negative offset → works."""
         dur = _run_duration_seconds(
