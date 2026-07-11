@@ -97,14 +97,15 @@ Do it.
     assert all("PASS" in e for e in evidence)
 
 
-@pytest.mark.parametrize("task_idx", [0, 3, 6, 10])
-def test_task_markdown_parser_extracts_checks(task_idx):
+def test_task_markdown_parser_extracts_checks():
     tasks = discover_tasks("hermes-core")
-    assert task_idx < len(tasks)
-    task = tasks[task_idx]
-    parsed = parse_task_markdown(task.path)
-    assert parsed.metadata["id"].startswith("htu-dev-")
-    assert parsed.deterministic_checks
+    assert tasks, "hermes-core must contain parser fixtures"
+
+    for task in tasks:
+        parsed = parse_task_markdown(task.path)
+        assert parsed.metadata["id"] == task.metadata["id"]
+        assert parsed.metadata["id"].startswith("htu-dev-")
+        assert parsed.deterministic_checks, parsed.metadata["id"]
 
 
 def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path, monkeypatch):
