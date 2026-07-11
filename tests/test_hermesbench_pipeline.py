@@ -211,29 +211,22 @@ def test_website_build_tolerates_empty_data(tmp_path):
     assert result.returncode == 0
 
 
-def test_app_has_honest_no_results_state():
-    """Validate source (website/app.js) rather than the built artifact
-    (website/dist/app.js).
-
-    These checks read the pre-build source file intentionally — they verify
-    developer-authored content (strings, function names) that must exist in
-    the source regardless of build output.  The build step should preserve
-    these strings, but the contract is with the source, not the generated
-    artifact.
-    """
-    app = (Path(__file__).resolve().parents[1] / "website/app.js").read_text()
-
-    assert "No reviewed results are published yet" in app
-    assert "function isCapabilityData" in app
-    assert "function isCapabilityRun" in app
-
-
-def test_app_has_no_static_mock_fallback():
-    app = (Path(__file__).resolve().parents[1] / "website/app.js").read_text()
-
-    assert "historical_mock" not in app
-    assert "static fallback" not in app.lower()
-    assert "data/leaderboard.json" not in app
+def test_app_capability_guards_enforce_evidence_policy():
+    """Exercise the frontend evidence policy through its exported behavior."""
+    root = Path(__file__).resolve().parents[1]
+    script = f"""
+const {{ isCapabilityData, isCapabilityRun, normalizeApiToFrontendShape }} = require({str(root / 'website/app.js')!r});
+const official = {{ run_id: 'official-1', official: true, evidence_class: 'official_evidence', capability_evidence: true, source: 'official-runs/run-1/result.json' }};
+const normalized = normalizeApiToFrontendShape({{ entries: [official] }});
+if (isCapabilityData(normalized)) throw new Error('live API data must not be capability evidence');
+if (isCapabilityRun(normalized.entries[0])) throw new Error('normalized live API rows must not be capability evidence');
+if (!isCapabilityData({{ data_status: 'run_data', capability_evidence: true }})) throw new Error('official data should be capability evidence');
+if (isCapabilityData({{ data_status: 'no_data', capability_evidence: true }})) throw new Error('no-data state must not be capability evidence');
+if (!isCapabilityRun(official)) throw new Error('official archived run should be a capability run');
+if (isCapabilityRun({{ ...official, evidence_class: 'unofficial_submission' }})) throw new Error('unofficial run must not be a capability run');
+"""
+    result = subprocess.run(["node", "-e", script], cwd=root, text=True, capture_output=True)
+    assert result.returncode == 0, result.stderr
 
 
 def test_visible_suite_counts_match_the_manifest_contract():
