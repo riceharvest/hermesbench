@@ -107,25 +107,20 @@ def test_task_markdown_parser_extracts_checks(task_idx):
     assert parsed.deterministic_checks
 
 
-def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path):
+def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path, monkeypatch):
     import hermesbench.adapters.hermes as hermes_adapter
 
-    # This is a runner contract test; do not require a real Hermes installation.
-    monkeypatch = pytest.MonkeyPatch()
     monkeypatch.setattr(
         hermes_adapter,
         "unsupported_cli_toolsets",
         lambda task, *, check_runtime=True: ["semantic_search"],
     )
-    try:
-        result = run_benchmark(
-            agent="hermes",
-            suite="hermes-extended",
-            task_id="htu-dev-025-semantic-search",
-            output_dir=tmp_path,
-        )
-    finally:
-        monkeypatch.undo()
+    result = run_benchmark(
+        agent="hermes",
+        suite="hermes-extended",
+        task_id="htu-dev-025-semantic-search",
+        output_dir=tmp_path,
+    )
     payload = json.loads(result.read_text())
     assert payload["results"][0]["status"] == "environment_skipped"
     assert payload["results"][0]["environment_skip"] is True
