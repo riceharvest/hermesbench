@@ -228,6 +228,21 @@ def test_provider_model_reasoning_metadata(tmp_path):
     assert score["reasoning_effort"] == "low"
 
 
+def test_python_module_entrypoint_help():
+    import os
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(Path.cwd() / "src")
+    result = subprocess.run(
+        [sys.executable, "-m", "hermesbench", "--help"],
+        text=True,
+        capture_output=True,
+        env=env,
+    )
+    assert result.returncode == 0
+    assert "Minimum-capable-model probe" in result.stdout
+
+
 def test_cli_smoke_validate_and_export(monkeypatch):
     import os
 

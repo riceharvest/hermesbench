@@ -407,11 +407,11 @@ class TestNonePartialMalformed:
             }]
         ))
 
-    # ── Negative wall_time must be rejected ──────────────────────────────
+    # ── Negative wall_time is rejected ───────────────────────────────────
 
     def test_negative_wall_time_rejected(self):
-        """wall_time < 0 must be rejected by validate_result_schema."""
-        with pytest.raises(ValueError, match="non-negative"):
+        """Negative durations are malformed benchmark results."""
+        with pytest.raises(ValueError, match="wall_time_seconds must be non-negative"):
             validate_result_schema(_valid_result(
                 results=[_task(wall_time_seconds=-1.0)]
             ))
