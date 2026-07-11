@@ -14,25 +14,23 @@ def test_hermes_core_and_extended_suites_are_disjoint_and_default(tmp_path):
     extended = discover_tasks("hermes-extended")
     core_ids = {task.metadata["id"] for task in core}
     extended_ids = {task.metadata["id"] for task in extended}
-    assert {
-        "htu-dev-001-file-and-terminal-self-serve",
-        "htu-dev-002-web-search-required",
-        "htu-dev-003-use-a-skill",
-        "htu-dev-007-code-execution",
-        "htu-dev-013-vision-image",
-    }.issubset(core_ids)
-    assert {
-        "htu-dev-015-messaging",
-        "htu-dev-020-homeassistant",
-        "htu-dev-032-github",
-        "htu-dev-038-openhue",
-        "htu-dev-014-image-gen",
-        "htu-dev-016-x-search",
-        "htu-dev-017-video",
-        "htu-dev-018-video-gen",
-        "htu-dev-019-tts",
-        "htu-dev-022-browser-cdp",
-    }.issubset(extended_ids)
+    core_requirements = {"file", "terminal", "web", "skills", "code_execution", "vision"}
+    extended_requirements = {
+        "messaging", "homeassistant", "github", "openhue", "image_gen",
+        "x_search", "video", "video_gen", "tts", "browser_cdp",
+    }
+    core_tools = {
+        requirement
+        for task in core
+        for requirement in task.metadata.get("tool_use_requirements", [])
+    }
+    extended_tools = {
+        requirement
+        for task in extended
+        for requirement in task.metadata.get("tool_use_requirements", [])
+    }
+    assert core_requirements <= core_tools
+    assert extended_requirements <= extended_tools
     assert core_ids.isdisjoint(extended_ids)
     assert resolve_version(DEFAULT_BENCHMARK_VERSION)["suite"] == "hermes-core"
     assert len(core) == resolve_version("hermes-core-v0.1")["task_count"]
