@@ -1,5 +1,8 @@
 import json, subprocess, sys
 from pathlib import Path
+
+import pytest
+
 from hermesbench.versions import resolve_version
 from hermesbench.tasks import (
     discover_tasks,
@@ -105,7 +108,14 @@ def test_task_markdown_parser_extracts_checks():
         assert parsed.deterministic_checks, parsed.metadata["id"]
 
 
-def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path):
+def test_hermes_run_marks_unavailable_cli_toolsets_as_environment_skip(tmp_path, monkeypatch):
+    import hermesbench.adapters.hermes as hermes_adapter
+
+    monkeypatch.setattr(
+        hermes_adapter,
+        "unsupported_cli_toolsets",
+        lambda task, *, check_runtime=True: ["semantic_search"],
+    )
     result = run_benchmark(
         agent="hermes",
         suite="hermes-extended",
@@ -214,6 +224,21 @@ def test_provider_model_reasoning_metadata(tmp_path):
     assert score["reasoning_effort"] == "low"
 
 
+def test_python_module_entrypoint_help():
+    import os
+
+    env = os.environ.copy()
+    env["PYTHONPATH"] = str(Path.cwd() / "src")
+    result = subprocess.run(
+        [sys.executable, "-m", "hermesbench", "--help"],
+        text=True,
+        capture_output=True,
+        env=env,
+    )
+    assert result.returncode == 0
+    assert "Minimum-capable-model probe" in result.stdout
+
+
 def test_cli_smoke_validate_and_export(monkeypatch):
     import os
 
@@ -245,6 +270,10 @@ def test_cli_smoke_validate_and_export(monkeypatch):
 # Remove the entry once a covering task exists.  This lets the benchmark evolve
 # (you can declare a class canonical before shipping a task for it) while still
 # detecting accidental coverage loss (removing a task without updating the gap).
+#
+# Currently empty: all canonical tool classes have covering tasks.  If you
+# intentionally add a gap (e.g. a future class with no task yet), list its
+# name here so the coverage contract stops rejecting it.
 _COVERAGE_GAPS: set[str] = set()
 
 

@@ -25,6 +25,7 @@ quality_notes: Tests whether the model discovers it must read local files and ru
 requires_skills: false
 coding_required: false
 external_web: false
+no_fixture_required: true
 tool_use_requirements:
 - file
 - terminal

@@ -2,7 +2,7 @@ from pathlib import Path
 import tomllib
 
 
-def test_pytest_does_not_require_xdist_for_collection():
+def test_pytest_does_not_require_xdist_in_default_options():
     config = tomllib.loads(Path('pyproject.toml').read_text())
 
     pytest_options = config['tool']['pytest']['ini_options']
