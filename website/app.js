@@ -588,7 +588,7 @@ async function runDetailPage(runId) {
     <header class="wiki-header"><span class="crumb">benchcut / run record</span><h1>${escapeHtml(run.run_id)}</h1><p class="wiki-lede">${escapeHtml(modelLabel(run))} · ${escapeHtml(status)} · ${escapeHtml(run.suite || 'benchmark run')}</p><div class="wiki-tags">${tag(status, capability)} ${run.provider ? tag(run.provider) : ''} ${run.reasoning_effort ? tag(`reasoning: ${run.reasoning_effort}`) : ''}</div></header>
     <div class="wiki-layout">
       <aside class="wiki-sidebar">
-        <nav class="wiki-toc" aria-label="On this page"><b>Contents</b><a href="#overview">Overview</a><a href="#configuration">Configuration</a><a href="#tasks">Task ledger</a><a href="#provenance">Provenance</a></nav>
+        <nav class="wiki-toc" aria-label="On this page"><b>Contents</b><a href="#overview" data-scroll-target="overview">Overview</a><a href="#configuration" data-scroll-target="configuration">Configuration</a><a href="#tasks" data-scroll-target="tasks">Task ledger</a><a href="#provenance" data-scroll-target="provenance">Provenance</a></nav>
         <section class="wiki-infobox"><div class="wiki-infobox-title">Run receipt</div>${metricRow('score', fmt.pct(run.overall_score ?? run.score_percentage))}${metricRow('passed', `${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}`)}${metricRow('timeouts', fmt.num(run.timeout_count))}${metricRow('tokens', fmt.compact(run.total_tokens ?? run.token_usage?.total_tokens))}${metricRow('tool calls', fmt.num(run.tool_call_count))}</section>
       </aside>
       <div class="wiki-article">
@@ -737,6 +737,14 @@ function bindControls() {
   bindBrowserUpload();
 }
 
+function bindWikiToc() {
+  document.querySelectorAll('[data-scroll-target]').forEach((link) => link.addEventListener('click', (event) => {
+    event.preventDefault();
+    const target = document.getElementById(link.dataset.scrollTarget);
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }));
+}
+
 /**
  * Wire up the browser upload form on the /submit page.
  * Sends the selected JSON file and token to the API via X-Hermesbench-Submission-Token header.
@@ -837,6 +845,7 @@ async function render(shouldScroll = true) {
   setActive(path);
   bindControls();
   bindCommandBuilder();
+  bindWikiToc();
   if (shouldScroll && state.lastPath !== path) window.scrollTo({ top: 0, behavior: 'smooth' });
   state.lastPath = path;
 }
