@@ -290,6 +290,21 @@ def test_fake_hermes_can_run_past_task_timeout_and_cleans_profile(
     assert _temporary_profile_dirs(home) == []
 
 
+def test_fake_hermes_stall_detector_terminates_without_task_timeout(
+    fake_hermes, tmp_path, monkeypatch
+):
+    home, _ = fake_hermes
+    monkeypatch.setenv("FAKE_HERMES_SLEEP", "2")
+
+    result = HermesCLIAdapter(
+        profile="source", stall_idle_seconds=0.1
+    ).run_task(_fake_task(timeout_seconds=30), tmp_path / "workdir")
+
+    assert result.status == "stalled"
+    assert result.claimed_done is False
+    assert _temporary_profile_dirs(home) == []
+
+
 def test_temporary_profile_excludes_persistent_agent_state(tmp_path, monkeypatch):
     home = tmp_path / "home"
     source = home / ".hermes" / "profiles" / "source"

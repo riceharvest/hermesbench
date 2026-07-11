@@ -61,6 +61,7 @@ def archive_official_run(result_path: str | Path, manifest_path: str | Path, out
     output_dir.mkdir(parents=True, exist_ok=True)
 
     result_data = _scrub_result(json.loads(result_path.read_text()))
+    result_data.setdefault('metadata', {})['official'] = True
     (output_dir / 'result.json').write_text(json.dumps(result_data, indent=2, sort_keys=True) + '\n')
     shutil.copyfile(manifest_path, output_dir / 'manifest.yaml')
     (output_dir / 'score-summary.json').write_text(json.dumps(aggregate(result_path), indent=2, sort_keys=True) + '\n')

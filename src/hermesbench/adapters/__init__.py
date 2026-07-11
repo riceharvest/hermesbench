@@ -10,6 +10,7 @@ def get_adapter(
     provider: str | None = None,
     reasoning_effort: str | None = None,
     profile: str | None = None,
+    stall_idle_seconds: float | None = 300.0,
 ):
     if name == "shell":
         return ShellAdapter(
@@ -24,5 +25,6 @@ def get_adapter(
             provider=provider,
             reasoning_effort=reasoning_effort,
             profile=profile,
+            stall_idle_seconds=stall_idle_seconds,
         )
     raise ValueError(f"unknown adapter {name}")

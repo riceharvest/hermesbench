@@ -55,6 +55,7 @@ class TaskResult:
     cost_usd: float | None = None
     false_done: bool = False
     timeout: bool = False
+    stalled: bool = False
     environment_skip: bool = False
     skip_reason: str | None = None
     verification_evidence: list[str] | None = None

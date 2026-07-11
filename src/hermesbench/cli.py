@@ -63,6 +63,12 @@ def main(argv=None):
         "--quantization", help="quantization level (e.g., Q4_K_M, IQ3_XS, EXL2-4.0bpw)"
     )
     r.add_argument(
+        "--stall-idle-seconds",
+        type=float,
+        default=300.0,
+        help="Hermes idle-progress guard in seconds; use 0 to disable",
+    )
+    r.add_argument(
         "--backend",
         help="local model serving backend (e.g., llama.cpp, vllm, sglang, ollama)",
     )
@@ -135,6 +141,7 @@ def main(argv=None):
             a.quantization,
             a.backend,
             a.profile,
+            None if a.stall_idle_seconds == 0 else a.stall_idle_seconds,
         )
         if a.model_size is not None:
             score = aggregate(result_path)

@@ -16,6 +16,7 @@ class AgentRun:
     # structured tool-event telemetry. Raw model or subprocess stdout is never
     # behavior evidence.
     behavior_evidence_trusted: bool = False
+    stalled: bool = False
 
 class AgentAdapter:
     def __init__(self, model: str | None = None, provider: str | None = None, reasoning_effort: str | None = None):

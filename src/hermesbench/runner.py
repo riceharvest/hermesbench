@@ -234,7 +234,8 @@ def _resolve_jobs(jobs: int | str | None, task_count: int) -> int:
 
 
 def _run_one_task(
-    task, agent, model, command, provider, reasoning_effort, profile=None
+    task, agent, model, command, provider, reasoning_effort, profile=None,
+    stall_idle_seconds=300.0,
 ) -> TaskResult:
     adapter = get_adapter(
         agent,
@@ -243,10 +244,12 @@ def _run_one_task(
         provider=provider,
         reasoning_effort=reasoning_effort,
         profile=profile,
+        stall_idle_seconds=stall_idle_seconds,
     )
     t0 = time.time()
     false_done = False
     timeout = False
+    stalled = False
     ar = None
     with tempfile.TemporaryDirectory(prefix=f"hb-{task.metadata['id']}-") as td:
         wd = Path(td)
@@ -265,6 +268,7 @@ def _run_one_task(
         # declares a trusted behavior-evidence channel. In particular, Hermes
         # stdout/stderr must never satisfy a tool-use requirement.
         behavior_trusted = bool(ar and ar.behavior_evidence_trusted)
+        stalled = bool(ar and ar.stalled)
         # Convert only adapter-owned structured events into the grader's existing
         # tool-log format. Model-controlled transcript text remains untrusted.
         behavior_transcript = ""
@@ -302,7 +306,8 @@ def _run_one_task(
             effective_score = 0.0 if false_done else raw_score
 
         status = (
-            "timeout" if timeout else ("passed" if effective_score >= 1.0 else "failed")
+            "timeout" if timeout else
+            ("stalled" if stalled else ("passed" if effective_score >= 1.0 else "failed"))
         )
         # Capture the tool classes the agent actually used and what the task required.
         tool_classes_used = _used_tool_classes(
@@ -329,6 +334,7 @@ def _run_one_task(
             cost_usd=ar.cost_usd if ar else None,
             false_done=false_done,
             timeout=timeout,
+            stalled=stalled,
             verification_evidence=evidence + behavior_evidence,
             logs={
                 "transcript": ar.transcript[:4000] if ar else "",
@@ -375,6 +381,7 @@ def run_benchmark(
     quantization=None,
     backend=None,
     profile="hermesbench",
+    stall_idle_seconds=300.0,
 ) -> Path:
     provider, model = _split_provider_model(provider, model)
     version_info = resolve_version(benchmark_version)
@@ -415,7 +422,8 @@ def run_benchmark(
     if max_workers == 1:
         results = [
             _run_one_task(
-                task, agent, model, command, provider, reasoning_effort, profile
+                task, agent, model, command, provider, reasoning_effort, profile,
+                stall_idle_seconds,
             )
             for task in runnable_tasks
         ]
@@ -424,7 +432,8 @@ def run_benchmark(
             results = list(
                 pool.map(
                     lambda task: _run_one_task(
-                        task, agent, model, command, provider, reasoning_effort, profile
+                        task, agent, model, command, provider, reasoning_effort, profile,
+                        stall_idle_seconds,
                     ),
                     runnable_tasks,
                 )

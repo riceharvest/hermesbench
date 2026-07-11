@@ -166,7 +166,16 @@ def build_data(
     runs_dir.mkdir(parents=True, exist_ok=True)
     for old in runs_dir.glob("*.json"):
         old.unlink()
-    for result_path in sorted(results_dir.glob("**/hermesbench-*.json")):
+    # Reviewed archives are the public source of official evidence. The
+    # default repository-local results/ directory is intentionally ignored,
+    # so never publish arbitrary exploratory files found there. Tests and
+    # callers that pass an explicit results directory retain the general
+    # result-file behavior.
+    if results_dir.resolve() == (ROOT / "results").resolve():
+        result_paths = sorted((ROOT / "official-runs").glob("*/result.json"))
+    else:
+        result_paths = sorted(results_dir.glob("**/hermesbench-*.json"))
+    for result_path in result_paths:
         data = json.loads(result_path.read_text())
         # Result files may contain private runner metadata and task logs. The
         # generated website is public, so apply the storage allowlist before

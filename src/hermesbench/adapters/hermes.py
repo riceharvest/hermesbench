@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, re, shutil, subprocess, uuid
+import json, re, shutil, subprocess, time, uuid
 from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
@@ -602,6 +602,54 @@ def _profile_with_cwd(
         raise
 
 
+def _profile_progress_token(state_db: Path) -> tuple[int, int] | None:
+    """Return a cheap progress marker for an isolated Hermes state database."""
+    try:
+        stat = state_db.stat()
+    except OSError:
+        return None
+    return stat.st_mtime_ns, stat.st_size
+
+
+def _run_with_stall_detection(
+    cmd: list[str],
+    workdir: Path,
+    state_db: Path,
+    stall_idle_seconds: float | None,
+) -> tuple[subprocess.CompletedProcess[str], bool]:
+    """Run Hermes with an optional idle-progress guard, not a task timeout."""
+    process = subprocess.Popen(
+        cmd, cwd=workdir, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+    )
+    if stall_idle_seconds is None:
+        stdout, stderr = process.communicate()
+        return subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr), False
+
+    last_token = _profile_progress_token(state_db)
+    last_progress = time.monotonic()
+    poll_seconds = min(0.25, max(0.01, stall_idle_seconds / 4))
+    while True:
+        try:
+            stdout, stderr = process.communicate(timeout=poll_seconds)
+            return subprocess.CompletedProcess(cmd, process.returncode, stdout, stderr), False
+        except subprocess.TimeoutExpired:
+            token = _profile_progress_token(state_db)
+            now = time.monotonic()
+            if token != last_token:
+                last_token = token
+                last_progress = now
+            elif now - last_progress >= stall_idle_seconds:
+                process.terminate()
+                try:
+                    stdout, stderr = process.communicate(timeout=2)
+                except subprocess.TimeoutExpired:
+                    process.kill()
+                    stdout, stderr = process.communicate()
+                return subprocess.CompletedProcess(
+                    cmd, process.returncode, stdout, stderr
+                ), True
+
+
 class HermesCLIAdapter(AgentAdapter):
     def __init__(
         self,
@@ -609,9 +657,11 @@ class HermesCLIAdapter(AgentAdapter):
         provider: str | None = None,
         reasoning_effort: str | None = None,
         profile: str | None = None,
+        stall_idle_seconds: float | None = 300.0,
     ):
         super().__init__(model, provider=provider, reasoning_effort=reasoning_effort)
         self.profile = profile
+        self.stall_idle_seconds = stall_idle_seconds
 
     def run_task(self, task, workdir: Path, hidden_dir: Path | None = None) -> AgentRun:
         toolsets = _resolve_toolsets(task)
@@ -659,11 +709,11 @@ class HermesCLIAdapter(AgentAdapter):
                 cmd += ["--provider", self.provider]
             if self.model:
                 cmd += ["--model", self.model]
-            p = subprocess.run(
+            p, stalled = _run_with_stall_detection(
                 cmd,
-                cwd=workdir,
-                text=True,
-                capture_output=True,
+                workdir,
+                tmp_profile_dir / "state.db",
+                self.stall_idle_seconds,
             )
             transcript = p.stdout + p.stderr
             telemetry = (
@@ -674,7 +724,7 @@ class HermesCLIAdapter(AgentAdapter):
                 else StateDBTelemetry(events=[])
             )
             return AgentRun(
-                "completed" if p.returncode == 0 else "failed",
+                "stalled" if stalled else ("completed" if p.returncode == 0 else "failed"),
                 transcript,
                 telemetry.tool_calls,
                 telemetry.cost_usd,
@@ -686,6 +736,7 @@ class HermesCLIAdapter(AgentAdapter):
                 "profile-state-db" if telemetry.trusted else None,
                 tool_events=telemetry.events,
                 behavior_evidence_trusted=telemetry.trusted,
+                stalled=stalled,
             )
         finally:
             if tmp_profile_dir is not None:
