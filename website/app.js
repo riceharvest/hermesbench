@@ -578,21 +578,27 @@ async function loadRun(runId) {
 async function runDetailPage(runId) {
   const run = await loadRun(runId);
   const capability = isCapabilityRun(run);
-  if (!capability) return `${backLink()}${pageHead('unreviewed submission', `Run ${run.run_id}`, 'This submission has not been reviewed or promoted. It is not capability evidence.', `<aside class="panel">${metricRow('status', 'unreviewed')}${metricRow('competitive metrics', 'not available')}</aside>`)}
-  <section class="run-detail"><div>${taskEvidenceList(run.tasks || [], false)}</div></section>`;
-  return `${backLink()}${pageHead('task report', `Run ${run.run_id}`, `${modelLabel(run)}. This page focuses on task evidence, not leaderboard decoration.`, `<aside class="panel">${metricRow('overall score', fmt.pct(run.overall_score ?? run.score_percentage))}${metricRow('passed', `${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}`)}${metricRow('reasoning effort', escapeHtml(run.reasoning_effort || 'not labeled'))}</aside>`)}
-  <section class="run-detail">
-    <aside class="panel sticky-panel">
-      <h2>Run receipt</h2>
-      ${metricRow('false done', fmt.num(run.false_done_count), fmt.pct(run.false_done_rate))}
-      ${metricRow('timeouts', fmt.num(run.timeout_count), fmt.pct(run.timeout_rate))}
-      ${metricRow('median time', fmt.seconds(run.median_wall_time_seconds))}
-      ${metricRow('tokens', fmt.compact(run.total_tokens ?? run.token_usage?.total_tokens))}
-      ${metricRow('tool calls', fmt.num(run.tool_call_count))}
-      ${run.source ? `<p class="microcopy">Source: <span class="mono">${escapeHtml(run.source)}</span></p>` : ''}
-    </aside>
-    <div>${taskEvidenceList(run.tasks || [])}</div>
-  </section>`;
+  document.title = `Run ${run.run_id} | BenchCut`;
+  const status = capability ? 'official evidence' : 'unreviewed submission';
+  const metaRow = (label, value) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value ?? 'n/a')}</td></tr>`;
+  const overview = capability
+    ? `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This page records one ${escapeHtml(run.suite || 'benchmark')} evaluation of <b>${escapeHtml(modelLabel(run))}</b>. The score is an evidence summary; the task ledger below is the audit trail.</p><div class="wiki-stat-grid"><div><b>${fmt.pct(run.overall_score ?? run.score_percentage)}</b><span>overall score</span></div><div><b>${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}</b><span>tasks passed</span></div><div><b>${fmt.pct(run.false_done_rate)}</b><span>false done</span></div><div><b>${fmt.seconds(run.median_wall_time_seconds)}</b><span>median time</span></div></div></section>`
+    : `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This submission has not been reviewed or promoted. It is shown for traceability only; competitive metrics are unavailable.</p></section>`;
+  return `${backLink()}<article class="wiki-page">
+    <header class="wiki-header"><span class="crumb">benchcut / run record</span><h1>${escapeHtml(run.run_id)}</h1><p class="wiki-lede">${escapeHtml(modelLabel(run))} · ${escapeHtml(status)} · ${escapeHtml(run.suite || 'benchmark run')}</p><div class="wiki-tags">${tag(status, capability)} ${run.provider ? tag(run.provider) : ''} ${run.reasoning_effort ? tag(`reasoning: ${run.reasoning_effort}`) : ''}</div></header>
+    <div class="wiki-layout">
+      <aside class="wiki-sidebar">
+        <nav class="wiki-toc" aria-label="On this page"><b>Contents</b><a href="#overview">Overview</a><a href="#configuration">Configuration</a><a href="#tasks">Task ledger</a><a href="#provenance">Provenance</a></nav>
+        <section class="wiki-infobox"><div class="wiki-infobox-title">Run receipt</div>${metricRow('score', fmt.pct(run.overall_score ?? run.score_percentage))}${metricRow('passed', `${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}`)}${metricRow('timeouts', fmt.num(run.timeout_count))}${metricRow('tokens', fmt.compact(run.total_tokens ?? run.token_usage?.total_tokens))}${metricRow('tool calls', fmt.num(run.tool_call_count))}</section>
+      </aside>
+      <div class="wiki-article">
+        ${overview}
+        <section class="wiki-section" id="configuration"><h2>Configuration</h2><table class="wiki-table"><tbody>${metaRow('Agent', run.agent)}${metaRow('Provider', run.provider)}${metaRow('Model', run.model)}${metaRow('Suite', run.suite)}${metaRow('Reasoning effort', run.reasoning_effort || 'not labeled')}${metaRow('Started', run.started_at)}${metaRow('Completed', run.completed_at)}${metaRow('Schema', run.raw_result_schema_version)}</tbody></table></section>
+        <section class="wiki-section" id="tasks"><h2>Task ledger</h2><p class="wiki-muted">Expand a task to inspect timing, tool use, token counts, and verifier checks.</p>${taskEvidenceList(run.tasks || [], capability)}</section>
+        <section class="wiki-section" id="provenance"><h2>Provenance</h2><p>Published records are sanitized before entering the site. Hidden checks, submission tokens, and local secrets are excluded.</p>${run.source ? `<p class="wiki-source"><b>Archive source</b><br><span class="mono">${escapeHtml(run.source)}</span></p>` : ''}</section>
+      </div>
+    </div>
+  </article>`;
 }
 
 function modelPage(provider, encodedModel) {

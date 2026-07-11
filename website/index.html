@@ -769,6 +769,49 @@
     }
     .back-link { margin-bottom: 20px; }
 
+    .wiki-page { max-width: 1180px; }
+    .wiki-header {
+      border-bottom: 1px solid var(--line-strong);
+      padding: 8px 0 28px;
+      margin-bottom: 24px;
+    }
+    .wiki-header h1 {
+      max-width: 920px;
+      margin: 12px 0 10px;
+      font-size: clamp(42px, 7vw, 88px);
+      line-height: .9;
+      letter-spacing: -.075em;
+      overflow-wrap: anywhere;
+    }
+    .wiki-lede { color: var(--muted); font-size: 17px; }
+    .wiki-tags { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 18px; }
+    .wiki-layout { display: grid; grid-template-columns: 220px minmax(0, 760px); gap: clamp(24px, 5vw, 68px); align-items: start; }
+    .wiki-sidebar { display: grid; gap: 18px; position: sticky; top: 92px; }
+    .wiki-toc { display: grid; gap: 2px; border-left: 2px solid var(--line-strong); padding: 2px 0 2px 14px; }
+    .wiki-toc b { margin-bottom: 7px; font-family: var(--mono); font-size: 11px; letter-spacing: .06em; text-transform: uppercase; }
+    .wiki-toc a { padding: 6px 0; color: var(--muted); font-size: 13px; }
+    .wiki-toc a:hover { color: var(--accent); }
+    .wiki-infobox { border: 1px solid var(--line-strong); background: var(--panel); }
+    .wiki-infobox-title { padding: 12px 14px; border-bottom: 1px solid var(--line); color: var(--accent); font-family: var(--mono); font-size: 11px; font-weight: 800; text-transform: uppercase; }
+    .wiki-infobox .metric-row { padding: 12px 14px; }
+    .wiki-infobox .metric-row b { font-size: 18px; }
+    .wiki-article { min-width: 0; }
+    .wiki-section { scroll-margin-top: 88px; border-top: 1px solid var(--line-strong); padding: 28px 0 34px; }
+    .wiki-section:first-child { border-top: 0; padding-top: 0; }
+    .wiki-section h2 { margin: 0 0 12px; font-size: clamp(28px, 4vw, 46px); line-height: 1; letter-spacing: -.06em; }
+    .wiki-section p { max-width: 720px; color: var(--muted); }
+    .wiki-stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); margin-top: 24px; border: 1px solid var(--line); }
+    .wiki-stat-grid div { display: grid; gap: 8px; min-height: 108px; padding: 16px; border-right: 1px solid var(--line); }
+    .wiki-stat-grid div:last-child { border-right: 0; }
+    .wiki-stat-grid b { color: var(--accent); font-family: var(--mono); font-size: 25px; }
+    .wiki-stat-grid span { color: var(--dim); font-size: 11px; text-transform: uppercase; }
+    .wiki-table { width: 100%; border-collapse: collapse; border-top: 1px solid var(--line); font-size: 14px; }
+    .wiki-table th, .wiki-table td { padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+    .wiki-table th { width: 32%; color: var(--dim); font-family: var(--mono); font-size: 11px; font-weight: 800; letter-spacing: .04em; text-transform: uppercase; }
+    .wiki-table td { color: var(--ink); overflow-wrap: anywhere; }
+    .wiki-muted { color: var(--dim) !important; font-size: 13px; }
+    .wiki-source { border-left: 3px solid var(--accent); padding: 12px 14px; background: rgba(215, 255, 95, .06); font-size: 13px; overflow-wrap: anywhere; }
+
     footer {
       border-top: 1px solid var(--line);
       padding: 28px 0 48px;
@@ -814,6 +857,8 @@
       .split-section,
       .podium,
       .run-detail { grid-template-columns: 1fr; }
+      .wiki-layout { grid-template-columns: 1fr; }
+      .wiki-sidebar { position: static; grid-template-columns: minmax(0, 1fr) minmax(220px, .8fr); align-items: start; }
       .hero { min-height: 0; }
       .receipt { transform: none; }
       .section-title,
@@ -849,6 +894,12 @@
       .metric-row { align-items: flex-start; flex-direction: column; gap: 5px; }
       summary { align-items: flex-start; min-height: 0; padding: 16px; }
       .fold-body { padding: 0 16px 16px; }
+      .wiki-sidebar, .wiki-stat-grid { grid-template-columns: 1fr; }
+      .wiki-stat-grid div { border-right: 0; border-bottom: 1px solid var(--line); }
+      .wiki-stat-grid div:last-child { border-bottom: 0; }
+      .wiki-table th, .wiki-table td { display: block; width: auto; }
+      .wiki-table th { padding-bottom: 4px; border-bottom: 0; }
+      .wiki-table td { padding-top: 0; }
     }
 
     @media (prefers-reduced-motion: reduce) {
