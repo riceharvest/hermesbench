@@ -908,4 +908,8 @@ async function init() {
   render(false);
 }
 
-init();
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { isCapabilityData, isCapabilityRun, normalizeApiToFrontendShape };
+} else {
+  init();
+}
