@@ -17,7 +17,14 @@ const MAX_TASKS = Number.parseInt(process.env.HERMESBENCH_MAX_TASKS || '200', 10
 const MAX_METADATA_KEYS = Number.parseInt(process.env.HERMESBENCH_MAX_METADATA_KEYS || '20', 10);
 
 // Fields allowed in public leaderboard responses (explicit allowlist).
-const PUBLIC_SCORE_FIELDS = new Set(['run_id', 'agent', 'provider', 'model', 'suite', 'overall_score', 'pass_at_1', 'task_count', 'official', 'submitted_at']);
+const PUBLIC_SCORE_FIELDS = new Set([
+  'run_id', 'agent', 'provider', 'model', 'suite',
+  'overall_score', 'pass_at_1', 'task_count', 'official', 'submitted_at',
+  // Detailed metrics for sorting/filtering
+  'reasoning_effort', 'false_done_rate', 'timeout_rate',
+  'median_wall_time_seconds', 'total_tokens', 'total_cost_usd',
+  'passed_task_count', 'false_done_count',
+]);
 
 // Public intake is paused by default. Re-enable deliberately with an explicit
 // deployment environment variable after a reviewed change.
@@ -237,6 +244,12 @@ function scorePayload(payload) {
   const rows = payload.results || [];
   const n = rows.length || 1;
   const overall = rows.reduce((sum, row) => sum + Number(row.score || 0), 0) / n;
+  const passedCount = rows.filter((row) => row.passed).length;
+  const falseDoneCount = rows.filter((row) => row.false_done).length;
+  const timeoutCount = rows.filter((row) => row.timeout).length;
+  const wallTimes = rows.filter((row) => row.wall_time_seconds != null).map((row) => row.wall_time_seconds).sort((a, b) => a - b);
+  const totalTokens = rows.reduce((sum, row) => sum + Number(row.token_usage?.total_tokens || 0), 0);
+
   const entry = {
     run_id: payload.run_id,
     agent: payload.agent,
@@ -244,10 +257,19 @@ function scorePayload(payload) {
     model: payload.model || null,
     suite: payload.suite,
     overall_score: overall,
-    pass_at_1: rows.filter((row) => row.passed).length / n,
+    pass_at_1: passedCount / n,
     task_count: rows.length,
     official: Boolean(payload.metadata?.official),
     submitted_at: payload.submitted_at || payload.completed_at || null,
+    // Detailed metrics
+    reasoning_effort: payload.metadata?.reasoning_effort || null,
+    false_done_rate: n > 0 ? falseDoneCount / n : 0,
+    timeout_rate: n > 0 ? timeoutCount / n : 0,
+    median_wall_time_seconds: wallTimes.length > 0 ? wallTimes[Math.floor(wallTimes.length / 2)] : null,
+    total_tokens: totalTokens,
+    total_cost_usd: payload.metadata?.total_cost_usd || null,
+    passed_task_count: passedCount,
+    false_done_count: falseDoneCount,
   };
   // Explicit public field allowlist — strip anything not in PUBLIC_SCORE_FIELDS.
   for (const key of Object.keys(entry)) {

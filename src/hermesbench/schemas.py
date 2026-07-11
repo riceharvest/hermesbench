@@ -282,6 +282,10 @@ PUBLIC_TASK_KEYS: set[str] = {
 PUBLIC_SCORE_FIELDS: set[str] = {
     "run_id", "agent", "provider", "model", "suite",
     "overall_score", "pass_at_1", "task_count", "official", "submitted_at",
+    # Detailed metrics for sorting/filtering
+    "reasoning_effort", "false_done_rate", "timeout_rate",
+    "median_wall_time_seconds", "total_tokens", "total_cost_usd",
+    "passed_task_count", "false_done_count",
 }
 # Sensitive log/transcript keys stripped from sanitized output.
 SENSITIVE_LOG_KEYS: set[str] = {"transcript", "stdout", "stderr", "logs", "messages"}

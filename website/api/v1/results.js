@@ -14,9 +14,9 @@ module.exports = async function handler(req, res) {
   if (!submissionsEnabled()) return sendJson(res, 403, { error: 'public submissions are currently paused' }, {}, req);
 
   try {
+    await enforceRateLimit(req);
     const payload = await readBody(req);
     const result = sanitizeResult(validateSubmission(payload, req));
-    await enforceRateLimit(req);
     const persisted = await persistSubmission(result);
     const responseBody = { run_id: result.run_id, accepted: true, persisted };
     if (persisted.duplicate) {
