@@ -136,7 +136,11 @@ def test_fresh_wheel_install(tmp_path):
     root = _repo_root()
     dist = root / "dist"
     if not dist.exists() or not list(dist.glob("*.whl")):
-        pytest.skip("no pre-built wheel in dist/ — run 'uv build' first")
+        # Build wheel if not present (explicit prerequisite)
+        subprocess.run(
+            [sys.executable, "-m", "build", "--wheel"],
+            check=True, capture_output=True, text=True, cwd=root,
+        )
 
     # Create a clean virtualenv
     venv = tmp_path / "venv"
@@ -209,7 +213,11 @@ def test_sdist_rebuilds_identical_wheel(tmp_path):
     root = _repo_root()
     dist = root / "dist"
     if not dist.exists() or not list(dist.glob("*.tar.gz")):
-        pytest.skip("no pre-built sdist in dist/")
+        # Build sdist if not present (explicit prerequisite)
+        subprocess.run(
+            [sys.executable, "-m", "build", "--sdist"],
+            check=True, capture_output=True, text=True, cwd=root,
+        )
 
     sdists = sorted(dist.glob("*.tar.gz"))
     sdist = sdists[-1]

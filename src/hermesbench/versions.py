@@ -1,15 +1,22 @@
 from __future__ import annotations
 
+from .tasks import discover_tasks
+
+
+def _task_count(suite: str) -> int:
+    """Return the manifest-backed count for a published suite."""
+    return len(discover_tasks(suite))
+
 BENCHMARK_VERSIONS = {
     'hermes-core-v0.1': {
         'suite': 'hermes-core',
-        'task_count': 13,
+        'task_count': _task_count('hermes-core'),
         'status': 'development',
         'notes': 'Hermes Agent tools and features shipped in the base installation.',
     },
     'hermes-extended-v0.1': {
         'suite': 'hermes-extended',
-        'task_count': 25,
+        'task_count': _task_count('hermes-extended'),
         'status': 'development',
         'notes': 'Installable and configurable Hermes ecosystem tools and integrations.',
     },
