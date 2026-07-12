@@ -1,6 +1,7 @@
 from __future__ import annotations
 import argparse, json, math, re, statistics
 from pathlib import Path
+import yaml
 from hermesbench.api import sanitize_for_storage
 from hermesbench.scoring import aggregate
 
@@ -157,6 +158,28 @@ def _task_detail(task: dict) -> dict:
     }
 
 
+def _archive_context(result_path: Path) -> dict[str, object]:
+    """Load companion manifest, score, and integrity records when available."""
+    archive_dir = result_path.parent
+    manifest_path = archive_dir / "manifest.yaml"
+    summary_path = archive_dir / "score-summary.json"
+    checksums_path = archive_dir / "SHA256SUMS"
+    manifest = yaml.safe_load(manifest_path.read_text()) if manifest_path.exists() else None
+    score_summary = json.loads(summary_path.read_text()) if summary_path.exists() else None
+    checksums = {}
+    if checksums_path.exists():
+        for line in checksums_path.read_text().splitlines():
+            parts = line.split()
+            if len(parts) == 2:
+                checksums[parts[1]] = parts[0]
+    return {
+        "manifest": manifest if isinstance(manifest, dict) else None,
+        "score_summary": score_summary if isinstance(score_summary, dict) else None,
+        "checksums": checksums,
+        "files": sorted(path.name for path in archive_dir.iterdir() if path.is_file()),
+    }
+
+
 def build_data(
     results_dir: Path = ROOT / "results", out_dir: Path = ROOT / "website" / "data"
 ) -> Path:
@@ -202,6 +225,12 @@ def build_data(
             "completed_at": public_data.get("completed_at"),
             "metadata": public_data.get("metadata", {}),
         }
+        archive = _archive_context(result_path)
+        if any(archive.values()):
+            detail["archive_manifest"] = archive["manifest"]
+            detail["archive_score_summary"] = archive["score_summary"]
+            detail["archive_checksums"] = archive["checksums"]
+            detail["archive_files"] = archive["files"]
         entries.append(entry)
         details.append(detail)
     entries.sort(

@@ -849,6 +849,20 @@ details[open] summary::after { content: "-"; }
   color: var(--muted);
   font-size: 12px;
 }
+.json-block {
+  max-height: 520px;
+  margin: 12px 0 0;
+  padding: 12px;
+  overflow: auto;
+  border: 1px solid var(--line);
+  background: var(--bg-raised);
+  color: var(--ink);
+  font: 11px/1.5 var(--font-mono);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.raw-data { margin-top: 14px; border-top: 1px solid var(--line); }
+.raw-data summary { padding: 10px 0; color: var(--accent); font-size: 11px; }
 
 /* Method layout list */
 .method-list {

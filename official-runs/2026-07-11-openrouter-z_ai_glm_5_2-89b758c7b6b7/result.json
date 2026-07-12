@@ -1,0 +1,1183 @@
+{
+  "agent": "hermes",
+  "completed_at": "2026-07-11T19:32:35.557685+00:00",
+  "metadata": {
+    "benchmark_version": "hermes-core-v0.1",
+    "cpu_info": "AMD Ryzen 9 5950X 16-Core Processor; 16 cores",
+    "git_commit": "060fc46",
+    "gpu_info": "NVIDIA GeForce RTX 3060",
+    "jobs": 13,
+    "metadata_available": {
+      "hardware": true,
+      "model_identity": true,
+      "provenance": true,
+      "runtime": true,
+      "timing": true
+    },
+    "model": "z-ai/glm-5.2",
+    "official": true,
+    "os_platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+    "profile": "hermesbench",
+    "provider": "openrouter",
+    "public_output_redacts_hidden_checks": true,
+    "python_version": "3.14.6",
+    "reasoning_effort": "low",
+    "run_wall_time_seconds": 309.03,
+    "task_count": 13,
+    "task_root": null
+  },
+  "model": "z-ai/glm-5.2",
+  "results": [
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.00269405,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-001-file-and-terminal-self-serve-cwlyfd38"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "The sum of all numbers in `data/records.txt` is **42**.\n\nThe file contains five numbers (3, 7, 11, 15, 6), and `awk` confirms the total: 3+7+11+15+6 = 42.\n\nsession_id: 20260711_212732_d2ee17\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": false,
+      "raw_task_score": 0.25,
+      "required_tool_classes": [
+        "file",
+        "terminal"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-001-file-and-terminal-self-serve",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 2797,
+        "output_tokens": 297,
+        "reasoning_tokens": 151
+      },
+      "tool_calls": 6,
+      "tool_classes_used": [
+        "terminal",
+        "file"
+      ],
+      "verification_claimed": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: FAIL",
+        "artifact_contains artifacts/answer.txt: FAIL",
+        "command_passes grep -E '[0-9]+' data/records.txt: PASS",
+        "command_contains cat artifacts/answer.txt: FAIL (rc=1)",
+        "behavior: required tool classes = ['file', 'terminal']",
+        "behavior: observed tool classes = ['file', 'terminal']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 6",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": false,
+      "wall_time_seconds": 23.606
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.012273075,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-002-web-search-required-pq81d8n5"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+v0.18.0\nDone. The latest stable release of the Hermes Agent framework is **v0.18.0** (\"The Judgment Release\"), released July 1, 2026.\n\nI found this via web search \u2014 a Reddit post on r/hermesagent titled \"Hermes Agent v0.18.0 \u2014 The Judgment Release (2026.7.1)\" explicitly names the framework release. The GitHub releases page also referenced a bump to 0.18.2, but that's the separate `@nous-research/ui` subpackage, not the Hermes Agent framework itself.\n\nAnswer written to `/tmp/hb-htu-dev-002-web-search-required-pq81d8n5/artifacts/answer.txt`.\n\nNote: the `web_extract` tool is configured with a search-only backend (SearXNG) and couldn't fetch page contents directly, so I relied on web search result snippets. The version is corroborated by two independent search results.\n\nsession_id: 20260711_212733_4cb57a\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "web"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-002-web-search-required",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 12537,
+        "output_tokens": 2670,
+        "reasoning_tokens": 1556
+      },
+      "tool_calls": 38,
+      "tool_classes_used": [
+        "file",
+        "web"
+      ],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "command_not_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['web']",
+        "behavior: observed tool classes = ['file', 'web']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 38",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 120.066
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.00341632,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-003-use-a-skill-j8b3tiua"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+decoded-by-skill\nDecoded the base64 string `ZGVjb2RlZC1ieS1za2lsbA==` from `case/artifact` using the `base64` skill and wrote the result to `artifacts/answer.txt`.\n\nThe decoded content is: `decoded-by-skill`\n\nsession_id: 20260711_212733_6caded\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "skills"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-003-use-a-skill",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 4339,
+        "output_tokens": 131,
+        "reasoning_tokens": 105
+      },
+      "tool_calls": 6,
+      "tool_classes_used": [
+        "file",
+        "skills"
+      ],
+      "verification_claimed": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['skills']",
+        "behavior: observed tool classes = ['file', 'skills']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 6",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 20.349
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.00320974,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-004-memory-recall-e1kcvk39"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+benchmark-secret\nDone. The secret word \"benchmark-secret\" has been:\n- Stored in both persistent memory and the fact store for recall\n- Written to /tmp/hb-htu-dev-004-memory-recall-e1kcvk39/artifacts/answer.txt (verified contents match)\n\nsession_id: 20260711_212731_96e548\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "memory"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-004-memory-recall",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 3613,
+        "output_tokens": 286,
+        "reasoning_tokens": 180
+      },
+      "tool_calls": 10,
+      "tool_classes_used": [
+        "memory",
+        "file"
+      ],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes grep -q \"benchmark-secret\" artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['memory']",
+        "behavior: observed tool classes = ['file', 'memory']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 10",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 25.25
+    },
+    {
+      "behavior_penalty": 1.0,
+      "category": "natural-tool-use",
+      "cost_usd": null,
+      "effective_task_score": 0.0,
+      "environment_skip": false,
+      "false_done": true,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-005-delegate-parallel-subtasks-7x3quxig"
+        },
+        "telemetry_source": null,
+        "transcript": "\u21a9 Background 2 tasks running \u2014 I'll resume when they finish. Keep chatting.\n  \u2713 [2/2] Read the file data/b.txt in the working   (2.94s)\n  \u2713 [1/2] Read the file data/a.txt in the working   (3.13s)\n  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+100\nDone. The task is complete:\n\n- data/a.txt sum: 30 + 20 = 50 (computed by subagent 1)\n- data/b.txt sum: 25 + 25 = 50 (computed by subagent 2)\n- Total: 100\n\nWritten to /tmp/hb-htu-dev-005-delegate-parallel-subtasks-7x3quxig/artifacts/answer.txt and verified the file contains 100.\n\nsession_id: 20260711_212731_bc41d4\n"
+      },
+      "passed": false,
+      "passed_effective": false,
+      "passed_raw": false,
+      "raw_task_score": 0.25,
+      "required_tool_classes": [
+        "delegation"
+      ],
+      "score": 0.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "failed",
+      "task_id": "htu-dev-005-delegate-parallel-subtasks",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": null,
+      "tool_calls": 0,
+      "tool_classes_used": [],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes grep -qE '(^|[^0-9])50($|[^0-9])' artifacts/answer.txt: FAIL (rc=1)",
+        "artifact_contains artifacts/answer.txt: FAIL",
+        "command_contains cat artifacts/answer.txt: FAIL (rc=0)",
+        "behavior: required tool classes = ['delegation']",
+        "behavior: observed tool classes = []",
+        "behavior: missing tool classes = ['delegation']",
+        "behavior: tool events seen = 0",
+        "behavior: used any tool = False",
+        "behavior: trusted tool evidence unavailable; raw transcript was not graded"
+      ],
+      "verification_sufficient": false,
+      "wall_time_seconds": 68.513
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.002704045,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-006-todo-plan-jq32waj1"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+pineapple\nDone. The word in `case/task.txt` was \"pineapple\". I created a two-step todo plan, completed both steps, and wrote the word to `artifacts/answer.txt`.\n\nsession_id: 20260711_212733_ce541c\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "todo"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-006-todo-plan",
+      "task_quality_tier": "gold",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 2926,
+        "output_tokens": 217,
+        "reasoning_tokens": 204
+      },
+      "tool_calls": 8,
+      "tool_classes_used": [
+        "file",
+        "todo"
+      ],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['todo']",
+        "behavior: observed tool classes = ['file', 'todo']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 8",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 24.742
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.005011325,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-007-code-execution-5wgapces"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "Done. The sum of the 110 numbers in `case/numbers.txt` (8 + 12 + 15 + 7, the rest being 0) is **42**, written to `artifacts/answer.txt`.\n\nsession_id: 20260711_212732_4e2a78\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "code_execution"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-007-code-execution",
+      "task_quality_tier": "gold",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 5087,
+        "output_tokens": 900,
+        "reasoning_tokens": 507
+      },
+      "tool_calls": 12,
+      "tool_classes_used": [
+        "code_execution",
+        "file"
+      ],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['code_execution']",
+        "behavior: observed tool classes = ['code_execution', 'file']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 12",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 40.208
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.028234975000000002,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-008-browser-required-wt8pcsk_"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "\u26a0\ufe0f  Reached maximum iterations (20). Requesting summary...\nI was unable to complete the task. Here's what happened:\n\n**Blocker:** The browser tool requires a Chrome/Chromium instance running with CDP (Chrome DevTools Protocol) on port 9222, but no such browser is running, and no Chrome/Chromium binary was found anywhere on the system (checked /usr/bin, /usr/local/bin, /opt, /snap, /home/dario, /usr/lib, and common flatpak/app paths). The config at `~/.hermes/config.yaml` has a `cdp_url` pointing to `ws://127.0.0.1:9222/...` but nothing is listening there.\n\n**What I tried:**\n1. `browser_navigate` to `https://hermes-agent.nousresearch.com/docs` \u2014 failed 5 times with \"CDP WebSocket connect failed: Connection refused (os error 111)\"\n2. `browser_cdp` with `Target.getTargets` \u2014 same connection refused error\n3. Searched the filesystem for any Chrome/Chromium/playwright binary \u2014 none found\n4. Checked Hermes skills and config for browser auto-launch guidance \u2014 the auto-launch feature is configured (`engine: auto`) but apparently can't find a browser to launch\n\n**What's needed to unblock:** A Chromium/Chrome binary needs to be installed (e.g., `dnf install chromium` on this Fedora system) or a remote CDP endpoint needs to be made available. Once a browser is reachable, I can navigate to the Hermes docs site, find the version string, and write it to `artifacts/answer.txt`.\n\nI did not fabricate a version string \u2014 per my operating principles, reporting the blocker honestly is better than inventing a result.\n\nsession_id: 20260711_212732_1e9b72\nException ignored in: <generator object Langfuse._create_span_with_parent_context at 0x7f9b59f2a7a0>\nTraceback (most recent call last):\n  File \"/home/dario/.hermes/hermes-agent/venv/lib/python3.11/site-packages/langfuse/_client/client.py\", line 1200, in _create_span_with_parent_context\n  File \"/home/dario/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/contextlib.py\", line 158, in __exit__\n  File \"/home/dario/.hermes/hermes-agent/venv/lib/python3.11/site-packages/opentelemetry/trace/__init__.py\", line 616, in use_span\nTypeError: isinstance() arg 2 must be a type, a tuple of types, or a union\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": false,
+      "raw_task_score": 0.0,
+      "required_tool_classes": [
+        "browser"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-008-browser-required",
+      "task_quality_tier": "gold",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 42810,
+        "output_tokens": 1900,
+        "reasoning_tokens": 1084
+      },
+      "tool_calls": 56,
+      "tool_classes_used": [
+        "browser",
+        "file",
+        "browser_cdp"
+      ],
+      "verification_claimed": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: FAIL",
+        "command_passes test -s artifacts/answer.txt: FAIL (rc=1)",
+        "command_passes grep -qE 'v?[0-9]+\\.[0-9]+' artifacts/answer.txt: FAIL (rc=2)",
+        "artifact_matches artifacts/answer.txt: FAIL",
+        "behavior: required tool classes = ['browser']",
+        "behavior: observed tool classes = ['browser', 'browser_cdp', 'file']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 56",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": false,
+      "wall_time_seconds": 162.301
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.00243533,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-009-session-search-xnv5gi9k"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+blue\nDone. The session search returned no results, so I read `case/seed.txt` which contained `blue`. Wrote that to `artifacts/answer.txt`.\n\nsession_id: 20260711_212732_61b747\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "session_search"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-009-session-search",
+      "task_quality_tier": "gold",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 2805,
+        "output_tokens": 120,
+        "reasoning_tokens": 106
+      },
+      "tool_calls": 6,
+      "tool_classes_used": [
+        "file",
+        "session_search"
+      ],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_contains cat artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['session_search']",
+        "behavior: observed tool classes = ['file', 'session_search']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 6",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 27.188
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.0025716800000000002,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-010-clarify-ambiguous-ne1ps5d6"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "\n(clarify timed out after 120s \u2014 agent will decide)\n  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+{\"ok\": true}\nDone. I used the clarify tool to ask which config format you wanted (JSON/YAML/TOML/XML), but no response came back within the time limit, so I defaulted to JSON and wrote `{\"ok\": true}` to `/tmp/hb-htu-dev-010-clarify-ambiguous-ne1ps5d6/artifacts/answer.txt`.\n\nsession_id: 20260711_212733_b9432f\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "clarify"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-010-clarify-ambiguous",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 5013,
+        "output_tokens": 231,
+        "reasoning_tokens": 60
+      },
+      "tool_calls": 4,
+      "tool_classes_used": [
+        "file",
+        "clarify"
+      ],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "command_passes python3 -c \"import json; json.load(open('artifacts/answer.txt'))\": PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['clarify']",
+        "behavior: observed tool classes = ['clarify', 'file']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 4",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 148.257
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": null,
+      "effective_task_score": 0.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-011-cronjob-schedule-eovdwtqd"
+        },
+        "telemetry_source": null,
+        "transcript": "The file now contains \"cron done\". The agent-driven cron job (using the `write_file` tool inside the scheduled job) succeeded when run via `action='run'`.\n\nSummary of what happened:\n- Created a one-off cron job scheduled for 2026-07-11 23:59 (job id `68b8d3a4f803`), workdir set to the task workdir, with a self-contained prompt instructing it to use `write_file` to write \"cron done\" to `artifacts/answer.txt`.\n- Ran the job immediately with `cronjob action='run'`.\n- Verified the result: `/tmp/hb-htu-dev-011-cronjob-schedule-eovdwtqd/artifacts/answer.txt` now contains exactly `cron done` (9 bytes).\n\nNote: the first three attempts used `no_agent=True` script-only jobs; those consistently reported `execution_success: false` and produced no file (the sandboxed script runner couldn't write to the workdir). Switching to an LLM-driven job that calls `write_file` worked. The cron tool itself was available throughout, so the \"cron unavailable\" fallback was not needed.\n\nFinal answer: the file `/tmp/hb-htu-dev-011-cronjob-schedule-eovdwtqd/artifacts/answer.txt` contains `cron done`, written by a scheduled one-off cron job that I triggered with `action='run'`.\n\nsession_id: 20260711_212732_a50aa1\n"
+      },
+      "passed": false,
+      "passed_effective": false,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "cronjob"
+      ],
+      "score": 0.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "failed",
+      "task_id": "htu-dev-011-cronjob-schedule",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": null,
+      "tool_calls": 0,
+      "tool_classes_used": [],
+      "verification_claimed": true,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_passes grep -qE 'cron done|cron unavailable' artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['cronjob']",
+        "behavior: observed tool classes = []",
+        "behavior: missing tool classes = ['cronjob']",
+        "behavior: tool events seen = 0",
+        "behavior: used any tool = False",
+        "behavior: trusted tool evidence unavailable; raw transcript was not graded"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 113.282
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.021545790000000002,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-012-computer-use-8le6pla3"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "  \u250a review diff\na/artifacts/answer.txt \u2192 b/artifacts/answer.txt\n@@ -0,0 +1 @@\n+computer_use unavailable\n\n  \u23f1 Timeout \u2014 denying command\n\nsession_id: 20260711_212733_6e965d\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": true,
+      "raw_task_score": 1.0,
+      "required_tool_classes": [
+        "computer_use"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": true,
+      "status": "stalled",
+      "task_id": "htu-dev-012-computer-use",
+      "task_quality_tier": "experimental",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 45165,
+        "output_tokens": 890,
+        "reasoning_tokens": 542
+      },
+      "tool_calls": 23,
+      "tool_classes_used": [
+        "computer_use",
+        "file"
+      ],
+      "verification_claimed": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: PASS",
+        "command_passes test -s artifacts/answer.txt: PASS",
+        "artifact_contains artifacts/answer.txt: PASS",
+        "command_passes grep -qE 'computer_use|screenshot' artifacts/answer.txt: PASS",
+        "behavior: required tool classes = ['computer_use']",
+        "behavior: observed tool classes = ['computer_use', 'file']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 23",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": true,
+      "wall_time_seconds": 309.023
+    },
+    {
+      "behavior_penalty": 0.0,
+      "category": "natural-tool-use",
+      "cost_usd": 0.029535600000000002,
+      "effective_task_score": 1.0,
+      "environment_skip": false,
+      "false_done": false,
+      "logs": {
+        "sandbox": {
+          "env_policy": {
+            "allowlist": [
+              "PATH",
+              "HOME",
+              "LANG",
+              "LC_ALL",
+              "PYTHONPATH",
+              "VIRTUAL_ENV",
+              "UV_CACHE_DIR",
+              "TMPDIR",
+              "TEMP",
+              "TMP"
+            ],
+            "mode": "inherited-by-adapter",
+            "sensitive_variable_names_present": [
+              "AIRTABLE_API_KEY",
+              "BROWSERLESS_TOKEN",
+              "CLOUDFLARE_API_TOKEN",
+              "HERMES_REDACT_SECRETS",
+              "HERMES_SESSION_KEY",
+              "ICEAUTHORITY",
+              "OPENROUTER_API_KEY",
+              "SSH_AUTH_SOCK",
+              "TINKER_API_KEY",
+              "VERCEL_TOKEN",
+              "WANDB_API_KEY",
+              "XAUTHORITY",
+              "X_BEARER_TOKEN"
+            ]
+          },
+          "process": {
+            "pid": 2439174,
+            "platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
+            "python": "3.14.6"
+          },
+          "tempdir_prefix": "hb-",
+          "workdir": "/tmp/hb-htu-dev-013-vision-image-z3k2enq7"
+        },
+        "telemetry_source": "profile-state-db",
+        "transcript": "\u26a0\ufe0f  Reached maximum iterations (20). Requesting summary...\nI was unable to complete the task. Here's a summary:\n\n**Blocker:** The `vision_analyze` tool consistently fails with \"No LLM provider configured for task=vision provider=auto.\" The active profile (`hermesbench-c3eefccc2b93`) has its auxiliary vision provider set to `auto`, which cannot resolve to a concrete provider. The main `~/.hermes/config.yaml` has a working vision configuration (`provider: openai-codex, model: gpt-4o-mini`), but the profile-level config overrides this with `provider: auto`.\n\n**What I tried:**\n- Called `vision_analyze` with both absolute and relative paths \u2014 same error every time.\n- Attempted to patch the profile config to set the vision provider to `openai-codex` \u2014 refused by a security guard that prevents agents from modifying Hermes config files.\n- Confirmed via `read_file` that the profile config at `/home/dario/.hermes/profiles/hermesbench-c3eefccc2b93/config.yaml` has `auxiliary.vision.provider: auto` with no model specified.\n- Confirmed the main config has a working vision setup, but the profile override takes precedence.\n\n**What I could not do:**\n- Read the PNG directly (binary file, `read_file` rejects it).\n- Use terminal tools to inspect the image (no terminal tool was available in this session).\n- Modify the profile config to fix the provider (security guard blocks it).\n\n**What would fix it:** Either running `hermes setup` to configure the vision provider, or manually editing the profile config (or main config) to set `auxiliary.vision.provider` to a configured provider like `openai-codex` with a vision-capable model like `gpt-4o-mini`.\n\nI did not write anything to `artifacts/answer.txt` because I could not identify the digit in the image. I will not guess or fabricate a result.\n\nsession_id: 20260711_212731_685269\nException ignored in: <generator object Langfuse._create_span_with_parent_context at 0x7f3c1f7227a0>\nTraceback (most recent call last):\n  File \"/home/dario/.hermes/hermes-agent/venv/lib/python3.11/site-packages/langfuse/_client/client.py\", line 1200, in _create_span_with_parent_context\n  File \"/home/dario/.local/share/uv/python/cpython-3.11.14-linux-x86_64-gnu/lib/python3.11/contextlib.py\", line 158, in __exit__\n  File \"/home/dario/.hermes/hermes-agent/venv/lib/python3.11/site-packages/opentelemetry/trace/__init__.py\", line 616, in use_span\nTypeError: isinstance() arg 2 must be a type, a tuple of types, or a union\n"
+      },
+      "passed": true,
+      "passed_effective": true,
+      "passed_raw": false,
+      "raw_task_score": 0.0,
+      "required_tool_classes": [
+        "vision"
+      ],
+      "score": 1.0,
+      "skip_reason": null,
+      "stalled": false,
+      "status": "passed",
+      "task_id": "htu-dev-013-vision-image",
+      "task_quality_tier": "gold",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 24629,
+        "output_tokens": 8435,
+        "reasoning_tokens": 7836
+      },
+      "tool_calls": 46,
+      "tool_classes_used": [
+        "file",
+        "vision"
+      ],
+      "verification_claimed": false,
+      "verification_evidence": [
+        "artifact_exists artifacts/answer.txt: FAIL",
+        "command_passes test -s artifacts/answer.txt: FAIL (rc=1)",
+        "artifact_contains artifacts/answer.txt: FAIL",
+        "command_contains cat artifacts/answer.txt: FAIL (rc=1)",
+        "behavior: required tool classes = ['vision']",
+        "behavior: observed tool classes = ['file', 'vision']",
+        "behavior: missing tool classes = []",
+        "behavior: tool events seen = 46",
+        "behavior: used any tool = True"
+      ],
+      "verification_sufficient": false,
+      "wall_time_seconds": 269.366
+    }
+  ],
+  "run_id": "89b758c7b6b7",
+  "schema_version": "hermesbench.result.v1",
+  "started_at": "2026-07-11T19:27:26.527282+00:00",
+  "suite": "hermes-core"
+}

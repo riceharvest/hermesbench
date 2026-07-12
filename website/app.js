@@ -553,6 +553,17 @@ function taskStatus(task) {
   return [task.status || 'failed', 'no'];
 }
 
+function jsonBlock(value) {
+  return `<pre class="json-block">${escapeHtml(JSON.stringify(value, null, 2))}</pre>`;
+}
+
+function dataRows(data) {
+  return Object.entries(data || {}).map(([key, value]) => {
+    const rendered = value !== null && typeof value === 'object' ? jsonBlock(value) : escapeHtml(value ?? 'n/a');
+    return `<tr><th>${escapeHtml(key)}</th><td>${rendered}</td></tr>`;
+  }).join('');
+}
+
 function taskEvidenceList(tasks, capability = true) {
   if (!tasks.length) return emptyState('No task evidence in this file', 'The summary loaded, but this public result does not include task-level checks.');
   return `<section class="task-list">${tasks.map((task) => {
@@ -563,6 +574,7 @@ function taskEvidenceList(tasks, capability = true) {
       </div>
       ${task.category ? `<p style="margin-top:12px">Category: <span class="mono">${escapeHtml(task.category)}</span></p>` : ''}
       ${checksList(task)}
+      <details class="raw-data"><summary>All available task data</summary>${jsonBlock(task)}</details>
     </div></details>`;
   }).join('')}</section>`;
 }
@@ -580,7 +592,7 @@ async function runDetailPage(runId) {
   const capability = isCapabilityRun(run);
   document.title = `Run ${run.run_id} | BenchCut`;
   const status = capability ? 'official evidence' : 'unreviewed submission';
-  const metaRow = (label, value) => `<tr><th>${escapeHtml(label)}</th><td>${escapeHtml(value ?? 'n/a')}</td></tr>`;
+  const runFields = Object.fromEntries(Object.entries(run).filter(([key]) => !['metadata', 'tasks'].includes(key)));
   const overview = capability
     ? `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This page records one ${escapeHtml(run.suite || 'benchmark')} evaluation of <b>${escapeHtml(modelLabel(run))}</b>. The score is an evidence summary; the task ledger below is the audit trail.</p><div class="wiki-stat-grid"><div><b>${fmt.pct(run.overall_score ?? run.score_percentage)}</b><span>overall score</span></div><div><b>${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}</b><span>tasks passed</span></div><div><b>${fmt.pct(run.false_done_rate)}</b><span>false done</span></div><div><b>${fmt.seconds(run.median_wall_time_seconds)}</b><span>median time</span></div></div></section>`
     : `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This submission has not been reviewed or promoted. It is shown for traceability only; competitive metrics are unavailable.</p></section>`;
@@ -593,7 +605,7 @@ async function runDetailPage(runId) {
       </aside>
       <div class="wiki-article">
         ${overview}
-        <section class="wiki-section" id="configuration"><h2>Configuration</h2><table class="wiki-table"><tbody>${metaRow('Agent', run.agent)}${metaRow('Provider', run.provider)}${metaRow('Model', run.model)}${metaRow('Suite', run.suite)}${metaRow('Reasoning effort', run.reasoning_effort || 'not labeled')}${metaRow('Started', run.started_at)}${metaRow('Completed', run.completed_at)}${metaRow('Schema', run.raw_result_schema_version)}</tbody></table></section>
+        <section class="wiki-section" id="configuration"><h2>Configuration</h2><p class="wiki-muted">Every public field captured for this run is shown below. Nested values remain expandable/readable as JSON.</p><table class="wiki-table"><tbody>${dataRows(runFields)}</tbody></table>${run.metadata ? `<h3>Run metadata</h3><table class="wiki-table"><tbody>${dataRows(run.metadata)}</tbody></table>` : ''}${run.archive_manifest ? `<h3>Archive manifest</h3><table class="wiki-table"><tbody>${dataRows(run.archive_manifest)}</tbody></table>` : ''}${run.archive_score_summary ? `<h3>Archived score summary</h3><table class="wiki-table"><tbody>${dataRows(run.archive_score_summary)}</tbody></table>` : ''}${run.archive_checksums ? `<h3>Archive integrity</h3><table class="wiki-table"><tbody>${dataRows(run.archive_checksums)}</tbody></table><p class="wiki-muted">Files: ${escapeHtml((run.archive_files || []).join(', '))}</p>` : ''}<details class="raw-data"><summary>Complete public run record</summary>${jsonBlock(run)}</details></section>
         <section class="wiki-section" id="tasks"><h2>Task ledger</h2><p class="wiki-muted">Expand a task to inspect timing, tool use, token counts, and verifier checks.</p>${taskEvidenceList(run.tasks || [], capability)}</section>
         <section class="wiki-section" id="provenance"><h2>Provenance</h2><p>Published records are sanitized before entering the site. Hidden checks, submission tokens, and local secrets are excluded.</p>${run.source ? `<p class="wiki-source"><b>Archive source</b><br><span class="mono">${escapeHtml(run.source)}</span></p>` : ''}</section>
       </div>

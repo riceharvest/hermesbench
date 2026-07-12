@@ -1,9 +1,9 @@
 {
   "agent": "hermes",
   "archive_checksums": {
-    "manifest.yaml": "20f342d041b93643c1111b3be17ca0d0df71ed164ac013af33f94cbfbf85686a",
-    "result.json": "0cc49ed24064ab2b4a52f3354af111f445effca613abe385135434de423f55de",
-    "score-summary.json": "fa0d8fd983d714c51e65aec253abd04ac2a611bea81aa80e9a644cf6cb87410a"
+    "manifest.yaml": "3db43293a9c71ac4c1a8bab0ea868e87364f0b59242a23ef5889faf20b756ff6",
+    "result.json": "2b561e5634f4feff6348a33c1fa68325e7aacda9a51e70f18a4e34bbda277edc",
+    "score-summary.json": "73318104e4fb7883a0457524917cb4120a94573942f40134b6999af7d6d12117"
   },
   "archive_files": [
     "SHA256SUMS",
@@ -13,105 +13,105 @@
   ],
   "archive_manifest": {
     "agent": "hermes",
-    "agent_version": "Hermes Agent v0.18.2 (2026.7.7.2)",
+    "agent_version": "Hermes Agent v0.18.2",
     "available_toolsets": "benchmark task declared toolsets",
     "backend": "OpenRouter",
     "benchmark_version": "hermes-core-v0.1",
     "capability_scope": "hermes-core",
-    "completed_at": "2026-07-11T18:23:02.175987+00:00",
+    "completed_at": "2026-07-11T19:40:23.530108+00:00",
     "hardware": "NVIDIA GeForce RTX 3060; AMD Ryzen 9 5950X 16-Core Processor; 16 cores",
-    "jobs": "auto",
-    "model": "nex-agi/nex-n2-mini",
+    "jobs": 13,
+    "model": "stepfun/step-3.7-flash",
     "notes": "Maintainer-reviewed public OpenRouter benchmark run. Result is sanitized; credentials and local secrets are excluded. This archive is published for inspection and comparison, not as a controlled repeated evaluation.",
     "operator": "dario",
     "os": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
     "private_pack_id": "hermes-core-public-v0.1",
     "profile": "hermesbench",
     "provider": "openrouter",
-    "result_json_sha256": "26579aebae9a644556e75a4d85db36678fe395b6720843568095ec6f4f789f7d",
+    "result_json_sha256": "98b276cbabf25a4acd4fe1099ab0a490dfbead5bed22da9a57f9b8a4a06cad60",
     "retry_policy": "no retries",
-    "run_id": "official-9bf90df43d40",
-    "runner_commit": "4b4cb43",
-    "started_at": "2026-07-11T18:19:02.566050+00:00",
+    "run_id": "official-3ec02954918c",
+    "runner_commit": "060fc46",
+    "started_at": "2026-07-11T19:37:28.764815+00:00",
     "timeout_policy": "task default with stall-idle-seconds=300"
   },
   "archive_score_summary": {
     "agent": "hermes",
-    "avg_tool_calls_per_task": 9.076923076923077,
+    "avg_tool_calls_per_task": 10.076923076923077,
     "cached_prompt_tokens": null,
     "capability_pass": false,
     "category_scores": {
-      "natural-tool-use": 0.6923076923076923
+      "natural-tool-use": 0.9230769230769231
     },
-    "completion_tokens": 8742,
-    "completion_tokens_per_task": 672.4615384615385,
-    "cost_per_successful_task_usd": 0.0013688094444444443,
-    "cost_per_task_usd": 0.0010193853846153845,
-    "cost_usd": 0.01325201,
+    "completion_tokens": 12896,
+    "completion_tokens_per_task": 992.0,
+    "cost_per_successful_task_usd": 0.00641614,
+    "cost_per_task_usd": 0.005922590769230769,
+    "cost_usd": 0.07699368,
     "environment_skip_count": 0,
     "explicit_total_tokens": null,
-    "failed_task_count": 4,
-    "false_done_count": 1,
-    "false_done_rate": 0.07692307692307693,
-    "input_tokens": 477090,
+    "failed_task_count": 1,
+    "false_done_count": 0,
+    "false_done_rate": 0.0,
+    "input_tokens": 257882,
     "input_tokens_cache_read": null,
     "input_tokens_cache_write": null,
     "max_score": 13,
-    "max_wall_time_seconds": 239.604,
-    "mean_wall_time_seconds": 53.18123076923077,
-    "median_wall_time_seconds": 28.635,
-    "min_wall_time_seconds": 18.99,
-    "model": "nex-agi/nex-n2-mini",
-    "output_tokens": 8742,
-    "overall_score": 0.6923076923076923,
-    "p95_wall_time_seconds": 139.711,
-    "pass_at_1": 0.6923076923076923,
-    "passed_task_count": 9,
-    "prompt_tokens": 477090,
-    "prompt_tokens_per_task": 36699.230769230766,
+    "max_wall_time_seconds": 174.759,
+    "mean_wall_time_seconds": 69.3203076923077,
+    "median_wall_time_seconds": 50.319,
+    "min_wall_time_seconds": 26.123,
+    "model": "stepfun/step-3.7-flash",
+    "output_tokens": 12896,
+    "overall_score": 0.9230769230769231,
+    "p95_wall_time_seconds": 165.217,
+    "pass_at_1": 0.9230769230769231,
+    "passed_task_count": 12,
+    "prompt_tokens": 257882,
+    "prompt_tokens_per_task": 19837.076923076922,
     "provider": "openrouter",
     "quality_tier_counts": {
       "experimental": 8,
       "gold": 5
     },
     "quality_tier_scores": {
-      "experimental": 0.5,
+      "experimental": 0.875,
       "gold": 1.0
     },
     "raw_category_scores": {
-      "natural-tool-use": 0.8461538461538461
+      "natural-tool-use": 0.7307692307692307
     },
-    "raw_overall_score": 0.8461538461538461,
+    "raw_overall_score": 0.7307692307692307,
     "raw_quality_tier_scores": {
-      "experimental": 0.8125,
-      "gold": 0.9
+      "experimental": 0.6875,
+      "gold": 0.8
     },
-    "raw_total_score": 11.0,
-    "reasoning_effort": null,
-    "reasoning_tokens": 4792,
-    "reasoning_tokens_per_task": 368.61538461538464,
-    "run_duration_seconds": 239.609937,
-    "run_id": "9bf90df43d40",
+    "raw_total_score": 9.5,
+    "reasoning_effort": "low",
+    "reasoning_tokens": 715,
+    "reasoning_tokens_per_task": 55.0,
+    "run_duration_seconds": 174.765293,
+    "run_id": "3ec02954918c",
     "schema_version": "hermesbench.score.v1",
-    "score_per_dollar": 5224.171218612816,
-    "score_percentage": 0.6923076923076923,
+    "score_per_dollar": 1198.8996019893102,
+    "score_percentage": 0.9230769230769231,
     "scored_task_count": 13,
     "suite": "hermes-core",
-    "sum_wall_time_seconds": 691.356,
+    "sum_wall_time_seconds": 901.164,
     "task_count": 13,
-    "tasks_per_second": 0.054254845031740065,
+    "tasks_per_second": 0.07438547881472095,
     "timeout_count": 0,
     "timeout_rate": 0.0,
     "token_source": null,
     "token_usage": {
-      "input_tokens": 477090,
-      "output_tokens": 8742,
-      "reasoning_tokens": 4792
+      "input_tokens": 257882,
+      "output_tokens": 12896,
+      "reasoning_tokens": 715
     },
-    "tokens_per_second": 2047.5945452963413,
-    "tokens_per_successful_task": 54513.77777777778,
-    "tokens_per_task": 37740.307692307695,
-    "tool_call_count": 118,
+    "tokens_per_second": 1553.472061526541,
+    "tokens_per_successful_task": 22624.416666666668,
+    "tokens_per_task": 20884.076923076922,
+    "tool_call_count": 131,
     "tool_call_tokens": null,
     "tool_call_tokens_per_task": null,
     "tool_use_behavior": {
@@ -134,10 +134,13 @@
       ],
       "tool_classes_used": [
         "browser",
+        "browser_cdp",
         "clarify",
         "code_execution",
         "computer_use",
+        "cronjob",
         "file",
+        "memory",
         "session_search",
         "skills",
         "terminal",
@@ -145,49 +148,49 @@
         "vision",
         "web"
       ],
-      "tool_use_pass_rate": 0.6923076923076923,
-      "tool_use_tasks_passed": 9
+      "tool_use_pass_rate": 0.9230769230769231,
+      "tool_use_tasks_passed": 12
     },
-    "total_cost_usd": 0.01325201,
-    "total_execution_time_seconds": 691.356,
-    "total_score": 9.0,
-    "total_tokens": 490624,
+    "total_cost_usd": 0.07699368,
+    "total_execution_time_seconds": 901.164,
+    "total_score": 12.0,
+    "total_tokens": 271493,
     "verification_compliance": 1.0
   },
-  "avg_tool_calls_per_task": 9.076923076923077,
+  "avg_tool_calls_per_task": 10.076923076923077,
   "cached_prompt_tokens": null,
   "capability_evidence": true,
   "capability_pass": false,
   "category_scores": {
-    "natural-tool-use": 0.6923076923076923
+    "natural-tool-use": 0.9230769230769231
   },
   "classification": "official",
-  "completed_at": "2026-07-11T18:23:02.175987+00:00",
-  "completion_tokens": 8742,
-  "completion_tokens_per_task": 672.4615384615385,
-  "cost_per_successful_task_usd": 0.0013688094444444443,
-  "cost_per_task_usd": 0.0010193853846153845,
-  "cost_usd": 0.01325201,
-  "cpst": 0.0014724455555555555,
+  "completed_at": "2026-07-11T19:40:23.530108+00:00",
+  "completion_tokens": 12896,
+  "completion_tokens_per_task": 992.0,
+  "cost_per_successful_task_usd": 0.00641614,
+  "cost_per_task_usd": 0.005922590769230769,
+  "cost_usd": 0.07699368,
+  "cpst": 0.00641614,
   "data_status": "run_data",
   "display_notice": "Run data is classified per entry; only archived official runs are official capability evidence.",
   "environment_skip_count": 0,
   "evidence_class": "official_evidence",
   "explicit_total_tokens": null,
-  "failed_task_count": 4,
-  "false_done_count": 1,
-  "false_done_rate": 0.07692307692307693,
-  "input_tokens": 477090,
+  "failed_task_count": 1,
+  "false_done_count": 0,
+  "false_done_rate": 0.0,
+  "input_tokens": 257882,
   "input_tokens_cache_read": null,
   "input_tokens_cache_write": null,
   "max_score": 13,
-  "max_wall_time_seconds": 239.604,
-  "mean_wall_time_seconds": 53.18123076923077,
-  "median_wall_time_seconds": 28.635,
+  "max_wall_time_seconds": 174.759,
+  "mean_wall_time_seconds": 69.3203076923077,
+  "median_wall_time_seconds": 50.319,
   "metadata": {
     "benchmark_version": "hermes-core-v0.1",
     "cpu_info": "AMD Ryzen 9 5950X 16-Core Processor; 16 cores",
-    "git_commit": "4b4cb43",
+    "git_commit": "060fc46",
     "gpu_info": "NVIDIA GeForce RTX 3060",
     "jobs": 13,
     "metadata_available": {
@@ -197,59 +200,60 @@
       "runtime": true,
       "timing": true
     },
-    "model": "nex-agi/nex-n2-mini",
+    "model": "stepfun/step-3.7-flash",
     "official": true,
     "os_platform": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
     "profile": "hermesbench",
     "provider": "openrouter",
     "python_version": "3.14.6",
-    "run_wall_time_seconds": 239.61,
+    "reasoning_effort": "low",
+    "run_wall_time_seconds": 174.765,
     "sanitized": true
   },
-  "min_wall_time_seconds": 18.99,
-  "model": "nex-agi/nex-n2-mini",
-  "model_slug": "openrouter-nex-agi-nex-n2-mini-none",
+  "min_wall_time_seconds": 26.123,
+  "model": "stepfun/step-3.7-flash",
+  "model_slug": "openrouter-stepfun-step-3-7-flash-low",
   "official": true,
-  "output_tokens": 8742,
-  "overall_score": 0.6923076923076923,
-  "p95_wall_time_seconds": 139.711,
-  "pass_at_1": 0.6923076923076923,
-  "passed_task_count": 9,
-  "prompt_tokens": 477090,
-  "prompt_tokens_per_task": 36699.230769230766,
+  "output_tokens": 12896,
+  "overall_score": 0.9230769230769231,
+  "p95_wall_time_seconds": 165.217,
+  "pass_at_1": 0.9230769230769231,
+  "passed_task_count": 12,
+  "prompt_tokens": 257882,
+  "prompt_tokens_per_task": 19837.076923076922,
   "provider": "openrouter",
   "quality_tier_counts": {
     "experimental": 8,
     "gold": 5
   },
   "quality_tier_scores": {
-    "experimental": 0.5,
+    "experimental": 0.875,
     "gold": 1.0
   },
   "raw_category_scores": {
-    "natural-tool-use": 0.8461538461538461
+    "natural-tool-use": 0.7307692307692307
   },
-  "raw_overall_score": 0.8461538461538461,
+  "raw_overall_score": 0.7307692307692307,
   "raw_quality_tier_scores": {
-    "experimental": 0.8125,
-    "gold": 0.9
+    "experimental": 0.6875,
+    "gold": 0.8
   },
   "raw_result_schema_version": "hermesbench.result.v1",
-  "raw_total_score": 11.0,
-  "reasoning_effort": null,
-  "reasoning_tokens": 4792,
-  "reasoning_tokens_per_task": 368.61538461538464,
-  "reliability_score": 0.95,
-  "run_duration_seconds": 239.609937,
-  "run_id": "9bf90df43d40",
+  "raw_total_score": 9.5,
+  "reasoning_effort": "low",
+  "reasoning_tokens": 715,
+  "reasoning_tokens_per_task": 55.0,
+  "reliability_score": 1.0,
+  "run_duration_seconds": 174.765293,
+  "run_id": "3ec02954918c",
   "schema_version": "hermesbench.score.v1",
-  "score_per_dollar": 5224.171218612816,
-  "score_percentage": 0.6923076923076923,
+  "score_per_dollar": 1198.8996019893102,
+  "score_percentage": 0.9230769230769231,
   "scored_task_count": 13,
-  "source": "official-runs/2026-07-11-openrouter-retry-nex-agi__nex-n2-mini-9bf90df43d40/result.json",
-  "started_at": "2026-07-11T18:19:02.566050+00:00",
+  "source": "official-runs/2026-07-11-openrouter-stepfun_step_3_7_flash-3ec02954918c/result.json",
+  "started_at": "2026-07-11T19:37:28.764815+00:00",
   "suite": "hermes-core",
-  "sum_wall_time_seconds": 691.356,
+  "sum_wall_time_seconds": 901.164,
   "task_count": 13,
   "tasks": [
     {
@@ -258,18 +262,18 @@
       "false_done": false,
       "grading_type": "natural-tool-use",
       "max_score": 1,
-      "passed": false,
-      "score": 0.0,
-      "status": "failed",
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
       "task_id": "htu-dev-001-file-and-terminal-self-serve",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 12021,
-        "output_tokens": 78,
-        "reasoning_tokens": 4
+        "input_tokens": 18152,
+        "output_tokens": 405,
+        "reasoning_tokens": 0
       },
-      "tool_calls": 2,
-      "wall_time_seconds": 18.99
+      "tool_calls": 4,
+      "wall_time_seconds": 26.123
     },
     {
       "category": "natural-tool-use",
@@ -283,12 +287,12 @@
       "task_id": "htu-dev-002-web-search-required",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 63688,
-        "output_tokens": 1679,
-        "reasoning_tokens": 1125
+        "input_tokens": 23993,
+        "output_tokens": 2374,
+        "reasoning_tokens": 0
       },
-      "tool_calls": 19,
-      "wall_time_seconds": 38.788
+      "tool_calls": 27,
+      "wall_time_seconds": 89.189
     },
     {
       "category": "natural-tool-use",
@@ -302,12 +306,31 @@
       "task_id": "htu-dev-003-use-a-skill",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 66058,
-        "output_tokens": 492,
-        "reasoning_tokens": 106
+        "input_tokens": 23442,
+        "output_tokens": 1099,
+        "reasoning_tokens": 0
       },
-      "tool_calls": 9,
-      "wall_time_seconds": 31.09
+      "tool_calls": 11,
+      "wall_time_seconds": 45.546
+    },
+    {
+      "category": "natural-tool-use",
+      "checks": [],
+      "false_done": false,
+      "grading_type": "natural-tool-use",
+      "max_score": 1,
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
+      "task_id": "htu-dev-004-memory-recall",
+      "timeout": false,
+      "token_usage": {
+        "input_tokens": 6104,
+        "output_tokens": 314,
+        "reasoning_tokens": 0
+      },
+      "tool_calls": 6,
+      "wall_time_seconds": 27.571
     },
     {
       "category": "natural-tool-use",
@@ -318,30 +341,11 @@
       "passed": false,
       "score": 0.0,
       "status": "failed",
-      "task_id": "htu-dev-004-memory-recall",
-      "timeout": false,
-      "token_usage": {
-        "input_tokens": 22992,
-        "output_tokens": 496,
-        "reasoning_tokens": 258
-      },
-      "tool_calls": 6,
-      "wall_time_seconds": 25.071
-    },
-    {
-      "category": "natural-tool-use",
-      "checks": [],
-      "false_done": true,
-      "grading_type": "natural-tool-use",
-      "max_score": 1,
-      "passed": false,
-      "score": 0.0,
-      "status": "failed",
       "task_id": "htu-dev-005-delegate-parallel-subtasks",
       "timeout": false,
       "token_usage": null,
       "tool_calls": 0,
-      "wall_time_seconds": 30.305
+      "wall_time_seconds": 50.319
     },
     {
       "category": "natural-tool-use",
@@ -355,12 +359,12 @@
       "task_id": "htu-dev-006-todo-plan",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 34372,
-        "output_tokens": 832,
-        "reasoning_tokens": 355
+        "input_tokens": 12837,
+        "output_tokens": 899,
+        "reasoning_tokens": 0
       },
       "tool_calls": 12,
-      "wall_time_seconds": 28.513
+      "wall_time_seconds": 38.63
     },
     {
       "category": "natural-tool-use",
@@ -374,12 +378,12 @@
       "task_id": "htu-dev-007-code-execution",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 20432,
-        "output_tokens": 235,
-        "reasoning_tokens": 8
+        "input_tokens": 20305,
+        "output_tokens": 1206,
+        "reasoning_tokens": 0
       },
-      "tool_calls": 6,
-      "wall_time_seconds": 20.798
+      "tool_calls": 12,
+      "wall_time_seconds": 70.17
     },
     {
       "category": "natural-tool-use",
@@ -393,12 +397,12 @@
       "task_id": "htu-dev-008-browser-required",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 37541,
-        "output_tokens": 554,
-        "reasoning_tokens": 315
+        "input_tokens": 26968,
+        "output_tokens": 1880,
+        "reasoning_tokens": 715
       },
-      "tool_calls": 8,
-      "wall_time_seconds": 28.635
+      "tool_calls": 15,
+      "wall_time_seconds": 63.935
     },
     {
       "category": "natural-tool-use",
@@ -412,12 +416,12 @@
       "task_id": "htu-dev-009-session-search",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 22895,
-        "output_tokens": 238,
-        "reasoning_tokens": 8
+        "input_tokens": 13114,
+        "output_tokens": 351,
+        "reasoning_tokens": 0
       },
       "tool_calls": 6,
-      "wall_time_seconds": 21.988
+      "wall_time_seconds": 30.602
     },
     {
       "category": "natural-tool-use",
@@ -431,12 +435,12 @@
       "task_id": "htu-dev-010-clarify-ambiguous",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 13744,
-        "output_tokens": 132,
-        "reasoning_tokens": 6
+        "input_tokens": 9221,
+        "output_tokens": 367,
+        "reasoning_tokens": 0
       },
-      "tool_calls": 4,
-      "wall_time_seconds": 139.711
+      "tool_calls": 5,
+      "wall_time_seconds": 165.217
     },
     {
       "category": "natural-tool-use",
@@ -444,14 +448,18 @@
       "false_done": false,
       "grading_type": "natural-tool-use",
       "max_score": 1,
-      "passed": false,
-      "score": 0.0,
-      "status": "failed",
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
       "task_id": "htu-dev-011-cronjob-schedule",
       "timeout": false,
-      "token_usage": null,
-      "tool_calls": 0,
-      "wall_time_seconds": 47.394
+      "token_usage": {
+        "input_tokens": 27636,
+        "output_tokens": 2219,
+        "reasoning_tokens": 0
+      },
+      "tool_calls": 11,
+      "wall_time_seconds": 80.89
     },
     {
       "category": "natural-tool-use",
@@ -465,12 +473,12 @@
       "task_id": "htu-dev-012-computer-use",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 170323,
-        "output_tokens": 3882,
-        "reasoning_tokens": 2601
+        "input_tokens": 58584,
+        "output_tokens": 1249,
+        "reasoning_tokens": 0
       },
-      "tool_calls": 42,
-      "wall_time_seconds": 239.604
+      "tool_calls": 15,
+      "wall_time_seconds": 174.759
     },
     {
       "category": "natural-tool-use",
@@ -484,28 +492,28 @@
       "task_id": "htu-dev-013-vision-image",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 13024,
-        "output_tokens": 124,
-        "reasoning_tokens": 6
+        "input_tokens": 17526,
+        "output_tokens": 533,
+        "reasoning_tokens": 0
       },
-      "tool_calls": 4,
-      "wall_time_seconds": 20.469
+      "tool_calls": 7,
+      "wall_time_seconds": 38.213
     }
   ],
-  "tasks_per_second": 0.054254845031740065,
+  "tasks_per_second": 0.07438547881472095,
   "timeout_count": 0,
   "timeout_rate": 0.0,
-  "token_efficiency_score": 1.411075879507917,
+  "token_efficiency_score": 3.4000026633354197,
   "token_source": null,
   "token_usage": {
-    "input_tokens": 477090,
-    "output_tokens": 8742,
-    "reasoning_tokens": 4792
+    "input_tokens": 257882,
+    "output_tokens": 12896,
+    "reasoning_tokens": 715
   },
-  "tokens_per_second": 2047.5945452963413,
-  "tokens_per_successful_task": 54513.77777777778,
-  "tokens_per_task": 37740.307692307695,
-  "tool_call_count": 118,
+  "tokens_per_second": 1553.472061526541,
+  "tokens_per_successful_task": 22624.416666666668,
+  "tokens_per_task": 20884.076923076922,
+  "tool_call_count": 131,
   "tool_call_tokens": null,
   "tool_call_tokens_per_task": null,
   "tool_use_behavior": {
@@ -528,10 +536,13 @@
     ],
     "tool_classes_used": [
       "browser",
+      "browser_cdp",
       "clarify",
       "code_execution",
       "computer_use",
+      "cronjob",
       "file",
+      "memory",
       "session_search",
       "skills",
       "terminal",
@@ -539,13 +550,13 @@
       "vision",
       "web"
     ],
-    "tool_use_pass_rate": 0.6923076923076923,
-    "tool_use_tasks_passed": 9
+    "tool_use_pass_rate": 0.9230769230769231,
+    "tool_use_tasks_passed": 12
   },
-  "total_cost_usd": 0.01325201,
-  "total_execution_time_seconds": 691.356,
-  "total_score": 9.0,
-  "total_tokens": 490624,
-  "value_score": 52.24171218612816,
+  "total_cost_usd": 0.07699368,
+  "total_execution_time_seconds": 901.164,
+  "total_score": 12.0,
+  "total_tokens": 271493,
+  "value_score": 11.988996019893102,
   "verification_compliance": 1.0
 }
