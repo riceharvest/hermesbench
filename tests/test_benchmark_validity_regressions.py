@@ -4,7 +4,7 @@ from pathlib import Path
 from types import SimpleNamespace
 
 from hermesbench.adapters.base import AgentRun
-from hermesbench.adapters.hermes import _extract_state_db_telemetry
+from hermesbench.adapters.hermes import _extract_state_db_telemetry, _transcript_runtime_issues
 
 
 def test_descendant_sessions_are_aggregated_but_other_cwds_are_excluded(tmp_path: Path):
@@ -395,6 +395,32 @@ def test_detached_one_shot_delegation_is_environment_skip(tmp_path, monkeypatch)
     assert result.status == "environment_skipped"
     assert result.environment_skip is True
     assert result.skip_reason == "delegation runtime unavailable: one-shot parent detached before completion delivery"
+
+
+def test_provider_key_daily_limit_is_environment_skip(tmp_path, monkeypatch):
+    import hermesbench.runner as runner
+
+    assert _transcript_runtime_issues("HTTP 403: Key limit exceeded (daily limit).") == [
+        "provider_key_limit_exceeded"
+    ]
+
+    class LimitedProviderAdapter:
+        def run_task(self, task, workdir, hidden_dir=None):
+            return AgentRun(
+                status="completed",
+                transcript="HTTP 403: Key limit exceeded (daily limit).",
+                runtime_issues=["provider_key_limit_exceeded"],
+            )
+
+    task = SimpleNamespace(
+        metadata={"id": "provider-limit", "category": "natural-tool-use"},
+        deterministic_checks=[], expected_artifacts=[], path=tmp_path / "task.md",
+    )
+    monkeypatch.setattr(runner, "get_adapter", lambda *args, **kwargs: LimitedProviderAdapter())
+    result = runner._run_one_task(task, "hermes", None, None, None, None)
+    assert result.status == "environment_skipped"
+    assert result.environment_skip is True
+    assert result.skip_reason == "provider unavailable: API key daily limit exceeded"
 
 
 def test_fact_store_satisfies_memory_tool_class(tmp_path, monkeypatch):

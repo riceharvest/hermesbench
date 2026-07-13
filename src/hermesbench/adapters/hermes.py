@@ -799,6 +799,13 @@ def _profile_progress_token(state_db: Path) -> tuple[int, ...] | None:
     return tuple(token)
 
 
+def _transcript_runtime_issues(transcript: str) -> list[str]:
+    """Classify provider failures emitted by the trusted Hermes CLI process."""
+    if re.search(r"HTTP\s+403:\s*Key limit exceeded", transcript, re.I):
+        return ["provider_key_limit_exceeded"]
+    return []
+
+
 def _run_with_stall_detection(
     cmd: list[str],
     workdir: Path,
@@ -941,6 +948,9 @@ class HermesCLIAdapter(AgentAdapter):
                 if tmp_profile_dir is not None
                 else StateDBTelemetry(events=[], runtime_issues=[])
             )
+            runtime_issues = sorted(
+                set(telemetry.runtime_issues + _transcript_runtime_issues(transcript))
+            )
             return AgentRun(
                 "stalled" if stalled else ("completed" if p.returncode == 0 else "failed"),
                 transcript,
@@ -955,7 +965,7 @@ class HermesCLIAdapter(AgentAdapter):
                 tool_events=telemetry.events,
                 behavior_evidence_trusted=telemetry.trusted,
                 stalled=stalled,
-                runtime_issues=telemetry.runtime_issues,
+                runtime_issues=runtime_issues,
             )
         finally:
             if tmp_profile_dir is not None:

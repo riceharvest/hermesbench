@@ -297,7 +297,9 @@ def _run_one_task(
         required_classes = set(task.metadata.get("tool_use_requirements", []))
         runtime_issues = set(ar.runtime_issues if ar else [])
         runtime_skip_reason = None
-        if "computer_use" in required_classes and "computer_use_runtime_unavailable" in runtime_issues:
+        if "provider_key_limit_exceeded" in runtime_issues:
+            runtime_skip_reason = "provider unavailable: API key daily limit exceeded"
+        elif "computer_use" in required_classes and "computer_use_runtime_unavailable" in runtime_issues:
             runtime_skip_reason = "computer_use runtime unavailable: cua-driver MCP server error"
         elif "delegation" in required_classes and "delegation_provider_interrupted" in runtime_issues:
             runtime_skip_reason = "delegation runtime unavailable: child provider API interrupted"
