@@ -395,3 +395,26 @@ def test_detached_one_shot_delegation_is_environment_skip(tmp_path, monkeypatch)
     assert result.status == "environment_skipped"
     assert result.environment_skip is True
     assert result.skip_reason == "delegation runtime unavailable: one-shot parent detached before completion delivery"
+
+
+def test_fact_store_satisfies_memory_tool_class(tmp_path, monkeypatch):
+    import hermesbench.runner as runner
+
+    class FactStoreAdapter:
+        def run_task(self, task, workdir, hidden_dir=None):
+            (workdir / "answer.txt").write_text("remembered")
+            return AgentRun(
+                status="completed", transcript="done",
+                tool_events=[{"tool_name": "fact_store"}],
+                behavior_evidence_trusted=True,
+            )
+
+    task = SimpleNamespace(
+        metadata={"id": "memory", "category": "natural-tool-use", "tool_use_requirements": ["memory"]},
+        deterministic_checks=[{"type": "artifact_exists", "path": "answer.txt"}],
+        expected_artifacts=["answer.txt"], path=tmp_path / "task.md",
+    )
+    monkeypatch.setattr(runner, "get_adapter", lambda *args, **kwargs: FactStoreAdapter())
+    result = runner._run_one_task(task, "hermes", None, None, None, None)
+    assert result.status == "passed"
+    assert result.tool_classes_used == ["memory"]
