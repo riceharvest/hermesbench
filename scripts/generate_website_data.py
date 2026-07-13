@@ -1,5 +1,6 @@
 from __future__ import annotations
 import argparse
+import hashlib
 import json
 import math
 import re
@@ -186,6 +187,78 @@ def _archive_context(result_path: Path) -> dict[str, object]:
     }
 
 
+def _aggregate_entry(aggregate_path: Path) -> tuple[dict, dict]:
+    """Build public leaderboard data from a reviewed multi-trial aggregate."""
+    data = json.loads(aggregate_path.read_text())
+    if data.get("schema_version") != "hermesbench.trials.v1":
+        raise ValueError(f"unsupported aggregate schema: {aggregate_path}")
+    manifest_path = aggregate_path.parent / "manifest.yaml"
+    manifest = yaml.safe_load(manifest_path.read_text()) if manifest_path.exists() else {}
+    official = bool(isinstance(manifest, dict) and manifest.get("official"))
+    source = _public_source(aggregate_path)
+    digest = hashlib.sha256(aggregate_path.read_bytes()).hexdigest()
+    cost = data.get("total_cost_usd")
+    cost_complete = bool(data.get("cost_telemetry_complete"))
+    score = float(data.get("score_mean") or 0)
+    task_count = int(data.get("reviewed_task_count", data.get("task_count", 0)) or 0)
+    entry_input = {
+        # Run-detail files use the public score envelope even when their
+        # embedded source evidence is a multi-trial aggregate.
+        "schema_version": "hermesbench.score.v1",
+        "run_id": data.get("aggregate_id") or digest[:12],
+        "agent": data.get("agent"),
+        "provider": data.get("provider"),
+        "model": data.get("model"),
+        "reasoning_effort": data.get("reasoning_effort"),
+        "suite": data.get("suite"),
+        "benchmark_version": data.get("benchmark_version"),
+        "overall_score": score,
+        "score_percentage": score,
+        "pass_at_1": data.get("perfect_trial_rate"),
+        "capability_pass": data.get("capability_pass_rate") == 1.0,
+        "capability_evaluable": data.get("evaluable_trial_count") == data.get("trial_count"),
+        "task_count": task_count,
+        "passed_task_count": score * task_count,
+        "failed_task_count": (1.0 - score) * task_count,
+        "trial_count": data.get("trial_count"),
+        "evaluable_trial_count": data.get("evaluable_trial_count"),
+        "score_stddev": data.get("score_stddev"),
+        "score_min": data.get("score_min"),
+        "score_max": data.get("score_max"),
+        "capability_pass_rate": data.get("capability_pass_rate"),
+        "perfect_trial_rate": data.get("perfect_trial_rate"),
+        "total_cost_usd": cost,
+        "cost_usd": cost,
+        "cost_telemetry_status": (
+            "complete_zero" if cost_complete and cost == 0 else "complete" if cost_complete else "unavailable"
+        ),
+        "private_pack_id": data.get("private_pack_id"),
+        "runner_commit": data.get("runner_commit"),
+        "excluded_probe_count": data.get("excluded_probe_count", 0),
+        "review_status": data.get("review_status"),
+        "official": official,
+        "classification": "official" if official else "unofficial",
+    }
+    if source:
+        entry_input["source"] = source
+    entry = _enhance(entry_input)
+    entry["capability_evidence"] = entry["evidence_class"] == "official_evidence"
+    detail = {
+        **entry,
+        "tasks": [],
+        "aggregate": data,
+        "metadata": {
+            "private_pack_id": data.get("private_pack_id"),
+            "benchmark_version": data.get("benchmark_version"),
+        },
+    }
+    archive = _archive_context(aggregate_path)
+    detail["archive_manifest"] = archive["manifest"]
+    detail["archive_checksums"] = archive["checksums"]
+    detail["archive_files"] = archive["files"]
+    return entry, detail
+
+
 def build_data(
     results_dir: Path = ROOT / "results", out_dir: Path = ROOT / "website" / "data"
 ) -> Path:
@@ -202,8 +275,10 @@ def build_data(
     # result-file behavior.
     if results_dir.resolve() == (ROOT / "results").resolve():
         result_paths = sorted((ROOT / "official-runs").glob("*/result.json"))
+        aggregate_paths = sorted((ROOT / "official-runs").glob("*/aggregate.json"))
     else:
         result_paths = sorted(results_dir.glob("**/hermesbench-*.json"))
+        aggregate_paths = sorted(results_dir.glob("**/aggregate.json"))
     for result_path in result_paths:
         data = json.loads(result_path.read_text())
         # Result files may contain private runner metadata and task logs. The
@@ -237,6 +312,10 @@ def build_data(
             detail["archive_score_summary"] = archive["score_summary"]
             detail["archive_checksums"] = archive["checksums"]
             detail["archive_files"] = archive["files"]
+        entries.append(entry)
+        details.append(detail)
+    for aggregate_path in aggregate_paths:
+        entry, detail = _aggregate_entry(aggregate_path)
         entries.append(entry)
         details.append(detail)
     entries.sort(

@@ -340,32 +340,31 @@ function podium(rows) {
   if (!isCapabilityData()) return '';
   const top = rows[0];
   if (!top) return '';
+  const aggregate = Number.isFinite(top.trial_count);
   return `<section class="podium" aria-label="Top visible run">
     <article class="podium-main">
       <span class="rank-tag hot">#1 ${escapeHtml(statusLabel(top))}</span>
       <h2>${escapeHtml(modelTitle(top))}</h2>
       <p class="muted">${escapeHtml(providerLine(top))} with run id <span class="mono">${escapeHtml(runIdOf(top) || 'n/a')}</span>.</p>
-      <div class="score-figure"><b>${fmt.pct(scoreOf(top))}</b><span>${fmt.num(passedOf(top))}/${fmt.num(taskCountOf(top))} tasks passed</span></div>
+      <div class="score-figure"><b>${fmt.pct(scoreOf(top))}</b><span>${aggregate ? `${fmt.num(top.evaluable_trial_count)}/${fmt.num(top.trial_count)} evaluable trials` : `${fmt.num(passedOf(top))}/${fmt.num(taskCountOf(top))} tasks passed`}</span></div>
       <div class="hero-actions"><a class="btn primary" href="#/runs/${encodeURIComponent(runIdOf(top))}">Open evidence</a><a class="btn secondary" href="#/models/${encodeURIComponent(top.provider || 'unknown')}/${encodeURIComponent(top.model || 'unknown')}">Model history</a></div>
     </article>
     <aside class="podium-side">
-      ${metricRow('false done', fmt.num(falseDoneCountOf(top)), 'claims without proof')}
-      ${metricRow('timeouts', fmt.num(timeoutCountOf(top)), 'unfinished tasks')}
-      ${metricRow('median task time', fmt.seconds(medianTimeOf(top)), 'wall clock')}
-      ${metricRow('token efficiency', fmt.num(tokenEfficiencyOf(top), 3), 'score per 1m tokens')}
+      ${aggregate ? metricRow('score range', `${fmt.pct(top.score_min)}–${fmt.pct(top.score_max)}`, 'across evaluable trials') + metricRow('reviewed probes', fmt.num(top.task_count), 'per trial') + metricRow('perfect trial rate', fmt.pct(top.capability_pass_rate)) : metricRow('false done', fmt.num(falseDoneCountOf(top)), 'claims without proof') + metricRow('timeouts', fmt.num(timeoutCountOf(top)), 'unfinished tasks') + metricRow('median task time', fmt.seconds(medianTimeOf(top)), 'wall clock') + metricRow('token efficiency', fmt.num(tokenEfficiencyOf(top), 3), 'score per 1m tokens')}
     </aside>
   </section>`;
 }
 
 function runCard(row, index) {
   const runId = runIdOf(row);
+  const aggregate = Number.isFinite(row.trial_count);
   return `<article class="run-card">
     <div class="rank-number">${String(index + 1).padStart(2, '0')}</div>
     <div class="run-title"><h2>${escapeHtml(modelTitle(row))}</h2><p>${escapeHtml(statusLabel(row))} / ${escapeHtml(providerLine(row))} / <span class="mono">${escapeHtml(runId || 'n/a')}</span></p></div>
     <div class="mini-metrics">
       ${miniMetric('score', fmt.pct(scoreOf(row)))}
-      ${miniMetric('passed', `${fmt.num(passedOf(row))}/${fmt.num(taskCountOf(row))}`)}
-      ${miniMetric('false done', fmt.num(falseDoneCountOf(row)))}
+      ${aggregate ? miniMetric('trials', `${fmt.num(row.evaluable_trial_count)}/${fmt.num(row.trial_count)} evaluable`) : miniMetric('passed', `${fmt.num(passedOf(row))}/${fmt.num(taskCountOf(row))}`)}
+      ${aggregate ? miniMetric('range', `${fmt.pct(row.score_min)}–${fmt.pct(row.score_max)}`) : miniMetric('false done', fmt.num(falseDoneCountOf(row)))}
     </div>
     <div class="hero-actions" style="grid-column: 1 / -1; margin-top: 0"><a class="text-pill" href="#/runs/${encodeURIComponent(runId)}">Task report</a><a class="text-pill" href="#/models/${encodeURIComponent(row.provider || 'unknown')}/${encodeURIComponent(row.model || 'unknown')}">Model history</a></div>
   </article>`;
@@ -594,20 +593,23 @@ async function runDetailPage(runId) {
   document.title = `Run ${run.run_id} | BenchCut`;
   const status = capability ? 'official evidence' : 'unreviewed submission';
   const runFields = Object.fromEntries(Object.entries(run).filter(([key]) => !['metadata', 'tasks'].includes(key)));
+  const isAggregate = run.aggregate?.schema_version === 'hermesbench.trials.v1';
   const overview = capability
-    ? `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This page records one ${escapeHtml(run.suite || 'benchmark')} evaluation of <b>${escapeHtml(modelLabel(run))}</b>. The score is an evidence summary; the task ledger below is the audit trail.</p><div class="wiki-stat-grid"><div><b>${fmt.pct(run.overall_score ?? run.score_percentage)}</b><span>overall score</span></div><div><b>${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}</b><span>tasks passed</span></div><div><b>${fmt.pct(run.false_done_rate)}</b><span>false done</span></div><div><b>${fmt.seconds(run.median_wall_time_seconds)}</b><span>median time</span></div></div></section>`
+    ? isAggregate
+      ? `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This is a maintainer-reviewed aggregate of ${fmt.num(run.evaluable_trial_count)} evaluable trials for <b>${escapeHtml(modelLabel(run))}</b>. Private prompts, fixtures, checks, and transcripts are intentionally not published.</p><div class="wiki-stat-grid"><div><b>${fmt.pct(run.overall_score ?? run.score_percentage)}</b><span>mean score</span></div><div><b>${fmt.num(run.evaluable_trial_count)}/${fmt.num(run.trial_count)}</b><span>evaluable trials</span></div><div><b>${fmt.pct(run.score_min)}–${fmt.pct(run.score_max)}</b><span>score range</span></div><div><b>${fmt.pct(run.capability_pass_rate)}</b><span>perfect trial rate</span></div></div></section>`
+      : `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This page records one ${escapeHtml(run.suite || 'benchmark')} evaluation of <b>${escapeHtml(modelLabel(run))}</b>. The score is an evidence summary; the task ledger below is the audit trail.</p><div class="wiki-stat-grid"><div><b>${fmt.pct(run.overall_score ?? run.score_percentage)}</b><span>overall score</span></div><div><b>${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}</b><span>tasks passed</span></div><div><b>${fmt.pct(run.false_done_rate)}</b><span>false done</span></div><div><b>${fmt.seconds(run.median_wall_time_seconds)}</b><span>median time</span></div></div></section>`
     : `<section class="wiki-section" id="overview"><h2>Overview</h2><p>This submission has not been reviewed or promoted. It is shown for traceability only; competitive metrics are unavailable.</p></section>`;
   return `${backLink()}<article class="wiki-page">
     <header class="wiki-header"><span class="crumb">benchcut / run record</span><h1>${escapeHtml(run.run_id)}</h1><p class="wiki-lede">${escapeHtml(modelLabel(run))} · ${escapeHtml(status)} · ${escapeHtml(run.suite || 'benchmark run')}</p><div class="wiki-tags">${tag(status, capability)} ${run.provider ? tag(run.provider) : ''} ${run.reasoning_effort ? tag(`reasoning: ${run.reasoning_effort}`) : ''}</div></header>
     <div class="wiki-layout">
       <aside class="wiki-sidebar">
         <nav class="wiki-toc" aria-label="On this page"><b>Contents</b><a href="#overview" data-scroll-target="overview">Overview</a><a href="#configuration" data-scroll-target="configuration">Configuration</a><a href="#tasks" data-scroll-target="tasks">Task ledger</a><a href="#provenance" data-scroll-target="provenance">Provenance</a></nav>
-        <section class="wiki-infobox"><div class="wiki-infobox-title">Run receipt</div>${metricRow('score', fmt.pct(run.overall_score ?? run.score_percentage))}${metricRow('passed', `${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}`)}${metricRow('timeouts', fmt.num(run.timeout_count))}${metricRow('tokens', fmt.compact(run.total_tokens ?? run.token_usage?.total_tokens))}${metricRow('tool calls', fmt.num(run.tool_call_count))}</section>
+        <section class="wiki-infobox"><div class="wiki-infobox-title">${isAggregate ? 'Aggregate receipt' : 'Run receipt'}</div>${metricRow('score', fmt.pct(run.overall_score ?? run.score_percentage))}${isAggregate ? metricRow('trials', `${fmt.num(run.evaluable_trial_count)}/${fmt.num(run.trial_count)} evaluable`) + metricRow('reviewed probes', fmt.num(run.task_count)) : metricRow('passed', `${fmt.num(run.passed_task_count)}/${fmt.num(run.task_count)}`) + metricRow('timeouts', fmt.num(run.timeout_count)) + metricRow('tokens', fmt.compact(run.total_tokens ?? run.token_usage?.total_tokens)) + metricRow('tool calls', fmt.num(run.tool_call_count))}</section>
       </aside>
       <div class="wiki-article">
         ${overview}
         <section class="wiki-section" id="configuration"><h2>Configuration</h2><p class="wiki-muted">Every public field captured for this run is shown below. Nested values remain expandable/readable as JSON.</p><table class="wiki-table"><tbody>${dataRows(runFields)}</tbody></table>${run.metadata ? `<h3>Run metadata</h3><table class="wiki-table"><tbody>${dataRows(run.metadata)}</tbody></table>` : ''}${run.archive_manifest ? `<h3>Archive manifest</h3><table class="wiki-table"><tbody>${dataRows(run.archive_manifest)}</tbody></table>` : ''}${run.archive_score_summary ? `<h3>Archived score summary</h3><table class="wiki-table"><tbody>${dataRows(run.archive_score_summary)}</tbody></table>` : ''}${run.archive_checksums ? `<h3>Archive integrity</h3><table class="wiki-table"><tbody>${dataRows(run.archive_checksums)}</tbody></table><p class="wiki-muted">Files: ${escapeHtml((run.archive_files || []).join(', '))}</p>` : ''}<details class="raw-data"><summary>Complete public run record</summary>${jsonBlock(run)}</details></section>
-        <section class="wiki-section" id="tasks"><h2>Task ledger</h2><p class="wiki-muted">Expand a task to inspect timing, tool use, token counts, and verifier checks.</p>${taskEvidenceList(run.tasks || [], capability)}</section>
+        <section class="wiki-section" id="tasks"><h2>${isAggregate ? 'Private task evidence' : 'Task ledger'}</h2><p class="wiki-muted">${isAggregate ? 'Task-level records are withheld to preserve the private evaluation pack. The public archive contains only sanitized aggregate evidence.' : 'Expand a task to inspect timing, tool use, token counts, and verifier checks.'}</p>${isAggregate ? '' : taskEvidenceList(run.tasks || [], capability)}</section>
         <section class="wiki-section" id="provenance"><h2>Provenance</h2><p>Published records are sanitized before entering the site. Hidden checks, submission tokens, and local secrets are excluded.</p>${run.source ? `<p class="wiki-source"><b>Archive source</b><br><span class="mono">${escapeHtml(run.source)}</span></p>` : ''}</section>
       </div>
     </div>

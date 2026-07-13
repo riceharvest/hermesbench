@@ -1,0 +1,24 @@
+aggregate_id: 1a4fe49d3a90
+official: true
+evidence_type: reviewed-multi-trial-aggregate
+benchmark_version: hermes-core-v0.2-private-reviewed
+suite: hermes-core-private
+operator: dario
+agent: hermes
+model: nex-agi/nex-n2-mini
+provider: openrouter
+runner_commit: 2d509cd
+hermes_runtime_commit: 51cd6c948614916dc8df8af1fb48e4c6419da3ff
+private_pack_id: sha256:d5e4581e8abd3633cb44867360c5edf2a8c998ea9a96c83c97184c994646f8a7
+task_count: 13
+reviewed_task_count: 12
+excluded_probe_count: 1
+trial_count: 3
+evaluable_trial_count: 3
+profile: hermesbench
+jobs: 4
+timeout_policy: no hard task timeout; WAL-aware stall-idle-seconds=300
+retry_policy: no retries
+aggregate_json_sha256: e9a0056faf6f7751d8c6c4609b508da8123f24b3baeaa67b763bae26a8ad1b9a
+notes: Aggregate-only public evidence. One independently reviewed invalid vision probe
+  is uniformly excluded. Raw private tasks and transcripts are not published.

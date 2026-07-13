@@ -59,6 +59,39 @@ def test_website_data_generated_from_results_and_splits(tmp_path):
     }
 
 
+def test_website_data_accepts_reviewed_private_trial_aggregate(tmp_path, monkeypatch):
+    import scripts.generate_website_data as generator
+
+    monkeypatch.setattr(generator, "ROOT", tmp_path)
+    archive = tmp_path / "official-runs" / "reviewed-aggregate"
+    archive.mkdir(parents=True)
+    (archive / "manifest.yaml").write_text("official: true\n")
+    (archive / "aggregate.json").write_text(json.dumps({
+        "schema_version": "hermesbench.trials.v1", "aggregate_id": "agg1",
+        "agent": "hermes", "provider": "provider", "model": "model",
+        "suite": "hermes-core-private",
+        "benchmark_version": "hermes-core-v0.2-private-reviewed",
+        "private_pack_id": "sha256:opaque", "runner_commit": "abc123",
+        "trial_count": 3, "evaluable_trial_count": 3,
+        "reviewed_task_count": 12, "excluded_probe_count": 1,
+        "score_mean": 0.75, "score_stddev": 0.1,
+        "score_min": 0.6, "score_max": 0.9,
+        "perfect_trial_rate": 0.0, "capability_pass_rate": 0.0,
+        "cost_telemetry_complete": True, "total_cost_usd": 0.25,
+    }))
+
+    leaderboard = generator.build_data(tmp_path / "results", tmp_path / "out")
+    entry = json.loads(leaderboard.read_text())["entries"][0]
+    detail = json.loads((tmp_path / "out" / "runs" / "agg1.json").read_text())
+    assert entry["capability_evidence"] is True
+    assert entry["source"] == "official-runs/reviewed-aggregate/aggregate.json"
+    assert entry["task_count"] == 12
+    assert entry["trial_count"] == 3
+    assert detail["schema_version"] == "hermesbench.score.v1"
+    assert detail["aggregate"]["schema_version"] == "hermesbench.trials.v1"
+    assert detail["tasks"] == []
+
+
 def test_website_value_metrics_require_complete_cost_telemetry():
     partial = _enhance({
         "overall_score": 0.5,

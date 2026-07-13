@@ -26,6 +26,12 @@ BENCHMARK_VERSIONS = {
         'status': 'private-evaluation',
         'notes': 'Fresh private equivalents of the base Hermes tool-capability probes.',
     },
+    'hermes-core-v0.2-private-reviewed': {
+        'suite': 'hermes-core-private',
+        'task_count': 12,
+        'status': 'private-evaluation-reviewed',
+        'notes': 'Maintainer-reviewed v0.2 aggregate excluding one invalid vision probe.',
+    },
 }
 DEFAULT_BENCHMARK_VERSION = 'hermes-core-v0.1'
 
