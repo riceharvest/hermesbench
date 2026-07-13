@@ -1,9 +1,9 @@
 from __future__ import annotations
-import json, re
+import json
+import re
 from pathlib import Path
 from typing import Any
 
-from .deterministic import run_checks
 
 
 # Mapping of canonical tool names (as seen in Hermes telemetry) to the classes

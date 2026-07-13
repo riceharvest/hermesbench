@@ -9,7 +9,7 @@ Edge-coverage additions:
 
 import json
 import os
-import subprocess
+
 import textwrap
 from pathlib import Path
 from types import SimpleNamespace

@@ -1,5 +1,13 @@
 from __future__ import annotations
-import json, os, platform, re, shutil, subprocess, tempfile, time, uuid
+import json
+import os
+import platform
+import re
+import shutil
+import subprocess
+import tempfile
+import time
+import uuid
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime, timezone
 from pathlib import Path
@@ -142,7 +150,7 @@ def _collect_system_metadata() -> dict[str, str | None]:
             timeout=5,
         )
         if result.returncode == 0:
-            lines = [l.strip() for l in result.stdout.strip().splitlines() if l.strip()]
+            lines = [line.strip() for line in result.stdout.strip().splitlines() if line.strip()]
             if lines:
                 # nvidia-smi returns one line per GPU; deduplicate model names.
                 models: dict[str, int] = {}

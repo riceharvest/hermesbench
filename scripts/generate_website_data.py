@@ -1,5 +1,9 @@
 from __future__ import annotations
-import argparse, json, math, re, statistics
+import argparse
+import json
+import math
+import re
+import statistics
 from pathlib import Path
 import yaml
 from hermesbench.api import sanitize_for_storage
@@ -85,7 +89,8 @@ def _summarize_group(rows: list[dict]) -> dict:
     avg = statistics.mean(scores) if scores else 0
     std = statistics.stdev(scores) if len(scores) > 1 else 0.0
     ci = 1.96 * std / math.sqrt(len(scores)) if len(scores) > 1 else 0.0
-    nums = lambda k: [e.get(k) for e in rows if e.get(k) is not None]
+    def nums(key):
+        return [entry.get(key) for entry in rows if entry.get(key) is not None]
     costs = [
         e.get("total_cost_usd", e.get("cost_usd"))
         for e in rows

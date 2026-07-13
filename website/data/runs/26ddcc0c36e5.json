@@ -1,9 +1,9 @@
 {
   "agent": "hermes",
   "archive_checksums": {
-    "manifest.yaml": "af64d5263814defb17471c4da46a0d2044ef3848a2c7aadd7fd78e0aaa8647e5",
-    "result.json": "dfbd1aa46a0198fad47760cceabbebc3b1ebd1c7f616b31f4b41b50526911a29",
-    "score-summary.json": "abd79561480d00ae29e0405083dadafb5493c28fa0124c01ce0753e6655c4f8d"
+    "manifest.yaml": "91112b3cb626d5294577c244bd3bde72600fda20e15bee9ae2026fd13ccaa806",
+    "result.json": "e016b3d4c9d179a5a37ca302adeea53a16851e7d5a6cf6428732fcc7c1e097e3",
+    "score-summary.json": "9ca3e8161ffaf2f3c353cba2bb5663f411cdc22d1b5f8e8610580129f1a1ccb7"
   },
   "archive_files": [
     "SHA256SUMS",
@@ -13,38 +13,38 @@
   ],
   "archive_manifest": {
     "agent": "hermes",
-    "agent_version": "Hermes Agent v0.18.2 (2026.7.7.2)",
+    "agent_version": "Hermes Agent v0.18.2 (2026.7.7.2) local 51cd6c94",
     "available_toolsets": "benchmark task declared toolsets",
     "benchmark_version": "hermes-core-v0.1",
     "capability_scope": "hermes-core",
-    "completed_at": "2026-07-13T11:58:52.467092+00:00",
+    "completed_at": "2026-07-13T16:56:55.217552+00:00",
     "hardware": "NVIDIA GeForce RTX 3060; AMD Ryzen 9 5950X 16-Core Processor; 16 cores",
     "jobs": 4,
     "model": "gpt-5.6-sol",
-    "notes": "OpenAI Codex subscription telemetry reported zero cost for every task; no score-per-dollar claim. One deterministic delegation artifact task failed although all required tool classes were observed.",
+    "notes": "Representative clean trial after delegation, stall-detection, and fact-store telemetry fixes. Sol passed 13/13 in all three independent trials (3/3); score range 1.0-1.0. Subscription telemetry reported zero cost.",
     "operator": "dario",
     "os": "Linux-7.1.3-100.fc43.x86_64-x86_64-with-glibc2.42",
     "private_pack_id": "hermes-core-public-v0.1",
     "profile": "hermesbench",
     "provider": "openai-codex",
-    "result_json_sha256": "9f1db57f40fcf65ec2f48f2e371d0817c1835d8335db2950416488a71b41a14f",
+    "result_json_sha256": "eb2b5023763403cdf69cb1fe3a7f65add179456364a9a0882bcb43f934fcbc66",
     "retry_policy": "no retries",
-    "run_id": "official-2026-07-13-openai-codex-gpt-5.6-sol-core-f3e65c7",
-    "runner_commit": "f3e65c7",
-    "started_at": "2026-07-13T11:54:35.974854+00:00",
+    "run_id": "official-2026-07-13-openai-codex-gpt-5.6-sol-core-afb3596",
+    "runner_commit": "afb3596",
+    "started_at": "2026-07-13T16:52:05.158580+00:00",
     "timeout_policy": "no hard task timeout; WAL-aware stall-idle-seconds=300"
   },
   "archive_score_summary": {
     "agent": "hermes",
-    "avg_tool_calls_per_task": 5.6923076923076925,
+    "avg_tool_calls_per_task": 4.769230769230769,
     "cached_prompt_tokens": null,
     "capability_evaluable": true,
-    "capability_pass": false,
+    "capability_pass": true,
     "category_scores": {
-      "natural-tool-use": 0.9230769230769231
+      "natural-tool-use": 1.0
     },
-    "completion_tokens": 5729,
-    "completion_tokens_per_task": 440.6923076923077,
+    "completion_tokens": 4515,
+    "completion_tokens_per_task": 347.3076923076923,
     "cost_per_successful_task_usd": 0.0,
     "cost_per_task_usd": 0.0,
     "cost_telemetry_coverage": 1.0,
@@ -53,71 +53,71 @@
     "cost_usd": 0,
     "environment_skip_count": 0,
     "explicit_total_tokens": null,
-    "failed_task_count": 1,
+    "failed_task_count": 0,
     "false_done_count": 0,
     "false_done_rate": 0.0,
-    "input_tokens": 187990,
+    "input_tokens": 169273,
     "input_tokens_cache_read": null,
     "input_tokens_cache_write": null,
     "max_score": 13,
-    "max_wall_time_seconds": 171.895,
-    "mean_wall_time_seconds": 50.42061538461539,
-    "median_wall_time_seconds": 25.682,
-    "min_wall_time_seconds": 16.277,
+    "max_wall_time_seconds": 225.065,
+    "mean_wall_time_seconds": 50.616846153846154,
+    "median_wall_time_seconds": 28.939,
+    "min_wall_time_seconds": 17.128,
     "model": "gpt-5.6-sol",
-    "output_tokens": 5729,
-    "overall_score": 0.9230769230769231,
-    "p95_wall_time_seconds": 138.643,
-    "pass_at_1": 0.9230769230769231,
-    "passed_task_count": 12,
-    "prompt_tokens": 187990,
-    "prompt_tokens_per_task": 14460.76923076923,
+    "output_tokens": 4515,
+    "overall_score": 1.0,
+    "p95_wall_time_seconds": 141.311,
+    "pass_at_1": 1.0,
+    "passed_task_count": 13,
+    "prompt_tokens": 169273,
+    "prompt_tokens_per_task": 13021.0,
     "provider": "openai-codex",
     "quality_tier_counts": {
       "experimental": 8,
       "gold": 5
     },
     "quality_tier_scores": {
-      "experimental": 0.875,
+      "experimental": 1.0,
       "gold": 1.0
     },
     "raw_category_scores": {
-      "natural-tool-use": 0.9230769230769231
+      "natural-tool-use": 1.0
     },
-    "raw_overall_score": 0.9230769230769231,
+    "raw_overall_score": 1.0,
     "raw_quality_tier_scores": {
-      "experimental": 0.875,
+      "experimental": 1.0,
       "gold": 1.0
     },
-    "raw_total_score": 12.0,
+    "raw_total_score": 13.0,
     "reasoning_effort": null,
-    "reasoning_tokens": 1873,
-    "reasoning_tokens_per_task": 144.07692307692307,
-    "run_duration_seconds": 256.492238,
-    "run_id": "5e52a02b9ffc",
+    "reasoning_tokens": 1314,
+    "reasoning_tokens_per_task": 101.07692307692308,
+    "run_duration_seconds": 290.058972,
+    "run_id": "26ddcc0c36e5",
     "runtime_warning_task_count": 0,
     "runtime_warnings": [],
     "schema_version": "hermesbench.score.v1",
     "score_per_dollar": null,
-    "score_percentage": 0.9230769230769231,
+    "score_percentage": 1.0,
     "scored_task_count": 13,
     "suite": "hermes-core",
-    "sum_wall_time_seconds": 655.468,
-    "task_correctness_pass": false,
+    "sum_wall_time_seconds": 658.019,
+    "task_correctness_pass": true,
     "task_count": 13,
-    "tasks_per_second": 0.050683794961467805,
+    "tasks_per_second": 0.04481847229328249,
     "timeout_count": 0,
     "timeout_rate": 0.0,
     "token_source": null,
     "token_usage": {
-      "input_tokens": 187990,
-      "output_tokens": 5729,
-      "reasoning_tokens": 1873
+      "input_tokens": 169273,
+      "output_tokens": 4515,
+      "reasoning_tokens": 1314
     },
-    "tokens_per_second": 762.5649864694931,
-    "tokens_per_successful_task": 16299.333333333334,
-    "tokens_per_task": 15045.538461538461,
-    "tool_call_count": 74,
+    "tokens_per_second": 603.6772411921808,
+    "tokens_per_successful_task": 13469.384615384615,
+    "tokens_per_task": 13469.384615384615,
+    "tool_call_count": 62,
     "tool_call_tokens": null,
     "tool_call_tokens_per_task": null,
     "tool_capability_evaluable": true,
@@ -160,23 +160,23 @@
       "tool_use_tasks_passed": 13
     },
     "total_cost_usd": 0,
-    "total_execution_time_seconds": 655.468,
-    "total_score": 12.0,
-    "total_tokens": 195592,
+    "total_execution_time_seconds": 658.019,
+    "total_score": 13.0,
+    "total_tokens": 175102,
     "verification_compliance": 1.0
   },
-  "avg_tool_calls_per_task": 5.6923076923076925,
+  "avg_tool_calls_per_task": 4.769230769230769,
   "cached_prompt_tokens": null,
   "capability_evaluable": true,
   "capability_evidence": true,
-  "capability_pass": false,
+  "capability_pass": true,
   "category_scores": {
-    "natural-tool-use": 0.9230769230769231
+    "natural-tool-use": 1.0
   },
   "classification": "official",
-  "completed_at": "2026-07-13T11:58:52.467092+00:00",
-  "completion_tokens": 5729,
-  "completion_tokens_per_task": 440.6923076923077,
+  "completed_at": "2026-07-13T16:56:55.217552+00:00",
+  "completion_tokens": 4515,
+  "completion_tokens_per_task": 347.3076923076923,
   "cost_per_successful_task_usd": 0.0,
   "cost_per_task_usd": 0.0,
   "cost_telemetry_coverage": 1.0,
@@ -189,20 +189,20 @@
   "environment_skip_count": 0,
   "evidence_class": "official_evidence",
   "explicit_total_tokens": null,
-  "failed_task_count": 1,
+  "failed_task_count": 0,
   "false_done_count": 0,
   "false_done_rate": 0.0,
-  "input_tokens": 187990,
+  "input_tokens": 169273,
   "input_tokens_cache_read": null,
   "input_tokens_cache_write": null,
   "max_score": 13,
-  "max_wall_time_seconds": 171.895,
-  "mean_wall_time_seconds": 50.42061538461539,
-  "median_wall_time_seconds": 25.682,
+  "max_wall_time_seconds": 225.065,
+  "mean_wall_time_seconds": 50.616846153846154,
+  "median_wall_time_seconds": 28.939,
   "metadata": {
     "benchmark_version": "hermes-core-v0.1",
     "cpu_info": "AMD Ryzen 9 5950X 16-Core Processor; 16 cores",
-    "git_commit": "f3e65c7",
+    "git_commit": "afb3596",
     "gpu_info": "NVIDIA GeForce RTX 3060",
     "jobs": 4,
     "metadata_available": {
@@ -218,56 +218,56 @@
     "profile": "hermesbench",
     "provider": "openai-codex",
     "python_version": "3.14.6",
-    "run_wall_time_seconds": 256.492,
+    "run_wall_time_seconds": 290.059,
     "sanitized": true
   },
-  "min_wall_time_seconds": 16.277,
+  "min_wall_time_seconds": 17.128,
   "model": "gpt-5.6-sol",
   "model_slug": "openai-codex-gpt-5-6-sol-none",
   "official": true,
-  "output_tokens": 5729,
-  "overall_score": 0.9230769230769231,
-  "p95_wall_time_seconds": 138.643,
-  "pass_at_1": 0.9230769230769231,
-  "passed_task_count": 12,
-  "prompt_tokens": 187990,
-  "prompt_tokens_per_task": 14460.76923076923,
+  "output_tokens": 4515,
+  "overall_score": 1.0,
+  "p95_wall_time_seconds": 141.311,
+  "pass_at_1": 1.0,
+  "passed_task_count": 13,
+  "prompt_tokens": 169273,
+  "prompt_tokens_per_task": 13021.0,
   "provider": "openai-codex",
   "quality_tier_counts": {
     "experimental": 8,
     "gold": 5
   },
   "quality_tier_scores": {
-    "experimental": 0.875,
+    "experimental": 1.0,
     "gold": 1.0
   },
   "raw_category_scores": {
-    "natural-tool-use": 0.9230769230769231
+    "natural-tool-use": 1.0
   },
-  "raw_overall_score": 0.9230769230769231,
+  "raw_overall_score": 1.0,
   "raw_quality_tier_scores": {
-    "experimental": 0.875,
+    "experimental": 1.0,
     "gold": 1.0
   },
   "raw_result_schema_version": "hermesbench.result.v1",
-  "raw_total_score": 12.0,
+  "raw_total_score": 13.0,
   "reasoning_effort": null,
-  "reasoning_tokens": 1873,
-  "reasoning_tokens_per_task": 144.07692307692307,
+  "reasoning_tokens": 1314,
+  "reasoning_tokens_per_task": 101.07692307692308,
   "reliability_score": 1.0,
-  "run_duration_seconds": 256.492238,
-  "run_id": "5e52a02b9ffc",
+  "run_duration_seconds": 290.058972,
+  "run_id": "26ddcc0c36e5",
   "runtime_warning_task_count": 0,
   "runtime_warnings": [],
   "schema_version": "hermesbench.score.v1",
   "score_per_dollar": null,
-  "score_percentage": 0.9230769230769231,
+  "score_percentage": 1.0,
   "scored_task_count": 13,
-  "source": "official-runs/2026-07-13-openai-codex-gpt-5.6-sol-core-f3e65c7/result.json",
-  "started_at": "2026-07-13T11:54:35.974854+00:00",
+  "source": "official-runs/2026-07-13-openai-codex-gpt-5.6-sol-core-afb3596/result.json",
+  "started_at": "2026-07-13T16:52:05.158580+00:00",
   "suite": "hermes-core",
-  "sum_wall_time_seconds": 655.468,
-  "task_correctness_pass": false,
+  "sum_wall_time_seconds": 658.019,
+  "task_correctness_pass": true,
   "task_count": 13,
   "tasks": [
     {
@@ -282,12 +282,12 @@
       "task_id": "htu-dev-001-file-and-terminal-self-serve",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 13497,
-        "output_tokens": 287,
-        "reasoning_tokens": 53
+        "input_tokens": 7854,
+        "output_tokens": 242,
+        "reasoning_tokens": 59
       },
       "tool_calls": 4,
-      "wall_time_seconds": 37.564
+      "wall_time_seconds": 28.939
     },
     {
       "category": "natural-tool-use",
@@ -301,12 +301,12 @@
       "task_id": "htu-dev-002-web-search-required",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 12661,
-        "output_tokens": 594,
-        "reasoning_tokens": 142
+        "input_tokens": 9088,
+        "output_tokens": 296,
+        "reasoning_tokens": 45
       },
-      "tool_calls": 11,
-      "wall_time_seconds": 44.7
+      "tool_calls": 6,
+      "wall_time_seconds": 31.947
     },
     {
       "category": "natural-tool-use",
@@ -320,12 +320,12 @@
       "task_id": "htu-dev-003-use-a-skill",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 13804,
-        "output_tokens": 248,
-        "reasoning_tokens": 99
+        "input_tokens": 13915,
+        "output_tokens": 301,
+        "reasoning_tokens": 151
       },
       "tool_calls": 4,
-      "wall_time_seconds": 25.093
+      "wall_time_seconds": 24.615
     },
     {
       "category": "natural-tool-use",
@@ -339,12 +339,12 @@
       "task_id": "htu-dev-004-memory-recall",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 8627,
-        "output_tokens": 209,
+        "input_tokens": 7739,
+        "output_tokens": 265,
         "reasoning_tokens": 46
       },
-      "tool_calls": 4,
-      "wall_time_seconds": 21.778
+      "tool_calls": 5,
+      "wall_time_seconds": 25.184
     },
     {
       "category": "natural-tool-use",
@@ -352,18 +352,18 @@
       "false_done": false,
       "grading_type": "natural-tool-use",
       "max_score": 1,
-      "passed": false,
-      "score": 0.0,
-      "status": "failed",
+      "passed": true,
+      "score": 1.0,
+      "status": "passed",
       "task_id": "htu-dev-005-delegate-parallel-subtasks",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 35935,
-        "output_tokens": 1396,
-        "reasoning_tokens": 472
+        "input_tokens": 22380,
+        "output_tokens": 755,
+        "reasoning_tokens": 120
       },
-      "tool_calls": 12,
-      "wall_time_seconds": 62.815
+      "tool_calls": 7,
+      "wall_time_seconds": 36.059
     },
     {
       "category": "natural-tool-use",
@@ -377,12 +377,12 @@
       "task_id": "htu-dev-006-todo-plan",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 15682,
-        "output_tokens": 282,
-        "reasoning_tokens": 17
+        "input_tokens": 15784,
+        "output_tokens": 303,
+        "reasoning_tokens": 40
       },
       "tool_calls": 6,
-      "wall_time_seconds": 24.205
+      "wall_time_seconds": 24.402
     },
     {
       "category": "natural-tool-use",
@@ -396,12 +396,12 @@
       "task_id": "htu-dev-007-code-execution",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 13775,
-        "output_tokens": 728,
-        "reasoning_tokens": 178
+        "input_tokens": 7844,
+        "output_tokens": 619,
+        "reasoning_tokens": 176
       },
-      "tool_calls": 4,
-      "wall_time_seconds": 51.414
+      "tool_calls": 3,
+      "wall_time_seconds": 32.731
     },
     {
       "category": "natural-tool-use",
@@ -415,12 +415,12 @@
       "task_id": "htu-dev-008-browser-required",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 12650,
-        "output_tokens": 263,
-        "reasoning_tokens": 126
+        "input_tokens": 12550,
+        "output_tokens": 316,
+        "reasoning_tokens": 176
       },
       "tool_calls": 4,
-      "wall_time_seconds": 25.682
+      "wall_time_seconds": 33.045
     },
     {
       "category": "natural-tool-use",
@@ -434,12 +434,12 @@
       "task_id": "htu-dev-009-session-search",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 7671,
-        "output_tokens": 152,
-        "reasoning_tokens": 18
+        "input_tokens": 9159,
+        "output_tokens": 129,
+        "reasoning_tokens": 11
       },
       "tool_calls": 4,
-      "wall_time_seconds": 17.314
+      "wall_time_seconds": 18.642
     },
     {
       "category": "natural-tool-use",
@@ -453,12 +453,12 @@
       "task_id": "htu-dev-010-clarify-ambiguous",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 6243,
-        "output_tokens": 176,
-        "reasoning_tokens": 40
+        "input_tokens": 10868,
+        "output_tokens": 173,
+        "reasoning_tokens": 38
       },
       "tool_calls": 3,
-      "wall_time_seconds": 138.643
+      "wall_time_seconds": 141.311
     },
     {
       "category": "natural-tool-use",
@@ -472,12 +472,12 @@
       "task_id": "htu-dev-011-cronjob-schedule",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 8355,
-        "output_tokens": 148,
-        "reasoning_tokens": 13
+        "input_tokens": 8354,
+        "output_tokens": 163,
+        "reasoning_tokens": 21
       },
       "tool_calls": 3,
-      "wall_time_seconds": 16.277
+      "wall_time_seconds": 18.951
     },
     {
       "category": "natural-tool-use",
@@ -491,12 +491,12 @@
       "task_id": "htu-dev-012-computer-use",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 28116,
-        "output_tokens": 1097,
-        "reasoning_tokens": 643
+        "input_tokens": 32815,
+        "output_tokens": 819,
+        "reasoning_tokens": 410
       },
-      "tool_calls": 12,
-      "wall_time_seconds": 171.895
+      "tool_calls": 10,
+      "wall_time_seconds": 225.065
     },
     {
       "category": "natural-tool-use",
@@ -510,28 +510,28 @@
       "task_id": "htu-dev-013-vision-image",
       "timeout": false,
       "token_usage": {
-        "input_tokens": 10974,
-        "output_tokens": 149,
-        "reasoning_tokens": 26
+        "input_tokens": 10923,
+        "output_tokens": 134,
+        "reasoning_tokens": 21
       },
       "tool_calls": 3,
-      "wall_time_seconds": 18.088
+      "wall_time_seconds": 17.128
     }
   ],
-  "tasks_per_second": 0.050683794961467805,
+  "tasks_per_second": 0.04481847229328249,
   "timeout_count": 0,
   "timeout_rate": 0.0,
-  "token_efficiency_score": 4.719400195697795,
+  "token_efficiency_score": 5.710957042181128,
   "token_source": null,
   "token_usage": {
-    "input_tokens": 187990,
-    "output_tokens": 5729,
-    "reasoning_tokens": 1873
+    "input_tokens": 169273,
+    "output_tokens": 4515,
+    "reasoning_tokens": 1314
   },
-  "tokens_per_second": 762.5649864694931,
-  "tokens_per_successful_task": 16299.333333333334,
-  "tokens_per_task": 15045.538461538461,
-  "tool_call_count": 74,
+  "tokens_per_second": 603.6772411921808,
+  "tokens_per_successful_task": 13469.384615384615,
+  "tokens_per_task": 13469.384615384615,
+  "tool_call_count": 62,
   "tool_call_tokens": null,
   "tool_call_tokens_per_task": null,
   "tool_capability_evaluable": true,
@@ -574,9 +574,9 @@
     "tool_use_tasks_passed": 13
   },
   "total_cost_usd": 0,
-  "total_execution_time_seconds": 655.468,
-  "total_score": 12.0,
-  "total_tokens": 195592,
+  "total_execution_time_seconds": 658.019,
+  "total_score": 13.0,
+  "total_tokens": 175102,
   "value_score": null,
   "verification_compliance": 1.0
 }
