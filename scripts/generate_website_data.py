@@ -53,9 +53,10 @@ def _enhance(entry: dict) -> dict:
     total_tokens = entry.get("total_tokens")
     token_efficiency = (score / total_tokens * 1_000_000) if total_tokens else None
     cost = entry.get("total_cost_usd", entry.get("cost_usd"))
-    value_score = (score / cost) if cost else None
+    cost_complete = entry.get("cost_telemetry_status") == "complete"
+    value_score = (score / cost) if cost_complete and cost else None
     cpst = None
-    if cost is not None and entry.get("passed_task_count"):
+    if cost_complete and cost is not None and entry.get("passed_task_count"):
         cpst = cost / entry["passed_task_count"]
     return {
         **entry,

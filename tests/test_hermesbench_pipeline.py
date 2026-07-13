@@ -5,7 +5,7 @@ import subprocess
 
 import pytest
 
-from scripts.generate_website_data import build_data, is_official_archive_source
+from scripts.generate_website_data import _enhance, build_data, is_official_archive_source
 from hermesbench.submissions import make_submission_payload
 from hermesbench.tasks import discover_tasks, parse_task_markdown
 
@@ -57,6 +57,26 @@ def test_website_data_generated_from_results_and_splits(tmp_path):
         "score_ci95_high",
         "best_submission_id",
     }
+
+
+def test_website_value_metrics_require_complete_cost_telemetry():
+    partial = _enhance({
+        "overall_score": 0.5,
+        "total_cost_usd": 0.25,
+        "passed_task_count": 1,
+        "cost_telemetry_status": "partial",
+    })
+    complete = _enhance({
+        "overall_score": 0.5,
+        "total_cost_usd": 0.25,
+        "passed_task_count": 1,
+        "cost_telemetry_status": "complete",
+    })
+
+    assert partial["value_score"] is None
+    assert partial["cpst"] is None
+    assert complete["value_score"] == 2.0
+    assert complete["cpst"] == 0.25
 
 
 def test_website_detail_strips_private_metadata_and_task_logs(tmp_path):

@@ -159,6 +159,7 @@
   },
   "avg_tool_calls_per_task": 11.461538461538462,
   "cached_prompt_tokens": null,
+  "capability_evaluable": true,
   "capability_evidence": true,
   "capability_pass": false,
   "category_scores": {
@@ -170,8 +171,11 @@
   "completion_tokens_per_task": 979.3076923076923,
   "cost_per_successful_task_usd": 0.0,
   "cost_per_task_usd": 0.0,
+  "cost_telemetry_coverage": 0.8461538461538461,
+  "cost_telemetry_status": "partial",
+  "cost_telemetry_task_count": 11,
   "cost_usd": 0.0,
-  "cpst": 0.0,
+  "cpst": null,
   "data_status": "run_data",
   "display_notice": "Run data is classified per entry; only archived official runs are official capability evidence.",
   "environment_skip_count": 0,
@@ -247,6 +251,8 @@
   "reliability_score": 1.0,
   "run_duration_seconds": 2621.493934,
   "run_id": "cd1bec8f0043",
+  "runtime_warning_task_count": 0,
+  "runtime_warnings": [],
   "schema_version": "hermesbench.score.v1",
   "score_per_dollar": null,
   "score_percentage": 0.8461538461538461,
@@ -255,6 +261,7 @@
   "started_at": "2026-07-11T15:14:22.985494+00:00",
   "suite": "hermes-core",
   "sum_wall_time_seconds": 2621.486,
+  "task_correctness_pass": false,
   "task_count": 13,
   "tasks": [
     {
@@ -513,6 +520,8 @@
   "tool_call_count": 149,
   "tool_call_tokens": null,
   "tool_call_tokens_per_task": null,
+  "tool_capability_evaluable": true,
+  "tool_capability_pass": false,
   "tool_use_behavior": {
     "tasks_with_tool_use_requirements": 13,
     "tool_classes_required": [
