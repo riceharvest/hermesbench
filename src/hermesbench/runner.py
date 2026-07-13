@@ -286,6 +286,10 @@ def _run_one_task(
             runtime_skip_reason = "computer_use runtime unavailable: cua-driver MCP server error"
         elif "delegation" in required_classes and "delegation_provider_interrupted" in runtime_issues:
             runtime_skip_reason = "delegation runtime unavailable: child provider API interrupted"
+        elif "delegation" in required_classes and "delegation_detached_one_shot" in runtime_issues:
+            runtime_skip_reason = (
+                "delegation runtime unavailable: one-shot parent detached before completion delivery"
+            )
         elif "vision" in required_classes and "vision_runtime_unavailable" in runtime_issues:
             runtime_skip_reason = "vision runtime unavailable: trusted vision tool result reported a server error"
 

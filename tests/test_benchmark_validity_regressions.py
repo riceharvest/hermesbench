@@ -372,3 +372,26 @@ def test_successful_task_keeps_runtime_issue_as_warning_instead_of_skip(tmp_path
     assert result.status == "passed"
     assert result.environment_skip is False
     assert result.runtime_issues == ["computer_use_runtime_unavailable"]
+
+
+def test_detached_one_shot_delegation_is_environment_skip(tmp_path, monkeypatch):
+    import hermesbench.runner as runner
+
+    class DetachedDelegationAdapter:
+        def run_task(self, task, workdir, hidden_dir=None):
+            return AgentRun(
+                status="completed", transcript="done",
+                tool_events=[{"tool_name": "delegate_task", "arguments": {"background": True}}],
+                behavior_evidence_trusted=True,
+                runtime_issues=["delegation_detached_one_shot"],
+            )
+
+    task = SimpleNamespace(
+        metadata={"id": "detached-delegation", "category": "natural-tool-use", "tool_use_requirements": ["delegation"]},
+        deterministic_checks=[], expected_artifacts=[], path=tmp_path / "task.md",
+    )
+    monkeypatch.setattr(runner, "get_adapter", lambda *args, **kwargs: DetachedDelegationAdapter())
+    result = runner._run_one_task(task, "hermes", None, None, None, None)
+    assert result.status == "environment_skipped"
+    assert result.environment_skip is True
+    assert result.skip_reason == "delegation runtime unavailable: one-shot parent detached before completion delivery"

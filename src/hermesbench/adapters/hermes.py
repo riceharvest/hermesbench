@@ -531,16 +531,47 @@ def _extract_state_db_telemetry(
             if "effect_disposition" in message_schema
             else "NULL AS effect_disposition"
         )
+        tool_call_id = "tool_call_id" if "tool_call_id" in message_schema else "NULL AS tool_call_id"
         messages = conn.execute(
-            f"SELECT role, tool_name, tool_calls, timestamp, {content}, {disposition} "
-            f"FROM messages WHERE session_id IN ({placeholders}) ORDER BY rowid",
+            f"SELECT session_id, role, tool_name, tool_calls, timestamp, {content}, "
+            f"{disposition}, {tool_call_id} FROM messages "
+            f"WHERE session_id IN ({placeholders}) ORDER BY rowid",
             session_ids,
         ).fetchall()
-        for role, tool_name, _tool_calls, timestamp, tool_content, effect in messages:
+        call_arguments: dict[str, dict] = {}
+        for _sid, role, _name, tool_calls, _ts, _content, _effect, _call_id in messages:
+            if role != "assistant" or not tool_calls:
+                continue
+            try:
+                proposed_calls = json.loads(tool_calls)
+            except (TypeError, ValueError, json.JSONDecodeError):
+                continue
+            if not isinstance(proposed_calls, list):
+                continue
+            for call in proposed_calls:
+                if not isinstance(call, dict):
+                    continue
+                function = call.get("function")
+                call_id = call.get("id") or call.get("call_id")
+                if not call_id or not isinstance(function, dict):
+                    continue
+                arguments = function.get("arguments")
+                if isinstance(arguments, str):
+                    try:
+                        arguments = json.loads(arguments)
+                    except (TypeError, ValueError, json.JSONDecodeError):
+                        continue
+                if isinstance(arguments, dict):
+                    call_arguments[str(call_id)] = arguments
+
+        for message_sid, role, tool_name, _tool_calls, timestamp, tool_content, effect, call_id in messages:
             # Hermes persists both the assistant's proposed call and the
             # resulting tool message. Only the latter proves execution.
             if role == "tool" and tool_name:
                 event = {"tool_name": tool_name, "timestamp": timestamp}
+                arguments = call_arguments.get(str(call_id)) if call_id else None
+                if arguments is not None:
+                    event["arguments"] = arguments
                 if effect is not None:
                     event["effect_disposition"] = effect
                 succeeded = _tool_result_succeeded(tool_content, effect)
@@ -563,6 +594,22 @@ def _extract_state_db_telemetry(
                     trusted_text,
                 ):
                     result.runtime_issues.append("delegation_provider_interrupted")
+                if (
+                    message_sid == root_id
+                    and tool_name == "delegate_task"
+                    and isinstance(arguments, dict)
+                    and arguments.get("background") is True
+                ):
+                    try:
+                        delegation_result = json.loads(tool_content or "{}")
+                    except (TypeError, ValueError, json.JSONDecodeError):
+                        delegation_result = {}
+                    if (
+                        isinstance(delegation_result, dict)
+                        and delegation_result.get("status") == "dispatched"
+                        and delegation_result.get("mode") == "background"
+                    ):
+                        result.runtime_issues.append("delegation_detached_one_shot")
         for row in rows:
             parent_id, end_reason, handoff_error = row[10], row[11], row[12]
             if parent_id is not None and re.search(

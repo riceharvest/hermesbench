@@ -97,6 +97,27 @@ def _temporary_profile_dirs(home: Path) -> list[Path]:
     )
 
 
+def test_state_db_detects_detached_delegation_from_trusted_call_and_result(tmp_path):
+    import sqlite3
+    from hermesbench.adapters.hermes import _extract_state_db_telemetry
+
+    workdir = tmp_path / "work"
+    workdir.mkdir()
+    db = tmp_path / "state.db"
+    conn = sqlite3.connect(db)
+    conn.execute("CREATE TABLE sessions (id TEXT, started_at REAL, ended_at REAL, tool_call_count INTEGER, input_tokens INTEGER, output_tokens INTEGER, reasoning_tokens INTEGER, estimated_cost_usd REAL, actual_cost_usd REAL, cwd TEXT, parent_session_id TEXT, end_reason TEXT, handoff_error TEXT)")
+    conn.execute("CREATE TABLE messages (session_id TEXT, role TEXT, tool_name TEXT, tool_call_id TEXT, tool_calls TEXT, content TEXT, timestamp REAL, effect_disposition TEXT)")
+    call = [{"id": "call-1", "type": "function", "function": {"name": "delegate_task", "arguments": json.dumps({"goal": "work", "background": True})}}]
+    conn.execute("INSERT INTO sessions VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?)", ("root", 1, 2, 1, 0, 0, 0, 0, 0, str(workdir), None, None, None))
+    conn.execute("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?)", ("root", "assistant", None, None, json.dumps(call), "", 1.1, None))
+    conn.execute("INSERT INTO messages VALUES (?,?,?,?,?,?,?,?)", ("root", "tool", "delegate_task", "call-1", None, json.dumps({"status": "dispatched", "mode": "background"}), 1.2, None))
+    conn.commit()
+    conn.close()
+    telemetry = _extract_state_db_telemetry(db, started_at=1, workdir=workdir, session_id="root")
+    assert telemetry.events == [{"tool_name": "delegate_task", "timestamp": 1.2, "arguments": {"goal": "work", "background": True}}]
+    assert telemetry.runtime_issues == ["delegation_detached_one_shot"]
+
+
 def test_fake_hermes_uses_owned_profile_with_workdir_and_never_credits_stdout(
     fake_hermes, tmp_path
 ):
