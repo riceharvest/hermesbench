@@ -775,14 +775,14 @@ def _profile_progress_token(state_db: Path) -> tuple[int, ...] | None:
     """Return a cheap progress marker for an isolated Hermes state database.
 
     SQLite may keep active writes in the WAL while the main database file's
-    mtime and size remain unchanged. Include the journal sidecars so tool
-    calls and delegated child-session progress cannot be mistaken for a stall.
+    mtime and size remain unchanged. Track the WAL, but not the shared-memory
+    index: SQLite updates ``-shm`` during reads and lock churn even when no
+    durable agent progress has occurred, which can mask a real stall forever.
     """
     token: list[int] = []
     for path in (
         state_db,
         state_db.with_name(state_db.name + "-wal"),
-        state_db.with_name(state_db.name + "-shm"),
     ):
         try:
             stat = path.stat()

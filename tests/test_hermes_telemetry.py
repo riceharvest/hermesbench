@@ -331,7 +331,7 @@ def test_fake_hermes_stall_detector_terminates_without_task_timeout(
     assert _temporary_profile_dirs(home) == []
 
 
-def test_stall_progress_token_tracks_sqlite_wal_and_shm(tmp_path):
+def test_stall_progress_token_tracks_wal_but_ignores_noisy_shm(tmp_path):
     from hermesbench.adapters.hermes import _profile_progress_token
 
     state_db = tmp_path / "state.db"
@@ -346,7 +346,7 @@ def test_stall_progress_token_tracks_sqlite_wal_and_shm(tmp_path):
     shm = tmp_path / "state.db-shm"
     shm.write_bytes(b"shared memory")
     after_shm = _profile_progress_token(state_db)
-    assert after_shm != after_wal
+    assert after_shm == after_wal
 
 
 def test_temporary_profile_excludes_persistent_agent_state(tmp_path, monkeypatch):
