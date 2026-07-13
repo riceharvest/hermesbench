@@ -20,6 +20,12 @@ BENCHMARK_VERSIONS = {
         'status': 'development',
         'notes': 'Installable and configurable Hermes ecosystem tools and integrations.',
     },
+    'hermes-core-v0.2-private': {
+        'suite': 'hermes-core-private',
+        'task_count': 13,
+        'status': 'private-evaluation',
+        'notes': 'Fresh private equivalents of the base Hermes tool-capability probes.',
+    },
 }
 DEFAULT_BENCHMARK_VERSION = 'hermes-core-v0.1'
 

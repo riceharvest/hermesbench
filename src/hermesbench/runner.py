@@ -18,6 +18,7 @@ from .graders.deterministic import run_checks
 from .graders.behavior import grade_behavior, score_tool_use
 from .schemas import TaskResult, RunResult, RunLedgerMetadata
 from .versions import resolve_version
+from .pack import canonical_pack_sha256
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -218,8 +219,14 @@ def _collect_run_metadata(
 
 
 def _copy_fixtures(task, workdir: Path) -> Path | None:
-    # Task packs keep fixtures next to their tasks directory: <pack>/tasks and <pack>/fixtures.
-    src = Path(task.path).parent.parent.parent / "fixtures" / task.metadata["id"]
+    task_path = Path(task.path).resolve()
+    pack_root = next(
+        (parent for parent in task_path.parents if (parent / "manifest.yaml").is_file()),
+        task_path.parent.parent.parent,
+    )
+    if not (pack_root / "fixtures").is_dir() and (pack_root.parent / "fixtures").is_dir():
+        pack_root = pack_root.parent
+    src = pack_root / "fixtures" / task.metadata["id"]
     if not src.exists():
         return None
     public = src / "public"
@@ -455,6 +462,10 @@ def run_benchmark(
     if benchmark_version and version_info["suite"] != suite:
         raise ValueError("benchmark version does not match selected suite")
     tasks = discover_tasks(suite, ROOT, task_root)
+    if benchmark_version and len(tasks) != version_info["task_count"] and task_id is None:
+        raise ValueError(
+            f"benchmark version expects {version_info['task_count']} tasks, discovered {len(tasks)}"
+        )
     if task_id:
         tasks = [t for t in tasks if t.metadata["id"] == task_id]
     if not tasks:
@@ -533,10 +544,11 @@ def run_benchmark(
 
     # Merge into the flat metadata dict (stays within MAX_RESULT_METADATA_KEYS=20).
     # Start with existing runner-specific fields.
+    private_pack_sha256 = canonical_pack_sha256(task_root) if task_root else None
     flat: dict[str, Any] = {
         "task_count": len(results),
         "public_output_redacts_hidden_checks": True,
-        "task_root": str(task_root) if task_root else None,
+        "private_pack_id": f"sha256:{private_pack_sha256}" if private_pack_sha256 else None,
     }
     # Add all non-None values from the structured ledger.
     flat.update(run_meta.to_metadata_dict())

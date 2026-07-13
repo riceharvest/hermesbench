@@ -270,7 +270,7 @@ PUBLIC_METADATA_KEYS: set[str] = {
     "provider", "model", "reasoning_effort", "quantization", "backend",
     "profile", "benchmark_version", "jobs", "run_wall_time_seconds",
     "engine_version", "hermes_version", "git_commit", "command",
-    "config_summary",
+    "config_summary", "private_pack_id",
     "os_platform", "python_version", "cpu_info", "gpu_info",
     "metadata_available",
     # Legacy fields kept for backward compatibility

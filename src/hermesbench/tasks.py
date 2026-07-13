@@ -83,7 +83,8 @@ def task_quality_findings(task: Task, root: Path = ROOT) -> list[str]:
         findings.append(f'WARNING {tid}: quality lint: no command-based validation check')
     if checks and not any(c.get('type') in SEMANTIC_CHECK_TYPES for c in checks):
         findings.append(f'ERROR {tid}: quality lint: no semantic validation beyond file existence/markers')
-    fixture_dir=root/'fixtures'/tid
+    fixtures_root = root / 'fixtures' if (root / 'fixtures').is_dir() else root.parent / 'fixtures'
+    fixture_dir=fixtures_root/tid
     fixture_files=[p for p in fixture_dir.rglob('*') if p.is_file()] if fixture_dir.exists() else []
     fixture_bytes=sum(p.stat().st_size for p in fixture_files) if fixture_files else 0
     if task.metadata.get('no_fixture_required') is not True and fixture_bytes < 128:
@@ -222,7 +223,13 @@ def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None, inclu
     entries=_manifest_entries(manifest)
     listed={t['id'] for t in entries}
     manifest_paths={Path(t.get('path','')) for t in entries}
-    actual_paths={p.relative_to(base) for p in base.glob('*/*.md') if p.name.lower() != 'readme.md' and p.name != 'TASK_TEMPLATE.md'}
+    actual_paths={
+        p.relative_to(base)
+        for p in base.rglob('*.md')
+        if p.name.lower() != 'readme.md'
+        and p.name != 'TASK_TEMPLATE.md'
+        and 'fixtures' not in p.relative_to(base).parts
+    }
     if not quality_only:
         for p in sorted(actual_paths - manifest_paths):
             # Only complain if a file is under a suite that has *some* entries in the manifest.
@@ -258,9 +265,10 @@ def validate_tasks(root: Path = ROOT, task_root: str | Path | None = None, inclu
             if not t.deterministic_checks: errors.append(f'{tid} has no deterministic checks')
             if t.metadata['visibility'] == 'private' and not t.hidden_checks:
                 errors.append(f'{tid} private task has no hidden checks note')
-            errors.extend(_fixture_contract_findings(t, base.parent / 'fixtures'))
+            fixtures_root = base / 'fixtures' if (base / 'fixtures').is_dir() else base.parent / 'fixtures'
+            errors.extend(_fixture_contract_findings(t, fixtures_root))
         if include_quality or quality_only:
-            errors.extend(task_quality_findings(t, base.parent if base.name == 'tasks' else root))
+            errors.extend(task_quality_findings(t, base))
     if not quality_only and listed - set(ids):
         # In multi-suite manifests, a task may legitimately appear under more than one suite.
         # Only flag tasks that are listed but were never discovered.

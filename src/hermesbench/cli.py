@@ -84,6 +84,9 @@ def main(argv=None):
         type=float,
         help="exit nonzero when overall score is below this fraction (0..1)",
     )
+    mt = sub.add_parser("aggregate-trials", help="aggregate repeated equivalent runs")
+    mt.add_argument("results", nargs="+", help="result JSON files in trial order")
+    mt.add_argument("--output", required=True, help="aggregate JSON destination")
     vt = sub.add_parser(
         "validate-tasks", help="validate task manifests and task quality"
     )
@@ -171,6 +174,10 @@ def main(argv=None):
             and score["overall_score"] < a.min_overall_score
         ):
             raise SystemExit(2)
+    elif a.cmd == "aggregate-trials":
+        from .multitrial import write_trial_aggregate
+
+        print(write_trial_aggregate(a.results, a.output))
     elif a.cmd == "export":
         for t in discover_tasks(a.suite, task_root=a.task_root):
             print(
