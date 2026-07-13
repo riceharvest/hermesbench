@@ -1,5 +1,5 @@
 from __future__ import annotations
-import json, re, shutil, subprocess, time, uuid
+import json, os, re, shutil, subprocess, time, uuid
 from functools import lru_cache
 from dataclasses import dataclass
 from pathlib import Path
@@ -416,71 +416,174 @@ class StateDBTelemetry:
     tool_calls: int = 0
     token_usage: dict[str, int | float] | None = None
     cost_usd: float | None = None
+    runtime_issues: list[str] = None
+
+
+def _tool_result_succeeded(content: Any, disposition: Any) -> bool:
+    """Conservatively classify a structured Hermes tool completion result."""
+    if str(disposition or "").lower() in {"failed", "error", "rejected"}:
+        return False
+    if not isinstance(content, str) or not content.strip():
+        return True
+    try:
+        payload = json.loads(content)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return not re.match(r"^\s*(?:error|failed)\b", content, re.I)
+    if not isinstance(payload, dict):
+        return True
+    if payload.get("success") is False:
+        return False
+    if str(payload.get("status", "")).lower() in {"failed", "error"}:
+        return False
+    return not bool(payload.get("error"))
 
 
 def _extract_state_db_telemetry(
-    db_path: Path, started_at: float, workdir: Path
+    db_path: Path,
+    started_at: float,
+    workdir: Path,
+    session_id: str | None = None,
 ) -> StateDBTelemetry:
-    """Read structured telemetry from the isolated Hermes session database.
-
-    The temporary profile is empty before launch, so a session selected by its
-    creation time and configured cwd is agent-owned evidence, not model output.
-    Ambiguous matches fail closed.
-    """
+    """Read trusted telemetry for one root session and its descendants."""
     import sqlite3
 
-    result = StateDBTelemetry(events=[])
+    result = StateDBTelemetry(events=[], runtime_issues=[])
     if not db_path.exists():
         return result
     try:
         conn = sqlite3.connect(str(db_path))
-        rows = conn.execute(
-            "SELECT id, started_at, ended_at, tool_call_count, input_tokens, output_tokens, reasoning_tokens, estimated_cost_usd, actual_cost_usd, cwd "
-            "FROM sessions WHERE started_at >= ? ORDER BY started_at DESC",
-            (started_at - 2.0,),
-        ).fetchall()
-        if len(rows) != 1:
+        session_schema = {
+            row[1] for row in conn.execute("PRAGMA table_info(sessions)").fetchall()
+        }
+        message_schema = {
+            row[1] for row in conn.execute("PRAGMA table_info(messages)").fetchall()
+        }
+        optional = [
+            name if name in session_schema else f"NULL AS {name}"
+            for name in ("parent_session_id", "end_reason", "handoff_error")
+        ]
+        session_columns = (
+            "SELECT id, started_at, ended_at, tool_call_count, input_tokens, "
+            "output_tokens, reasoning_tokens, estimated_cost_usd, actual_cost_usd, cwd, "
+            + ", ".join(optional)
+            + " FROM sessions"
+        )
+        if session_id:
+            root_rows = conn.execute(
+                f"{session_columns} WHERE id = ?", (session_id,)
+            ).fetchall()
+            if not root_rows:
+                conn.close()
+                return result
+            root_id = session_id
+        else:
+            root_rows = conn.execute(
+                f"{session_columns} WHERE started_at >= ? "
+                "AND (cwd = ? OR cwd IS NULL) ORDER BY started_at",
+                (started_at - 2.0, str(workdir)),
+            ).fetchall()
+            if "parent_session_id" in session_schema:
+                root_rows = [row for row in root_rows if row[10] is None]
+            if not root_rows or (
+                "parent_session_id" in session_schema and len(root_rows) != 1
+            ):
+                conn.close()
+                return result
+            root_id = root_rows[0][0]
+
+        if "parent_session_id" in session_schema:
+            session_ids = [root_id]
+            frontier = [root_id]
+            while frontier:
+                placeholders = ",".join("?" for _ in frontier)
+                children = [
+                    row[0]
+                    for row in conn.execute(
+                        f"SELECT id FROM sessions WHERE parent_session_id IN ({placeholders})",
+                        frontier,
+                    ).fetchall()
+                    if row[0] not in session_ids
+                ]
+                session_ids.extend(children)
+                frontier = children
+            placeholders = ",".join("?" for _ in session_ids)
+            rows = conn.execute(
+                f"{session_columns} WHERE id IN ({placeholders}) ORDER BY started_at",
+                session_ids,
+            ).fetchall()
+        else:
+            # Old Hermes databases did not persist session lineage. The profile
+            # is isolated, so retain the prior bounded CWD fallback for them.
+            rows = conn.execute(
+                f"{session_columns} WHERE started_at >= ? "
+                "AND (id = ? OR cwd = ? OR cwd IS NULL) ORDER BY started_at",
+                (root_rows[0][1] - 2.0, root_id, str(workdir)),
+            ).fetchall()
+        if not rows:
             conn.close()
             return result
-        session_id, *_ = rows[0]
-        row = rows[0]
+
+        session_ids = [row[0] for row in rows]
+        placeholders = ",".join("?" for _ in session_ids)
+        content = "content" if "content" in message_schema else "NULL AS content"
+        disposition = (
+            "effect_disposition"
+            if "effect_disposition" in message_schema
+            else "NULL AS effect_disposition"
+        )
         messages = conn.execute(
-            "SELECT role, tool_name, tool_calls, timestamp FROM messages WHERE session_id = ? ORDER BY rowid",
-            (session_id,),
+            f"SELECT role, tool_name, tool_calls, timestamp, {content}, {disposition} "
+            f"FROM messages WHERE session_id IN ({placeholders}) ORDER BY rowid",
+            session_ids,
         ).fetchall()
-        for role, tool_name, tool_calls, timestamp in messages:
+        for role, tool_name, _tool_calls, timestamp, tool_content, effect in messages:
+            # Hermes persists both the assistant's proposed call and the
+            # resulting tool message. Only the latter proves execution.
             if role == "tool" and tool_name:
-                result.events.append({"tool_name": tool_name, "timestamp": timestamp})
-            elif tool_calls:
-                try:
-                    decoded = (
-                        json.loads(tool_calls)
-                        if isinstance(tool_calls, str)
-                        else tool_calls
-                    )
-                    calls = decoded if isinstance(decoded, list) else [decoded]
-                    for call in calls:
-                        name = (
-                            call.get("function", {}).get("name")
-                            if isinstance(call, dict)
-                            else None
-                        )
-                        if name:
-                            result.events.append(
-                                {"tool_name": name, "timestamp": timestamp}
-                            )
-                except (TypeError, ValueError, json.JSONDecodeError):
-                    pass
+                event = {"tool_name": tool_name, "timestamp": timestamp}
+                if effect is not None:
+                    event["effect_disposition"] = effect
+                succeeded = _tool_result_succeeded(tool_content, effect)
+                if not succeeded:
+                    event["succeeded"] = False
+                result.events.append(event)
+                trusted_text = str(tool_content or "")
+                if tool_name == "computer_use" and re.search(
+                    r"cua_driver.*MCP server error", trusted_text, re.I | re.S
+                ):
+                    result.runtime_issues.append("computer_use_runtime_unavailable")
+                if tool_name == "vision_analyze" and re.search(
+                    r"(?:server error|failed to process|vision.*unavailable)",
+                    trusted_text,
+                    re.I,
+                ):
+                    result.runtime_issues.append("vision_runtime_unavailable")
+                if tool_name == "delegate_task" and re.search(
+                    r"(?:Interrupted during API call|Interrupt: skipping \d+ tool call)",
+                    trusted_text,
+                ):
+                    result.runtime_issues.append("delegation_provider_interrupted")
+        for row in rows:
+            parent_id, end_reason, handoff_error = row[10], row[11], row[12]
+            if parent_id is not None and re.search(
+                r"(?:Interrupted during API call|API.*interrupt|provider.*interrupt)",
+                f"{end_reason or ''} {handoff_error or ''}",
+                re.I,
+            ):
+                result.runtime_issues.append("delegation_provider_interrupted")
         conn.close()
         result.trusted = True
-        result.session_id = session_id
+        result.session_id = root_id
         result.tool_calls = len(result.events)
         result.token_usage = {
-            "input_tokens": row[4],
-            "output_tokens": row[5],
-            "reasoning_tokens": row[6],
+            "input_tokens": sum(row[4] or 0 for row in rows),
+            "output_tokens": sum(row[5] or 0 for row in rows),
+            "reasoning_tokens": sum(row[6] or 0 for row in rows),
         }
-        result.cost_usd = row[8] if row[8] is not None else row[7]
+        result.cost_usd = sum(
+            (row[8] if row[8] is not None else row[7] or 0) or 0 for row in rows
+        )
+        result.runtime_issues = sorted(set(result.runtime_issues))
         return result
     except (OSError, sqlite3.Error):
         return result
@@ -535,6 +638,8 @@ def _profile_with_cwd(
     profile: str | None,
     workdir: Path,
     reasoning_effort: str | None = None,
+    provider: str | None = None,
+    model: str | None = None,
 ) -> tuple[str, Path]:
     """Create a temporary profile that overrides terminal.cwd to workdir.
 
@@ -590,6 +695,23 @@ def _profile_with_cwd(
             terminal = data["terminal"] = {}
         # Hermes tools honor terminal.cwd rather than the launcher cwd.
         terminal["cwd"] = str(workdir.resolve())
+        # Do not carry a stale user-browser websocket URL into an isolated
+        # benchmark run. Empty lets Hermes use normal browser discovery.
+        browser = data.setdefault("browser", {})
+        if not isinstance(browser, dict):
+            browser = data["browser"] = {}
+        browser["cdp_url"] = ""
+
+        # Pin benchmark children to the same provider/model as the parent
+        # instead of routing them through a user's unrelated global provider.
+        delegation = data.setdefault("delegation", {})
+        if not isinstance(delegation, dict):
+            delegation = data["delegation"] = {}
+        delegation["provider"] = provider or ""
+        delegation["model"] = model or ""
+        for key in ("base_url", "api_key", "api_mode"):
+            delegation[key] = ""
+
         if reasoning_effort is not None:
             agent = data.setdefault("agent", {})
             if not isinstance(agent, dict):
@@ -602,13 +724,26 @@ def _profile_with_cwd(
         raise
 
 
-def _profile_progress_token(state_db: Path) -> tuple[int, int] | None:
-    """Return a cheap progress marker for an isolated Hermes state database."""
-    try:
-        stat = state_db.stat()
-    except OSError:
-        return None
-    return stat.st_mtime_ns, stat.st_size
+def _profile_progress_token(state_db: Path) -> tuple[int, ...] | None:
+    """Return a cheap progress marker for an isolated Hermes state database.
+
+    SQLite may keep active writes in the WAL while the main database file's
+    mtime and size remain unchanged. Include the journal sidecars so tool
+    calls and delegated child-session progress cannot be mistaken for a stall.
+    """
+    token: list[int] = []
+    for path in (
+        state_db,
+        state_db.with_name(state_db.name + "-wal"),
+        state_db.with_name(state_db.name + "-shm"),
+    ):
+        try:
+            stat = path.stat()
+        except OSError:
+            token.extend((0, 0))
+        else:
+            token.extend((stat.st_mtime_ns, stat.st_size))
+    return tuple(token)
 
 
 def _run_with_stall_detection(
@@ -618,8 +753,19 @@ def _run_with_stall_detection(
     stall_idle_seconds: float | None,
 ) -> tuple[subprocess.CompletedProcess[str], bool]:
     """Run Hermes with an optional idle-progress guard, not a task timeout."""
+    # ``chat -q`` is a request/response process: it has no live channel to
+    # receive Hermes' later async-delegation completion event. Tell Hermes to
+    # use its synchronous fallback for background=true delegation, which still
+    # runs batch children in parallel but keeps the result in this response.
+    env = os.environ.copy()
+    env["HERMES_SESSION_ASYNC_DELIVERY"] = "0"
     process = subprocess.Popen(
-        cmd, cwd=workdir, text=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE
+        cmd,
+        cwd=workdir,
+        env=env,
+        text=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
     )
     if stall_idle_seconds is None:
         stdout, stderr = process.communicate()
@@ -687,12 +833,24 @@ class HermesCLIAdapter(AgentAdapter):
             "Important: the file/terminal/search tools operate inside the Workdir above. "
             "Always use paths relative to the Workdir, not system paths found by search."
         )
+        if "delegation" in toolsets:
+            prompt += (
+                "\n\nThis is a one-shot benchmark process with no later turn available. "
+                "If you use delegate_task, call it with background=false so the "
+                "delegated results are returned in this turn. After the delegation "
+                "result returns, complete all remaining parent-side work and verify "
+                "the required artifacts before your final response."
+            )
         cmd = ["hermes"]
         tmp_profile_dir: Path | None = None
         try:
             started_at = __import__("time").time()
             profile_name, tmp_profile_dir = _profile_with_cwd(
-                self.profile, workdir, reasoning_effort=self.reasoning_effort
+                self.profile,
+                workdir,
+                reasoning_effort=self.reasoning_effort,
+                provider=self.provider,
+                model=self.model,
             )
             cmd += ["-p", profile_name]
             cmd += [
@@ -702,8 +860,6 @@ class HermesCLIAdapter(AgentAdapter):
                 "-Q",
                 "--toolsets",
                 ",".join(toolsets),
-                "--max-turns",
-                "20",
             ]
             if getattr(self, "provider", None):
                 cmd += ["--provider", self.provider]
@@ -716,12 +872,21 @@ class HermesCLIAdapter(AgentAdapter):
                 self.stall_idle_seconds,
             )
             transcript = p.stdout + p.stderr
+            cli_session_match = re.search(
+                r"(?:^|\n)session_id:\s*([\w-]+)", transcript
+            )
+            cli_session_id = (
+                cli_session_match.group(1) if cli_session_match else None
+            )
             telemetry = (
                 _extract_state_db_telemetry(
-                    tmp_profile_dir / "state.db", started_at=started_at, workdir=workdir
+                    tmp_profile_dir / "state.db",
+                    started_at=started_at,
+                    workdir=workdir,
+                    session_id=cli_session_id,
                 )
                 if tmp_profile_dir is not None
-                else StateDBTelemetry(events=[])
+                else StateDBTelemetry(events=[], runtime_issues=[])
             )
             return AgentRun(
                 "stalled" if stalled else ("completed" if p.returncode == 0 else "failed"),
@@ -737,6 +902,7 @@ class HermesCLIAdapter(AgentAdapter):
                 tool_events=telemetry.events,
                 behavior_evidence_trusted=telemetry.trusted,
                 stalled=stalled,
+                runtime_issues=telemetry.runtime_issues,
             )
         finally:
             if tmp_profile_dir is not None:

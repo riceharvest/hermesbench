@@ -486,6 +486,7 @@ class TestAggregateEdgeCases:
         assert score["scored_task_count"] == 0
         assert score["task_count"] == 1
         assert score["overall_score"] == 0.0
+        assert score["capability_evaluable"] is True
 
     def test_aggregate_with_cost_fields(self, tmp_path: Path) -> None:
         """cost fields are handled correctly (null-safe)."""
@@ -535,8 +536,7 @@ class TestAggregateEdgeCases:
         score = aggregate(result)
         assert score["cost_usd"] == 0.03
         assert score["total_cost_usd"] == 0.03
-        # cost_per_successful_task: total costs among *all* successes (len(successes) = 2)
-        # t1 has cost 0.01, t3 has no cost → sum=0.01 / 2 = 0.005
+        # Per-success metric preserves the cost attributed to successful tasks.
         assert score["cost_per_successful_task_usd"] == 0.005
         # cost_per_task: total cost / 3 tasks
         assert score["cost_per_task_usd"] == pytest.approx(0.01)

@@ -17,6 +17,9 @@ class AgentRun:
     # behavior evidence.
     behavior_evidence_trusted: bool = False
     stalled: bool = False
+    # Adapter-owned failures derived from subprocess stderr, structured tool
+    # results, or session metadata. Never populate this from model prose.
+    runtime_issues: list[str] = field(default_factory=list)
 
 class AgentAdapter:
     def __init__(self, model: str | None = None, provider: str | None = None, reasoning_effort: str | None = None):

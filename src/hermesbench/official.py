@@ -42,6 +42,16 @@ def validate_official_manifest(manifest: dict[str, Any], result_path: str | Path
     actual = sha256_file(result_path)
     if expected != actual:
         raise ValueError(f'hash mismatch for result JSON: expected {expected}, got {actual}')
+    result = json.loads(Path(result_path).read_text())
+    metadata = result.get('metadata', {})
+    result_commit = metadata.get('git_commit')
+    if result_commit != manifest['runner_commit']:
+        raise ValueError(
+            f"runner commit mismatch: manifest has {manifest['runner_commit']}, "
+            f"result has {result_commit}"
+        )
+    if metadata.get('git_dirty') is not False:
+        raise ValueError('official evidence requires a clean runner checkout; dirty runner checkout detected')
 
 
 def _scrub_result(value: Any) -> Any:

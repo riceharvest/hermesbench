@@ -45,7 +45,7 @@ Pass if the agent performed a web search and wrote a plausible version string. T
 ## Deterministic checks
 - artifact_exists: artifacts/answer.txt
 - command_passes: test -s artifacts/answer.txt
-- command_contains: cat artifacts/answer.txt => v
+- command_passes: grep -qE '^v?[0-9]+\.[0-9]+(\.[0-9]+)?([+-][0-9A-Za-z.-]+)?$' artifacts/answer.txt
 - command_not_contains: cat artifacts/answer.txt => unknown
 
 ## Hidden checks

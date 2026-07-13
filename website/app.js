@@ -129,6 +129,7 @@ function tokenEfficiencyOf(row) {
 }
 
 function valueOf(row) {
+  if (row.cost_telemetry_status != null && row.cost_telemetry_status !== 'complete') return null;
   if (row.value_score != null) return row.value_score;
   const cost = row.total_cost_usd ?? row.cost_usd;
   return cost && scoreOf(row) ? scoreOf(row) / cost : null;

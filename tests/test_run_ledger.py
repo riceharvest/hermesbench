@@ -15,6 +15,7 @@ from hermesbench.schemas import (
 )
 from hermesbench.runner import (
     _collect_git_commit,
+    _collect_git_dirty,
     _collect_system_metadata,
     _collect_run_metadata,
     _safe_command,
@@ -58,6 +59,7 @@ class TestRunLedgerMetadataToFromDict:
             jobs=2,
             run_wall_time_seconds=12.345,
             git_commit="abc1234",
+            git_dirty=False,
             command="hermesbench run --suite core-cli",
             os_platform="Linux-7.1.3-x86_64",
             python_version="3.11.14",
@@ -85,6 +87,7 @@ class TestRunLedgerMetadataToFromDict:
         assert restored.model == "deepseek-chat"
         assert restored.quantization is None  # explicitly set None -> omitted
         assert restored.run_wall_time_seconds == 12.345
+        assert restored.git_dirty is False
         assert restored.metadata_available["timing"] is True
 
     def test_none_fields_omitted_from_dict(self):
@@ -110,6 +113,7 @@ class TestRunLedgerMetadataToFromDict:
             jobs=4,
             run_wall_time_seconds=1.0,
             git_commit="gc",
+            git_dirty=False,
             command="cmd",
             os_platform="os",
             python_version="py",

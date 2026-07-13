@@ -62,6 +62,9 @@ function requireScoreEntry(e, file, where, provenance) {
   const score = e.score_percentage ?? e.overall_score;
   if (!num01(score)) fail(file, `${where}.score_percentage/overall_score must be a 0..1 number`);
   for (const k of ['pass_at_1', 'false_done_rate', 'timeout_rate', 'raw_overall_score']) if (e[k] != null && !num01(e[k])) fail(file, `${where}.${k} must be a 0..1 number when present`);
+  for (const k of ['cost_telemetry_coverage']) if (e[k] != null && !num01(e[k])) fail(file, `${where}.${k} must be a 0..1 number when present`);
+  for (const k of ['capability_pass', 'capability_evaluable', 'tool_capability_pass', 'tool_capability_evaluable', 'task_correctness_pass']) if (e[k] != null && typeof e[k] !== 'boolean') fail(file, `${where}.${k} must be boolean when present`);
+  if (e.cost_telemetry_status != null && !['unavailable', 'partial', 'complete_zero', 'complete'].includes(e.cost_telemetry_status)) fail(file, `${where}.cost_telemetry_status is not recognized`);
   for (const k of ['task_count', 'total_score', 'max_score', 'total_execution_time_seconds', 'total_tokens', 'tool_call_count', 'total_cost_usd']) if (!maybeNum(e[k])) fail(file, `${where}.${k} must be numeric or null when present`);
   if (e.category_scores != null && !isObj(e.category_scores)) fail(file, `${where}.category_scores must be an object when present`);
   if (e.raw_category_scores != null && !isObj(e.raw_category_scores)) fail(file, `${where}.raw_category_scores must be an object when present`);

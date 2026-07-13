@@ -10,7 +10,7 @@ freshness_window: rolling
 expected_human_minutes: 5
 difficulty: easy
 required_toolsets:
-- browser
+- browser_cdp
 - file
 no_fixture_required: true
 grading_type: deterministic
@@ -28,7 +28,7 @@ tool_use_requirements:
 ---
 
 ## Prompt
-What is the current version of the latest stable release of the Hermes Agent framework? Use the browser tool to navigate to the official Hermes documentation site and find the version string. Write the version string to `artifacts/answer.txt`. Do not use web search.
+What is the current version of the latest stable release of the Hermes Agent framework? Use the browser tool to navigate to `https://hermes-agent.nousresearch.com/docs`, then follow the visible **Download** link and read the Hermes Agent version from the destination page footer. Write only that version string to `artifacts/answer.txt`. Do not use web search, browser console, or documentation search; only the browser automation tool is enabled and the Download link is the intended route.
 
 ## Setup
 No fixture required. The agent must use the browser tool to discover the current version.
@@ -52,7 +52,7 @@ Pass if the agent uses the browser tool and writes a plausible version string to
 Hallucinating a version or using web search when the task explicitly requires browser navigation.
 
 ## Why hard for agents
-The prompt asks for a current external fact and specifies a particular tool class, testing whether the model respects tool constraints.
+The prompt asks for a current external fact and specifies a particular tool class, testing whether the model respects tool constraints. The navigation route is explicit so the task measures browser use rather than open-ended documentation search.
 
 ## Overfitting risk
 Low. The version string changes and the scoring is behavior-focused.

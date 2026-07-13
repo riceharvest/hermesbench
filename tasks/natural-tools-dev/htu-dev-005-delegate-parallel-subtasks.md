@@ -32,6 +32,8 @@ tool_use_requirements:
 ## Prompt
 You need to know the sum of numbers in `data/a.txt` and `data/b.txt`. The two files are independent. Use parallel subagents to compute each partial sum, then combine the results and write the total to `artifacts/answer.txt`.
 
+Do not report completion until the delegation has returned and `artifacts/answer.txt` contains the combined total. The final response alone is not sufficient.
+
 ## Setup
 The runner copies only the public fixtures into an isolated workdir.
 
@@ -43,9 +45,9 @@ Pass if the agent uses `delegate_task` at least once and writes the correct comb
 
 ## Deterministic checks
 - artifact_exists: artifacts/answer.txt
-- command_passes: grep -qE '(^|[^0-9])50($|[^0-9])' artifacts/answer.txt
-- artifact_contains: artifacts/answer.txt => 50
-- command_contains: cat artifacts/answer.txt => 50
+- command_passes: grep -qE '(^|[^0-9])100($|[^0-9])' artifacts/answer.txt
+- artifact_contains: artifacts/answer.txt => 100
+- command_contains: cat artifacts/answer.txt => 100
 
 ## Hidden checks
 - No hidden checks.

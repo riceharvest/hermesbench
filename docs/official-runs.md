@@ -12,7 +12,7 @@ Only designated maintainers may mark runs official. Self-submitted uploads are a
 
 ## Required disclosure
 
-Official manifests disclose hardware/runtime, OS, provider, model, agent version, runner commit, timeout policy, retry policy, suite version, capability scope (`hermes-core` or `hermes-extended`), available toolsets, and result hash.
+Official manifests disclose hardware/runtime, OS, provider, model, agent version, runner commit, timeout policy, retry policy, suite version, capability scope (`hermes-core` or `hermes-extended`), available toolsets, and result hash. New official runs must be generated from a clean checkout: result metadata must contain `git_dirty: false`, and its `git_commit` must match the manifest's `runner_commit`. The archiver rejects dirty or mismatched provenance.
 
 ## Private packs (optional)
 
@@ -21,6 +21,8 @@ For sensitive or rotating fixture data, private packs must live outside the repo
 ## Archive requirements
 
 Each official archive contains `result.json`, `manifest.yaml`, `score-summary.json`, and `SHA256SUMS`. Archives must not include submission tokens, private hidden-check material, or local secrets.
+
+The score summary preserves separate task-correctness, tool-capability, runtime-warning, and cost-availability fields. A run with `cost_telemetry_status` other than `complete` must not be ranked or advertised by score per dollar. `complete_zero` is an availability state, not proof of zero provider cost.
 
 ## Conflicts of interest
 

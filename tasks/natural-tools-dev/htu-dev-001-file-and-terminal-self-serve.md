@@ -37,6 +37,8 @@ You are in a work directory with some files. A local user wants to know the sum 
 
 Do not ask the user anything. Determine what information you need, use the tools available, and give the final answer.
 
+Completion is not just a prose answer: use both the file and terminal tools, then write the correct total to `artifacts/answer.txt`.
+
 ## Setup
 The runner copies only the public fixture into an isolated workdir. No hidden oracle is used.
 

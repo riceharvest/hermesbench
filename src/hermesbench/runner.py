@@ -80,6 +80,23 @@ def _collect_git_commit() -> str | None:
     return None
 
 
+def _collect_git_dirty() -> bool | None:
+    """Return whether the checkout differs from HEAD, including untracked files."""
+    try:
+        result = subprocess.run(
+            ["git", "status", "--porcelain", "--untracked-files=normal"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            cwd=ROOT,
+        )
+        if result.returncode == 0:
+            return bool(result.stdout.strip())
+    except (subprocess.SubprocessError, FileNotFoundError, OSError):
+        pass
+    return None
+
+
 def _collect_system_metadata() -> dict[str, str | None]:
     """Collect safe OS/Python/platform metadata.
 
@@ -162,6 +179,7 @@ def _collect_run_metadata(
     """
     system = _collect_system_metadata()
     git_commit = _collect_git_commit()
+    git_dirty = _collect_git_dirty()
     meta = RunLedgerMetadata(
         provider=provider,
         model=model,
@@ -177,13 +195,14 @@ def _collect_run_metadata(
         cpu_info=system.get("cpu_info"),
         gpu_info=system.get("gpu_info"),
         git_commit=git_commit,
+        git_dirty=git_dirty,
         command=_safe_command(command),
     )
     # Populate availability markers.
     avail: dict[str, bool] = {}
     avail["model_identity"] = bool(provider or model or reasoning_effort)
     avail["runtime"] = bool(profile or benchmark_version)
-    avail["provenance"] = bool(git_commit or command)
+    avail["provenance"] = bool(git_commit or command) and git_dirty is not None
     avail["hardware"] = bool(system.get("cpu_info") or system.get("gpu_info"))
     avail["timing"] = run_wall_time_seconds is not None
     meta.metadata_available = avail
@@ -260,6 +279,16 @@ def _run_one_task(
             ar = None
             timeout = True
 
+        required_classes = set(task.metadata.get("tool_use_requirements", []))
+        runtime_issues = set(ar.runtime_issues if ar else [])
+        runtime_skip_reason = None
+        if "computer_use" in required_classes and "computer_use_runtime_unavailable" in runtime_issues:
+            runtime_skip_reason = "computer_use runtime unavailable: cua-driver MCP server error"
+        elif "delegation" in required_classes and "delegation_provider_interrupted" in runtime_issues:
+            runtime_skip_reason = "delegation runtime unavailable: child provider API interrupted"
+        elif "vision" in required_classes and "vision_runtime_unavailable" in runtime_issues:
+            runtime_skip_reason = "vision runtime unavailable: trusted vision tool result reported a server error"
+
         # Behavior-based grading for natural tool use. If a task declares
         # `tool_use_requirements`, the agent must actually invoke those tool
         # classes in its transcript. This is independent of artifact/output
@@ -277,7 +306,7 @@ def _run_one_task(
                 behavior_transcript = "\n".join(
                     f"agent.tool_executor: tool {event.get('tool_name')} completed (trusted-state-db)"
                     for event in ar.tool_events
-                    if event.get("tool_name")
+                    if event.get("tool_name") and event.get("succeeded", True)
                 )
             else:
                 # Controlled test adapters may provide their own trusted synthetic
@@ -292,6 +321,22 @@ def _run_one_task(
         raw_score, evidence = run_checks(
             wd, task.deterministic_checks, hidden_dir=hidden_dir
         )
+        if runtime_skip_reason and (raw_score < 1.0 or behavior_score < 1.0):
+            return TaskResult(
+                task_id=task.metadata["id"], category=task.metadata["category"],
+                status="environment_skipped", score=0.0, passed=False,
+                wall_time_seconds=round(time.time() - t0, 3),
+                task_quality_tier=task_quality_tier(task, ROOT),
+                raw_task_score=raw_score, effective_task_score=0.0,
+                environment_skip=True, skip_reason=runtime_skip_reason,
+                verification_evidence=evidence + behavior_evidence + [runtime_skip_reason],
+                tool_calls=ar.tool_calls, token_usage=ar.token_usage, cost_usd=ar.cost_usd,
+                logs={"transcript": ar.transcript[:4000], "tool_trace": ar.tool_events,
+                      "telemetry_source": ar.telemetry_source, "sandbox": _sandbox_metadata(wd)},
+                tool_classes_used=list(_used_tool_classes(behavior_transcript)),
+                required_tool_classes=list(required_classes),
+                runtime_issues=sorted(runtime_issues),
+            )
         verification_claimed = bool(ar and ar.claimed_done)
         verification_sufficient = raw_score >= 1.0
         if verification_claimed and not verification_sufficient:
@@ -301,7 +346,11 @@ def _run_one_task(
         # receives no effective credit. Raw partial checks remain audit-only;
         # they must never reward an unverified capability pass.
         if task.metadata.get("tool_use_requirements"):
-            effective_score = 0.0 if false_done else behavior_score
+            effective_score = (
+                1.0
+                if not false_done and raw_score >= 1.0 and behavior_score >= 1.0
+                else 0.0
+            )
         else:
             effective_score = 0.0 if false_done else raw_score
 
@@ -338,11 +387,17 @@ def _run_one_task(
             verification_evidence=evidence + behavior_evidence,
             logs={
                 "transcript": ar.transcript[:4000] if ar else "",
+                # Keep structured tool provenance alongside the bounded model
+                # transcript. Quiet Hermes CLI runs put tool calls in the
+                # temporary state DB, so transcript-only diagnostics cannot
+                # explain stalled browser/cron trajectories.
+                "tool_trace": ar.tool_events if ar else [],
                 "telemetry_source": ar.telemetry_source if ar else None,
                 "sandbox": _sandbox_metadata(wd),
             },
             tool_classes_used=list(tool_classes_used),
             required_tool_classes=list(required_tool_classes),
+            runtime_issues=sorted(runtime_issues),
         )
 
 

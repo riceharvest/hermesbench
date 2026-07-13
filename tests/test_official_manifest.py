@@ -27,7 +27,7 @@ def _result(tmp_path):
         "model": "test-model",
         "started_at": "2026-07-10T00:00:00Z",
         "completed_at": "2026-07-10T00:01:00Z",
-        "metadata": {},
+        "metadata": {"git_commit": "abc123", "git_dirty": False},
         "results": [
             {
                 "task_id": "t1",
@@ -89,6 +89,25 @@ def test_result_hash_mismatch_fails(tmp_path):
     result = _result(tmp_path)
     manifest = _manifest(result, result_json_sha256="bad")
     with pytest.raises(ValueError, match="hash mismatch"):
+        validate_official_manifest(manifest, result)
+
+
+def test_official_manifest_rejects_dirty_runner_checkout(tmp_path):
+    result = _result(tmp_path)
+    payload = json.loads(result.read_text())
+    payload["metadata"]["git_dirty"] = True
+    result.write_text(json.dumps(payload))
+    manifest = _manifest(result)
+
+    with pytest.raises(ValueError, match="dirty runner checkout"):
+        validate_official_manifest(manifest, result)
+
+
+def test_official_manifest_rejects_runner_commit_mismatch(tmp_path):
+    result = _result(tmp_path)
+    manifest = _manifest(result, runner_commit="different")
+
+    with pytest.raises(ValueError, match="runner commit mismatch"):
         validate_official_manifest(manifest, result)
 
 

@@ -62,6 +62,7 @@ class TaskResult:
     logs: dict[str, Any] | None = None
     tool_classes_used: list[str] | None = None
     required_tool_classes: list[str] | None = None
+    runtime_issues: list[str] = field(default_factory=list)
 
 @dataclass
 class RunLedgerMetadata:
@@ -104,6 +105,8 @@ class RunLedgerMetadata:
     # ── Generation / provenance ────────────────────────────────────────
     git_commit: str | None = None
     """Short git commit hash of the HermesBench checkout, or ``None``."""
+    git_dirty: bool | None = None
+    """Whether the checkout had tracked or untracked changes at run start."""
     command: str | None = None
     """Invocation command (secrets scrubbed)."""
     config_summary: dict[str, Any] | None = None
@@ -141,7 +144,7 @@ class RunLedgerMetadata:
             "provider", "model", "reasoning_effort", "quantization", "backend",
             "profile", "benchmark_version", "jobs", "run_wall_time_seconds",
             "engine_version", "hermes_version",
-            "git_commit", "command", "config_summary",
+            "git_commit", "git_dirty", "command", "config_summary",
             "os_platform", "python_version", "cpu_info", "gpu_info",
         ):
             val = getattr(self, key, None)
@@ -170,6 +173,7 @@ class RunLedgerMetadata:
             engine_version=d.get("engine_version"),
             hermes_version=d.get("hermes_version"),
             git_commit=d.get("git_commit"),
+            git_dirty=d.get("git_dirty"),
             command=d.get("command"),
             config_summary=d.get("config_summary"),
             os_platform=d.get("os_platform"),

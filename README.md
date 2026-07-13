@@ -3,11 +3,11 @@
 [![CI](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml/badge.svg)](https://github.com/riceharvest/hermesbench/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 ![Tasks](https://img.shields.io/badge/tasks-38-orange)
-![Status](https://img.shields.io/badge/status-pre--official-blue)
+![Status](https://img.shields.io/badge/status-reviewed--evidence-blue)
 
-HermesBench is an **early-stage tool-use benchmark harness** for Hermes-style agents. It reports two scopes: **`hermes-core`**, the tools and features shipped in the base Hermes Agent installation, and **`hermes-extended`**, the installable/configurable ecosystem tools and integrations. It does not yet establish a minimum-capable-model boundary for the full Hermes Agent surface; that requires archived, reproducible runs in an environment where the requested tools are available.
+HermesBench is a **tool-use benchmark harness** for Hermes-style agents. It reports two scopes: **`hermes-core`**, the tools and features shipped in the base Hermes Agent installation, and **`hermes-extended`**, the installable/configurable ecosystem tools and integrations. It does not claim a minimum-capable-model boundary for the full Hermes Agent surface; any boundary is specific to the archived suite, runner revision, and disclosed environment.
 
-Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers get trained on, and leaderboard wins stop predicting whether an agent can actually finish messy work. HermesBench flips the signal. We grade agentic behavior from telemetry, not output correctness. A task is a capability probe, not a puzzle with a known answer. The benchmark is open-ended by design: a model must autonomously decide which Hermes tool, skill, or workflow to invoke, and then actually do it. Failures are not "wrong answers"; they are missing capabilities.
+Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers get trained on, and leaderboard wins stop predicting whether an agent can actually finish messy work. HermesBench flips the signal. We grade required tool trajectories from telemetry and task outcomes with deterministic checks, reporting those dimensions separately. A task is a capability probe, not just a puzzle with a known answer. The benchmark is open-ended by design: a model must autonomously decide which Hermes tool, skill, or workflow to invoke, and then actually do it.
 
 ## What makes it different
 
@@ -22,7 +22,7 @@ Existing benchmarks are increasingly benchmaxxed: prompts leak, public answers g
 
 ## Current status
 
-HermesBench is under active validation. Hermes runs are preflighted against the toolsets the active runtime exposes. `hermes-core` and `hermes-extended` must be reported separately; unavailable extended tools are environmental skips, not model failures. Only reviewed, archived official runs appear as public capability evidence. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
+Hermes runs are preflighted against the toolsets the active runtime exposes. `hermes-core` and `hermes-extended` are reported separately; unavailable tools are environmental skips, not model failures. Results separate deterministic correctness (`task_correctness_pass`), required-tool evidence (`tool_capability_pass`), trusted runtime warnings, and cost-telemetry availability. Legacy `capability_pass` remains the strict combined gate. Score-per-dollar claims require `cost_telemetry_status=complete`; `complete_zero` is not proof of free inference. Only reviewed, hash-verified archives from a clean committed checkout appear as public capability evidence. See [`docs/official-runs.md`](docs/official-runs.md) and [`docs/methodology.md`](docs/methodology.md).
 
 ## Quick start
 

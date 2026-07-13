@@ -121,7 +121,7 @@ def test_fake_hermes_uses_owned_profile_with_workdir_and_never_credits_stdout(
     assert "HERMESBENCH_RUN_MARKER=" not in record["argv"][chat_idx + 2]
     assert "-Q" in record["argv"]
     assert record["argv"][record["argv"].index("--toolsets") + 1] == "file,terminal"
-    assert record["argv"][record["argv"].index("--max-turns") + 1] == "20"
+    assert "--max-turns" not in record["argv"]
     assert record["argv"][record["argv"].index("--provider") + 1] == "fake-provider"
     assert record["argv"][record["argv"].index("--model") + 1] == "fake-model"
     assert run.status == "completed"
@@ -133,6 +133,11 @@ def test_fake_hermes_uses_owned_profile_with_workdir_and_never_credits_stdout(
     assert run.telemetry_source == "profile-state-db"
     assert run.behavior_evidence_trusted is True
     assert any(e["tool_name"] == "terminal" for e in run.tool_events)
+    config = yaml.safe_load(record["config"])
+    assert config["browser"]["cdp_url"] == ""
+    assert config["delegation"]["provider"] == "fake-provider"
+    assert config["delegation"]["model"] == "fake-model"
+    assert all(not config["delegation"].get(key) for key in ("base_url", "api_key"))
     assert _temporary_profile_dirs(home) == []
 
 
@@ -303,6 +308,24 @@ def test_fake_hermes_stall_detector_terminates_without_task_timeout(
     assert result.status == "stalled"
     assert result.claimed_done is False
     assert _temporary_profile_dirs(home) == []
+
+
+def test_stall_progress_token_tracks_sqlite_wal_and_shm(tmp_path):
+    from hermesbench.adapters.hermes import _profile_progress_token
+
+    state_db = tmp_path / "state.db"
+    state_db.write_bytes(b"db")
+    before = _profile_progress_token(state_db)
+
+    wal = tmp_path / "state.db-wal"
+    wal.write_bytes(b"tool event")
+    after_wal = _profile_progress_token(state_db)
+    assert after_wal != before
+
+    shm = tmp_path / "state.db-shm"
+    shm.write_bytes(b"shared memory")
+    after_shm = _profile_progress_token(state_db)
+    assert after_shm != after_wal
 
 
 def test_temporary_profile_excludes_persistent_agent_state(tmp_path, monkeypatch):

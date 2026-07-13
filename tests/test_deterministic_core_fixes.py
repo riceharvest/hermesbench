@@ -2,6 +2,7 @@ import json
 from pathlib import Path
 
 from hermesbench.graders.deterministic import run_checks
+from hermesbench.scoring import aggregate
 from hermesbench.tasks import discover_tasks, validate_tasks
 from hermesbench.schemas import RunResult, TaskResult
 
@@ -192,6 +193,70 @@ def test_capability_pass_is_task_scoped_not_union_scoped(tmp_path):
         "2026-01-01T00:00:00", "2026-01-01T00:00:01", results, {}
     ).to_jsonable()))
     assert aggregate(path)["capability_pass"] is False
+
+
+def test_required_environment_skip_makes_capability_unevaluable(tmp_path):
+    from hermesbench.scoring import aggregate
+
+    skipped = TaskResult(
+        "vision", "natural-tool-use", "environment_skipped", 0.0, False, 2.0,
+        environment_skip=True, required_tool_classes=["vision"],
+        token_usage={"input_tokens": 10}, cost_usd=0.25, tool_calls=1,
+    )
+    path = tmp_path / "result.json"
+    path.write_text(json.dumps(RunResult(
+        "hermesbench.result.v1", "skip", "hermes-core", "hermes", None,
+        "2026-01-01T00:00:00", "2026-01-01T00:00:02", [skipped], {}
+    ).to_jsonable()))
+    score = aggregate(path)
+    assert score["capability_evaluable"] is False
+    assert score["capability_pass"] is False
+    assert score["cost_usd"] == 0.25
+    assert score["total_tokens"] == 10
+    assert score["tool_call_count"] == 1
+    assert score["total_execution_time_seconds"] == 2.0
+
+
+def test_score_separates_tool_capability_from_task_correctness(tmp_path):
+    result = TaskResult(
+        "delegation", "natural-tool-use", "failed", 0.0, False, 1.0,
+        required_tool_classes=["delegation"], tool_classes_used=["delegation"],
+    )
+    path = tmp_path / "result.json"
+    path.write_text(json.dumps(RunResult(
+        "hermesbench.result.v1", "semantics", "hermes-core", "hermes", None,
+        "2026-01-01T00:00:00", "2026-01-01T00:00:01", [result], {}
+    ).to_jsonable()))
+
+    score = aggregate(path)
+
+    assert score["tool_capability_evaluable"] is True
+    assert score["tool_capability_pass"] is True
+    assert score["task_correctness_pass"] is False
+    assert score["capability_pass"] is False
+
+
+def test_score_reports_partial_cost_coverage_and_runtime_warnings(tmp_path):
+    results = [
+        TaskResult(
+            "a", "natural-tool-use", "passed", 1.0, True, 1.0,
+            cost_usd=0.0, runtime_issues=["recovered_runtime_error"],
+        ),
+        TaskResult("b", "natural-tool-use", "passed", 1.0, True, 1.0),
+    ]
+    path = tmp_path / "result.json"
+    path.write_text(json.dumps(RunResult(
+        "hermesbench.result.v1", "coverage", "hermes-core", "hermes", None,
+        "2026-01-01T00:00:00", "2026-01-01T00:00:02", results, {}
+    ).to_jsonable()))
+
+    score = aggregate(path)
+
+    assert score["cost_telemetry_task_count"] == 1
+    assert score["cost_telemetry_coverage"] == 0.5
+    assert score["cost_telemetry_status"] == "partial"
+    assert score["runtime_warning_task_count"] == 1
+    assert score["runtime_warnings"] == ["recovered_runtime_error"]
 
 
 def test_result_exposes_effective_scoring_and_sandbox(tmp_path):
