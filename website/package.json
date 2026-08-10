@@ -5,6 +5,6 @@
     "test:api": "node scripts/smoke-api.js"
   },
   "dependencies": {
-    "@vercel/blob": "^2.4.0"
+    "@vercel/blob": "^2.7.0"
   }
 }
